@@ -1,4 +1,4 @@
-close all
+% close all
 clear
 
 %% Path expression
@@ -7,7 +7,6 @@ clear
 % Emax = 4% fmax = 0.12
 
 radius = 490; %m 
-radius = 1000; %m 
 path_length = 98; %m given
 theta = path_length / radius;
 
@@ -17,13 +16,17 @@ init_tan = 0; %45 deg
 final_pos = [radius*sin(theta) radius*(1-cos(theta))];
 final_tan = theta; %45 deg
 
+% init_pos = [19.784661402450800,0.395745995589228];
+% init_tan =0.040000000000000; %45 deg
+% final_pos = [39.158200044894620,1.567163911716475];
+% final_tan = 0.080000000000000; %45 deg
 %tolerances
-angleTolerance = deg2rad(0.5); %degrees
+angleTolerance = deg2rad(0); %degrees
 deltaYTolerance = 0.1;
 
 % number of total candidates are calculated here
 numLenCandidates = 100;
-numAngleCandidates = 10;
+numAngleCandidates = 1;
 
 minLength = norm(init_pos - final_pos);
 maxLength = abs(final_pos(1) - init_pos(1)) + abs(final_pos(2) - init_pos(2));
@@ -85,5 +88,7 @@ arcSeg = arcSegment(init_pos,init_tan,radius,path_length,1);
 [x , y] = arcSeg.getXY();
 hold on
 plot(x,y,'LineWidth',3)
-
-
+% ylim(xlim)
+xlabel('X(m)')
+ylabel('Y(m)')
+title('Valid Paths')
