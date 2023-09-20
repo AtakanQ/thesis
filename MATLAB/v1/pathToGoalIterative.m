@@ -13,7 +13,7 @@ theta = path_length / radius;
 
 % divide the road to 10. This may change according
 % to length
-numPlanningSegments = 10;
+numPlanningSegments = 3;
 theta = theta/numPlanningSegments;
 
 % initial and final points
@@ -26,7 +26,7 @@ real_init_pos = init_pos;
 real_init_tan = init_tan;
 
 %tolerances
-deltaYTolerance = 0.1;
+deltaYTolerance = 0.2;
 
 % number of total candidates are calculated here
 numLenCandidates = 100;
@@ -129,6 +129,6 @@ grid on
 % ylim(xlim)
 
 % print radii
-for k = 1:6
-    disp([num2str(k), '. arc segment radius: ', num2str(1/C1.arcSegments(k).radius)])
-end
+% for k = 1:6
+%     disp([num2str(k), '. arc segment radius: ', num2str(1/C1.arcSegments(k).radius)])
+% end

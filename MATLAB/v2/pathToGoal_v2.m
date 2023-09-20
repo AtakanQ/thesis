@@ -62,7 +62,8 @@ for k=1:numCurves
     curv_len = lenCandidates( validLenIndices(k) );
     angle = angleCandidates( validAngleIndices(k) );
     tempK1 = 2 * angle / curv_len;
-
+    
+    % [C1, C2] = createElementary_v2(init_pos,init_tan,tempK1,curv_len,0,0);
     [C1, C2] = createElementary_v2(init_pos,init_tan,tempK1,curv_len,1/radius,1/radius);
 
     all_curves.X(k,:) = [C1.allX C2.allX];

@@ -1,0 +1,10 @@
+- Research about HD maps.
+https://developer.here.com/documentation/here-map-content-schema/dev_guide/topics/topology-geometry-model.html#topology-geometry-model
+
+- Think about the inputs that can be extracted from HD maps.
+ * # of lanes on road
+ * road geometry
+ * road representation
+
+- Study chapter 4, 5, 6 of the guidance thesis.
+Read the thesis and think about a way to convert the representation of roads in the thesis to consecutive arc splines (best case).
