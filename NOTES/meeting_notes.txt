@@ -1,0 +1,4 @@
+-Validate the algorithm with Beziér curves.
+https://www.desmos.com/calculator/xlpbe9bgll?lang=tr
+-Validate the algorithm with known/generated arc splines.
+-Find a real road representation and try to fit arc splines. Look at the results by measuring maximum and mean deviation.
