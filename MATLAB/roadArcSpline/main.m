@@ -4,7 +4,7 @@ clear
 
 pts = [5 5; 25 30; 55 55; 110 100;120 115; 125 130; 135 160];
 
-myRadii = findRadii(pts);
+myRadii = findCurvature(pts);
 figure;
 plot(pts(:,1), pts(:,2))
 hold on
@@ -15,7 +15,7 @@ title('Plot of Hand Given Data Points')
 
 trng_pts = [50 10; 30 20; 40 30];
 
-myRadii_trng = findRadii(trng_pts);
+myRadii_trng = findCurvature(trng_pts);
 figure;
 plot(trng_pts(:,1), trng_pts(:,2))
 hold on
@@ -30,7 +30,7 @@ x = radius*cos(theta);
 y = radius*sin(theta);
 
 
-myRadii = findRadii([x ;y]');
+myRadii = findCurvature([x ;y]');
 figure;
 plot(x, y)
 hold on
@@ -45,7 +45,9 @@ disp(num2str(1/myRadii(5), 100));
 % end
 
 %% Define Beziér Curve
-
+close all
+clear
+clc
 % Control points:
 P0 = [0, 0];
 P1 = [10, 15];
@@ -56,20 +58,20 @@ P5 = [30, 80];
 
 % x,y coordinates and curvature
 [x,y,curvature] = generateBezier(P0,P1,P2,P3,P4,P5);
+
+
 x = x(1:5:length(x));
 y = y(1:5:length(y));
 curvature = curvature(1:5:length(curvature));
 
-% xy_diff = [diff(x') diff(y')];
-% xy_rotation = zeros(length(xy_diff),2);
-% for j = 1:length(curvature)
-%     if curvature(j) > 0 %rotate cw
-%         xy_rotation(j,:) = [xy_diff(j,2) -xy_diff(j,1)];
-%     else %rotate ccw
-%         xy_rotation(j,:) = [-xy_diff(j,2) xy_diff(j,1)];
-%     end
-% end
+[bezierCurvature, centers] = findCurvature([x' y']);
 
+
+figure;
+plot(x,y, 'LineWidth', 1,'Color',[1 0 0])
+title("Generated Sample Bezier Curve")
+axis equal
+% plotMVRCcircles(x,y,centers,bezierCurvature,1/0.0001);
 
 
 figure;
@@ -80,36 +82,46 @@ xlabel('t')
 ylabel('Curvature')
 
 
-[bezierCurvature, centers] = findRadii([x' y']);
-
-figure;
-plot(x,y, 'LineWidth', 1,'Color',[1 0 0])
-title("Generated Sample Bezier Curve")
-hold on
-theta = linspace(0, 2*pi, 1000);
-for i = 1:length(centers)
-    centerX = centers(i,1);
-    centerY = centers(i,2);
-    radius = 1/bezierCurvature(i);
-    if(radius < 1/0.04)
-        curr_point = [x(i+1) y(i+1)];
-
-        crc_x = centerX + radius * cos(theta);
-        crc_y = centerY + radius * sin(theta);
-        plot(crc_x, crc_y, 'b', 'LineWidth', 0.2);
-        plot(curr_point(1), curr_point(2), '*','LineWidth',1,'Color',[0 1 0]);
-        plot([x(i) x(i+2)], [y(i) y(i+2)], '*','LineWidth',1,'Color',[0 0 1]);
-        axis equal;
-        hold on
-    end
-end
-
-
 figure;
 plot(linspace(0,1,length(bezierCurvature)),bezierCurvature)
 title("Generated Bezier Curve's Curvature (MVRC method)")
 xlabel('t')
 ylabel('Curvature')
+
+
+% Find the angle differences 
+%########### USELESS, OBSOLETE###########3
+% [start_angles, end_angles] = findStartEndAngles(x ,y);
+
+figure;
+for k = 1:((length(centers)-1)/2)
+    start_coor = [x(2*k-1) y(2*k-1)];
+    end_coor = [x(2*k+1) y(2*k+1)];
+    diff_start = start_coor - centers(2*k,:);
+    diff_end = end_coor - centers(2*k,:);
+
+    start_angle = atan2(diff_start(2), diff_start(1));
+    end_angle = atan2(diff_end(2), diff_end(1));
+    start_angle(start_angle < 0) = start_angle(start_angle < 0) + 2*pi;
+    end_angle(end_angle < 0) = end_angle(end_angle < 0) + 2*pi;
+
+    % disp('Angles')
+    % rad2deg(start_angle)
+    % rad2deg(end_angle)
+    % 1/bezierCurvature(k)
+    % centers(k,:)
+    temp = arcSegment(centers(2*k,:), rad2deg(start_angle), rad2deg(end_angle),abs(1/bezierCurvature(2*k)) );
+    hold on
+    temp.plotArc();
+
+    % plot([start_coor(1) end_coor(1)],[start_coor(2) end_coor(2)])
+    % hold on
+    % plot(centers(k,1),centers(k,2),'*')
+end
+title("Bezier Curve Approximated with Arc Spline")
+xlabel('x coordinate')
+ylabel('y coordinate')
+axis equal
 
 
 
