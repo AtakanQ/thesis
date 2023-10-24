@@ -50,19 +50,19 @@ clear
 clc
 % Control points:
 P0 = [0, 0];
-P1 = [10, 15];
-P2 = [15, 25];
-P3 = [25, 20];
-P4 = [40, 10];
-P5 = [30, 80];
+P1 = [40 60];
+P2 = [100 70];
+P3 = [150 80];
+P4 = [300 200];
+P5 = [50 100];
 
 % x,y coordinates and curvature
-[x,y,curvature] = generateBezier(P0,P1,P2,P3,P4,P5);
+[x,y,tangent,curvature] = generateBezier(P0,P1,P2,P3,P4,P5);
 
 
-x = x(1:5:length(x));
-y = y(1:5:length(y));
-curvature = curvature(1:5:length(curvature));
+% x = x(1:5:length(x));
+% y = y(1:5:length(y));
+% curvature = curvature(1:5:length(curvature));
 
 [bezierCurvature, centers] = findCurvature([x' y']);
 
@@ -76,7 +76,7 @@ axis equal
 
 figure;
 t = 0:0.001:1;
-plot(t(1:5:end),curvature)
+plot(t,curvature)
 title("Generated Bezier Curve's Curvature (Analytical)")
 xlabel('t')
 ylabel('Curvature')
@@ -92,9 +92,9 @@ ylabel('Curvature')
 % Find the angle differences 
 %########### USELESS, OBSOLETE###########3
 % [start_angles, end_angles] = findStartEndAngles(x ,y);
-
+allPoints = [];
 figure;
-for k = 1:((length(centers)-1)/2)
+for k = 1:floor((length(centers))/2)
     start_coor = [x(2*k-1) y(2*k-1)];
     end_coor = [x(2*k+1) y(2*k+1)];
     diff_start = start_coor - centers(2*k,:);
@@ -105,27 +105,67 @@ for k = 1:((length(centers)-1)/2)
     start_angle(start_angle < 0) = start_angle(start_angle < 0) + 2*pi;
     end_angle(end_angle < 0) = end_angle(end_angle < 0) + 2*pi;
 
-    % disp('Angles')
-    % rad2deg(start_angle)
-    % rad2deg(end_angle)
-    % 1/bezierCurvature(k)
-    % centers(k,:)
     temp = arcSegment(centers(2*k,:), rad2deg(start_angle), rad2deg(end_angle),abs(1/bezierCurvature(2*k)) );
+
     hold on
     temp.plotArc();
-
-    % plot([start_coor(1) end_coor(1)],[start_coor(2) end_coor(2)])
-    % hold on
-    % plot(centers(k,1),centers(k,2),'*')
+    allPoints = [allPoints; temp.Coordinates];
 end
 title("Bezier Curve Approximated with Arc Spline")
 xlabel('x coordinate')
 ylabel('y coordinate')
 axis equal
 
+desiredLength = length(x);
+downsamplingFactor = ceil(length(allPoints) / desiredLength);
+allPointsDownsampled = allPoints(1:downsamplingFactor:end,:);
+
+% Calculate the difference between every point. Note that downsampled
+% points array will not be equal to the number of real analytical (x,y)
+% pairs. Therefore computing the difference between every downsampled point
+% and corresponding analytical point should be enough for distance
+% computation.
+distances = zeros(length(allPointsDownsampled),1);
+
+for i = 1:length(allPointsDownsampled)
+    distances(i) = norm( allPointsDownsampled(i,:) - [x(i) y(i)] );
+end
+figure;
+plot(distances,'.')
+title("Distance Between Analytical and Arc Approximation")
+xlabel('Coordinate index')
+ylabel('Distance')
+
+%Compute the tangent angle of analytical and generated curves
+analytical_angles = atan2(tangent(:,2),tangent(:,1));
+% Plot the tangents to see the results.
+% figure;
+% quiver(x,y,tangent(:,1)',tangent(:,2)')
+% title(" Tangent Angle of Every Point of Analytical Calculation")
+% xlabel('x')
+% ylabel('y')
 
 
 
+% Compute the tangents. We have the arc spline so 
+% perhaps there is a better way to do this...
+
+tangent_arc_spline = diff(allPointsDownsampled);
+figure;
+quiver(allPointsDownsampled(1:end-1,1),allPointsDownsampled(1:end-1,2),tangent_arc_spline(:,1),tangent_arc_spline(:,2))
+title(" Tangent Angle of Every Point of MVRC Method")
+xlabel('x')
+ylabel('y')
+MVRC_angles = atan2(tangent_arc_spline(:,2),tangent_arc_spline(:,1));
+
+figure;
+plot(analytical_angles,'.');
+hold on
+plot(MVRC_angles,'.');
+title('Angle Values of Tangents of Analytical and MVRC Methods')
+xlabel('Coordinate index')
+ylabel('Angle Value (radians)')
+legend('Analytical','MVRC')
 
 %Calculate the difference between points
 % xy = [diff(x') diff(y')];

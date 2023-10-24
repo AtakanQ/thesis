@@ -29,7 +29,7 @@ classdef arcSegment
             endAngleRad = deg2rad(obj.EndAngle);
 
             % Compute (x, y) coordinates of the arc
-            theta = linspace(startAngleRad, endAngleRad, 100); % 100 points for the arc
+            theta = linspace(startAngleRad, endAngleRad, 10); % 100 points for the arc
             x = obj.Center(1) + obj.Radius * cos(theta);
             y = obj.Center(2) + obj.Radius * sin(theta);
             
