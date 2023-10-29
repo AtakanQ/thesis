@@ -175,3 +175,44 @@ legend('Analytical','MVRC')
 % title('Lengths along the curve')
 % xlabel('t')
 % ylabel('Lengths')
+
+%% Real Road
+close all
+clear
+load('../sharp.mat')
+
+x = data.RoadSpecifications(1, 1).Centers(:,1);
+y = data.RoadSpecifications(1, 1).Centers(:,2);
+path_len = sum(norm(diff([x y])));
+sprintf('Approximate real road path length: %d m',path_len)
+figure;
+% plot3(x,y,1:length(x))
+plot(x,y,'LineWidth',2)
+title('Real Road')
+xlabel('m')
+ylabel('m')
+axis equal
+grid on
+
+%From plot get datapoints. For sharp turn only pick [5 22]
+
+picked_x = x(5:22);
+picked_y = y(5:22);
+hold on
+plot(picked_x,picked_y,'Color',[1 0 0],'LineWidth',2)
+legend('Full Road','Picked Road Segment')
+
+[curvature, centers] = findCurvature([picked_x picked_y]);
+
+figure;
+plot(curvature*1000,'*','MarkerSize',6)
+title('Curvature')
+xlabel('Data index')
+ylabel('(Radius^-^1)*1000')
+axis equal
+grid on
+
+plotCircles(curvature,centers,picked_x,picked_y)
+hold on
+plot(picked_x,picked_y,'.','Color',[1 0 0])
+legend('Estimation','Picked Road Segment')

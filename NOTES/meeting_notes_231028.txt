@@ -1,0 +1,3 @@
+-Change the implementation so that it is compatible with Ardam's paper.
+-Look at real roads and inspect (using the method) if their curvature changes linearly. (From: OpenStreetMaps, in the future HERE maps)
+-Test the method with real roads and try to reduce the number of arc splines generated. Plot curvatures.
