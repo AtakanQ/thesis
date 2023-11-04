@@ -38,10 +38,11 @@ center = zeros(length(pts)-2,2);
         
         crossProduct = AC(1) * rho(2) - AC(2) * rho(1);
 
-        
+
         curvature(i - 1) = sign(crossProduct) * 1/norm(rho);
         center(i - 1,:) = pts(i,:) + rho(1:2);
-
+        disp(['Points: ',num2str(pts(i,:)) ])
+        disp(['Curvature: ',num2str(curvature(i - 1)*1000,3) ])
 %         Ax = pts(i,1); 
 %         Ay = pts(i,2);
 %         Bx = pts(i-1,1); 

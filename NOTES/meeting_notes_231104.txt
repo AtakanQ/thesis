@@ -1,0 +1,4 @@
+-Try to fit clothoid between consecutive points. (Maybe change the order of approximation according to the change in curvature? )
+-Try to find "linearly connectable" parts in curvature plot. If found, either connect them with clothoid or just straight lines.
+*Need to find a metric to fit the line or method least squares?
+*If a clothoid is found between "linearly connectable" parts, maybe check the segment length to determine the order of approximation?
