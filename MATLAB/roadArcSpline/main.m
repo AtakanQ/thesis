@@ -45,6 +45,7 @@ disp(num2str(1/myRadii(5), 100));
 % end
 
 %% Define Beziér Curve
+
 close all
 clear
 clc
@@ -105,7 +106,7 @@ for k = 1:floor((length(centers))/2)
     start_angle(start_angle < 0) = start_angle(start_angle < 0) + 2*pi;
     end_angle(end_angle < 0) = end_angle(end_angle < 0) + 2*pi;
 
-    temp = arcSegment(centers(2*k,:), rad2deg(start_angle), rad2deg(end_angle),abs(1/bezierCurvature(2*k)) );
+    temp = arcSegment_v2(centers(2*k,:), rad2deg(start_angle), rad2deg(end_angle),abs(1/bezierCurvature(2*k)) );
 
     hold on
     temp.plotArc();
@@ -177,42 +178,97 @@ legend('Analytical','MVRC')
 % ylabel('Lengths')
 
 %% Real Road
+% close all
+% clear
+% load('../nigde_otoyol_kavsak.mat')
+% 
+% x = data.RoadSpecifications(1, 1).Centers(:,1);
+% y = data.RoadSpecifications(1, 1).Centers(:,2);
+% path_len = sum(norm(diff([x y])));
+% sprintf('Approximate real road path length: %d m',path_len)
+% figure;
+% % plot3(x,y,1:length(x))
+% plot(x,y,'LineWidth',2)
+% title('Real Road')
+% xlabel('m')
+% ylabel('m')
+% axis equal
+% grid on
+% 
+% %From plot get datapoints. For sharp turn only pick [5 22]
+% 
+% picked_x = x(5:34);
+% picked_y = y(5:34);
+% hold on
+% plot(picked_x,picked_y,'Color',[1 0 0],'LineWidth',2)
+% legend('Full Road','Picked Road Segment')
+% 
+% [curvature, centers] = findCurvature([picked_x picked_y]);
+% 
+% figure;
+% plot(curvature*1000,'*','MarkerSize',6)
+% title('Curvature')
+% xlabel('Data index')
+% ylabel('(Radius^-^1)*1000')
+% axis equal
+% grid on
+% 
+% plotCircles(curvature,centers,picked_x,picked_y)
+% hold on
+% plot(picked_x,picked_y,'.','Color',[1 0 0])
+%% REAL DATA 
 close all
 clear
-load('../sharp.mat')
 
-x = data.RoadSpecifications(1, 1).Centers(:,1);
-y = data.RoadSpecifications(1, 1).Centers(:,2);
-path_len = sum(norm(diff([x y])));
-sprintf('Approximate real road path length: %d m',path_len)
+lonlat = readCSV('C:\Users\Atakan\Desktop\thesis2\PYTHON\O-21___4.csv');
+refLat = mean(lonlat(:,2));
+refLon = mean(lonlat(:,1));
+% [x, y] = latlon_to_local_xy(lonlat(:,2), lonlat(:,1), refLat, refLon);
+[xEast, yNorth, zUp] = geodetic2enu(lonlat(:,2), lonlat(:,1), 0, refLat, refLon, 0, wgs84Ellipsoid);
 figure;
-% plot3(x,y,1:length(x))
-plot(x,y,'LineWidth',2)
-title('Real Road')
-xlabel('m')
-ylabel('m')
-axis equal
-grid on
+plot(xEast,yNorth)
 
-%From plot get datapoints. For sharp turn only pick [5 22]
+[curvature, centers] = findCurvature([xEast yNorth]);
 
-picked_x = x(5:22);
-picked_y = y(5:22);
-hold on
-plot(picked_x,picked_y,'Color',[1 0 0],'LineWidth',2)
-legend('Full Road','Picked Road Segment')
+diffxy = diff([xEast yNorth]);
+segment_lengths = sqrt(sum(diffxy.^2,2));
 
-[curvature, centers] = findCurvature([picked_x picked_y]);
-
+sum_over_curve = cumulativeSum(segment_lengths);
+crv_multiplied = curvature*1000;
 figure;
-plot(curvature*1000,'*','MarkerSize',6)
+plot(sum_over_curve(2:end),crv_multiplied,'*','MarkerSize',6)
 title('Curvature')
 xlabel('Data index')
 ylabel('(Radius^-^1)*1000')
-axis equal
+% axis equal
 grid on
 
-plotCircles(curvature,centers,picked_x,picked_y)
+plotCircles(curvature,centers,xEast,yNorth)
 hold on
-plot(picked_x,picked_y,'.','Color',[1 0 0])
-legend('Estimation','Picked Road Segment')
+plot(xEast,yNorth,'.','Color',[1 0 0])
+% hold on
+% plot(xEast,yNorth,'Color',[0 1 0])
+axis equal
+
+%generate clothoid between consecutive points. 
+num_clothoids = length(curvature) - 1;
+dummy_arcSeg= arcSegment;
+
+figure;
+for i=1:num_clothoids
+    % clothoid(init_pos,init_tan, init_curvature, final_curvature,...
+               % length,order,arcSegClass)
+    init_pos =[xEast(i + 1) yNorth(i + 1)];
+    vector = [xEast(i + 2) yNorth(i + 2)] - init_pos;
+    init_tan = atan2(vector(2),vector(1));
+
+    all_clothoids(i) = clothoid(init_pos,init_tan,curvature(i),curvature(i+1),...
+        segment_lengths(i+1),20,dummy_arcSeg);
+    all_clothoids(i).generateArcSegments();
+    all_clothoids(i).plotPlain();
+    hold on
+end
+title('Clothoid Path')
+xlabel('x (m)')
+ylabel('y (m)')
+grid on
