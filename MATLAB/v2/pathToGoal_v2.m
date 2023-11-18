@@ -26,7 +26,7 @@ deltaYTolerance = 0.1;
 
 % number of total candidates are calculated here
 numLenCandidates = 100;
-numAngleCandidates = 1;
+numAngleCandidates = 10;
 
 minLength = norm(init_pos - final_pos);
 maxLength = abs(final_pos(1) - init_pos(1)) + abs(final_pos(2) - init_pos(2));

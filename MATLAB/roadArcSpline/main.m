@@ -227,7 +227,7 @@ refLon = mean(lonlat(:,1));
 [xEast, yNorth, zUp] = geodetic2enu(lonlat(:,2), lonlat(:,1), 0, refLat, refLon, 0, wgs84Ellipsoid);
 figure;
 plot(xEast,yNorth)
-
+title('Real road')
 [curvature, centers] = findCurvature([xEast yNorth]);
 
 diffxy = diff([xEast yNorth]);
@@ -264,6 +264,7 @@ for i=1:num_clothoids
 
     all_clothoids(i) = clothoid(init_pos,init_tan,curvature(i),curvature(i+1),...
         segment_lengths(i+1),20,dummy_arcSeg);
+
     all_clothoids(i).generateArcSegments();
     all_clothoids(i).plotPlain();
     hold on
@@ -272,3 +273,28 @@ title('Clothoid Path')
 xlabel('x (m)')
 ylabel('y (m)')
 grid on
+
+
+
+%% test
+lb = clothoidLaneBoundary('BoundaryType','Solid', ...
+'Strength',1,'Width',0.2,'CurveLength',segment_lengths(22), ...
+'Curvature',curvature(21),'LateralOffset',2,'HeadingAngle',10);
+rb = lb;
+rb.LateralOffset = -2;
+bep = birdsEyePlot('XLimits',[-50 50],'YLimits',[-50 50]);
+lbPlotter = laneBoundaryPlotter(bep,'DisplayName','Left-lane boundary','Color','r');
+rbPlotter = laneBoundaryPlotter(bep,'DisplayName','Right-lane boundary','Color','g');
+plotLaneBoundary(lbPlotter,lb)
+plotLaneBoundary(rbPlotter,rb);
+grid
+hold on
+x = 0:5:50;
+yl = computeBoundaryModel(lb,x);
+yr = computeBoundaryModel(rb,x);
+plot(x,yl,'ro')
+plot(x,yr,'go')
+hold off
+
+
+

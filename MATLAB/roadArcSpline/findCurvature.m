@@ -41,24 +41,8 @@ center = zeros(length(pts)-2,2);
 
         curvature(i - 1) = sign(crossProduct) * 1/norm(rho);
         center(i - 1,:) = pts(i,:) + rho(1:2);
-        disp(['Points: ',num2str(pts(i,:)) ])
-        disp(['Curvature: ',num2str(curvature(i - 1)*1000,3) ])
-%         Ax = pts(i,1); 
-%         Ay = pts(i,2);
-%         Bx = pts(i-1,1); 
-%         By = pts(i-1,2); 
-%         Cx = pts(i+1,1); 
-%         Cy = pts(i+1,2); 
-%         figure; 
-%         hold all; 
-% %         quiver(Bx,By,Ax,Ay); 
-% %         quiver(Ax,Ay,Cx,Cy); 
-% %         quiver(Ax,Ay,e(1),e(2)); 
-% %         quiver(Ax,Ay,f(1),f(2)); 
-%         plot([Bx,Ax],[By,Ay],'Color',[0 1 0]); 
-%         plot([Ax,Cx],[Ay,Cy],'Color',[0 0.5 0]); 
-%         plot([Ax,Ax+e(1)],[Ay,Ay+e(2)],'Color',[0 0 1]); 
-%         plot([Ax,Ax+f(1)],[Ay,Ay+f(2)],'Color',[1 0 0]);
+        % disp(['Points: ',num2str(pts(i,:)) ])
+        % disp(['Curvature: ',num2str(curvature(i - 1)*1000,3) ])
         
     end
 
