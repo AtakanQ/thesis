@@ -1,6 +1,8 @@
 %% REAL DATA 
 close all
 clear
+addpath('../../CLOTHOIDFITTING/G1fitting')
+
 
 lonlat = readCSV('..\..\PYTHON\O-21___4.csv');
 refLat = mean(lonlat(:,2));

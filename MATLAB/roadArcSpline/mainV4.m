@@ -1,6 +1,7 @@
 %% REAL DATA 
 close all
 clear
+addpath('../../CLOTHOIDFITTING/G1fitting')
 
 roadMunichData; 
 lonlat = roadMunich(:,2:3);
