@@ -4,7 +4,7 @@ figure;
 for k = 2:(length(picked_x)-1)
     if(k == 2) || (k == length(centers)+1 )
     start_coor = [picked_x(k-1) picked_y(k-1)];
-    end_coor = [picked_x(k+1) picked_y(k+1)];
+    end_coor = [picked_x(k+1) picked_y(k+1)]; 
     else
     start_coor = [picked_x(k) picked_y(k)];
     end_coor = [picked_x(k+1) picked_y(k+1)];
@@ -18,8 +18,9 @@ for k = 2:(length(picked_x)-1)
 
     start_angle(start_angle < 0) = start_angle(start_angle < 0) + 2*pi;
     end_angle(end_angle < 0) = end_angle(end_angle < 0) + 2*pi;
-
-    temp = arcSegment_v2(centers(k-1,:), rad2deg(start_angle), rad2deg(end_angle),abs(1/curvature(k-1)) );
+    
+    radius = abs(1/curvature(k-1));
+    temp = arcSegment_v2(centers(k-1,:), rad2deg(start_angle), rad2deg(end_angle), radius);
 
     hold on
     temp.plotArc();
