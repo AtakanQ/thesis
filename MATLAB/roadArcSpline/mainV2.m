@@ -2,7 +2,7 @@
 close all
 clear
 
-lonlat = readCSV('C:\Users\Atakan\Desktop\thesis2\PYTHON\O-21___4.csv');
+lonlat = readCSV('..\..\PYTHON\O-21___4.csv');
 refLat = mean(lonlat(:,2));
 refLon = mean(lonlat(:,1));
 [xEast, yNorth, zUp] = geodetic2enu(lonlat(:,2), ...
