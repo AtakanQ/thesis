@@ -60,12 +60,12 @@ legend('Arcs','Road data points');
 
 
 numSegments = length(arcSegments);
-diffx = cell(numSegments,1);
-diffy = cell(numSegments,1);
+diffx = cell(numSegments);
+diffy = cell(numSegments);
 
 for j = 1:numSegments
-    diffx{j} = arcSegments{j}.Coordinates(:,1) - all_clothoids(j).allX';
-    diffy{j} = arcSegments{j}.Coordinates(:,2) - all_clothoids(j).allY';
+    diffx{j} = arcSegments{j}.Coordinates()
+
 end
 
 
