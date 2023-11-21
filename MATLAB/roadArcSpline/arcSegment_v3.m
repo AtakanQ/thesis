@@ -40,7 +40,7 @@ classdef arcSegment_v3
         
         % Method to plot the arc
         function plotArc(obj)
-            plot(obj.Coordinates(:, 1), obj.Coordinates(:, 2), 'b', 'LineWidth', 1);
+            plot(obj.Coordinates(:, 1), obj.Coordinates(:, 2),'--', 'Color',[0 1 1], 'LineWidth', 1);
             % hold on;
             % plot(obj.Center(1), obj.Center(2), 'ro'); % Plot center point
             % axis equal;

@@ -56,18 +56,11 @@ num_arc_points = 420;
 [arcSegments] = plotCircles_v2(curvature,centers,xEast,yNorth,num_arc_points);
 hold on
 plot(xEast,yNorth,'*','Color',[1 0 0])
-legend('Arcs','Road data points');
+% legend('Arcs','Road data points');
 
 
-numSegments = length(arcSegments);
-diffx = cell(numSegments);
-diffy = cell(numSegments);
+errors = computeError(arcSegments,all_clothoids);
 
-for j = 1:numSegments
-    diffx{j} = arcSegments{j}.Coordinates()
-
-end
-
-
-
-
+figure;
+plot(errors{1})
+title('Error')

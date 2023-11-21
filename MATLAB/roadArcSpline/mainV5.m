@@ -24,7 +24,7 @@ diffxy = diff([xEast yNorth]);
 
 
 %generate clothoid between consecutive points. 
-num_clothoids = length(curvature) - 1;
+num_clothoids = length(curvature);
 dummy_arcSeg= arcSegment;
 
 figure;
@@ -56,18 +56,20 @@ num_arc_points = 420;
 [arcSegments] = plotCircles_v2(curvature,centers,xEast,yNorth,num_arc_points);
 hold on
 plot(xEast,yNorth,'*','Color',[1 0 0])
-legend('Arcs','Road data points');
+% legend('Arcs','Road data points');
 
 
-numSegments = length(arcSegments);
-diffx = cell(numSegments,1);
-diffy = cell(numSegments,1);
+errors = computeError(arcSegments,all_clothoids);
 
-for j = 1:numSegments
-    diffx{j} = arcSegments{j}.Coordinates(:,1) - all_clothoids(j).allX';
-    diffy{j} = arcSegments{j}.Coordinates(:,2) - all_clothoids(j).allY';
-end
-
-
-
-
+figure;
+plot(errors{1})
+title('Error')
+figure;
+plot(errors{10})
+title('Error')
+figure;
+plot(errors{21})
+title('Error')
+figure;
+plot(errors{31})
+title('Error')

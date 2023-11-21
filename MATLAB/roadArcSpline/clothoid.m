@@ -113,7 +113,7 @@ classdef clothoid < handle
        function plotPlain(obj)
             % figure;
 
-            plot(obj.allX,obj.allY,'LineWidth',3);
+            plot(obj.allX,obj.allY,'LineWidth',1.5);
             % title('Clothoid Path')
             % xlabel('x')
             % ylabel('y')
