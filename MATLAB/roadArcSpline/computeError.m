@@ -5,6 +5,7 @@ numSegments = length(arcSegments);
 errors = cell(numSegments,1);
 num_coor_arc = length(arcSegments{1}.Coordinates);
 
+% DEBUG
 % figure;
 for j = 1:numSegments
     curr_clothoid_points = [all_clothoids(j).allX' all_clothoids(j).allY'];
@@ -15,10 +16,10 @@ for j = 1:numSegments
         % Calculate Euclidean distances between 'curr_point' and all points in 'curr_clothoid_points'
         distances = sqrt(sum(bsxfun(@minus, curr_clothoid_points, curr_point).^2, 2));
         
-        % Find the index of the closest point
+        % Find the minimum of the closest point
         [minError, ~] = min(distances);
         errors{j}(k) = minError;
-        % 
+        % DEBUG
         % plot(curr_point(1),curr_point(2),'*')
         % hold on
         % plot(curr_clothoid_points(:,1),curr_clothoid_points(:,2),'.','MarkerSize',15)

@@ -31,17 +31,33 @@ figure;
 for i=1:num_clothoids
     init_pos = [xEast(i) yNorth(i)]; 
     init_tan = theta(i); 
-    all_clothoids(i) = clothoid(init_pos,init_tan,k(i),k(i)+dk(i)*L(i),...
-        L(i),20,dummy_arcSeg);
 
-    all_clothoids(i).generateArcSegments();
+    %OBSOLETE WITH clothoid_v2
+    % all_clothoids(i) = clothoid(init_pos,init_tan,k(i),k(i)+dk(i)*L(i),...
+    %     L(i),20,dummy_arcSeg);
+
+    % Using k(i+1) instead of k(i)+dk(i)*L(i) should be better ?. TODO
+    all_clothoids(i) = clothoid_v2(init_pos, init_tan, ...
+        k(i), k(i)+dk(i)*L(i),L(i),5000 );
+    
+    %OBSOLETE WITH clothoid_v2
+    % all_clothoids(i).generateArcSegments();
+
     all_clothoids(i).plotPlain();
     hold on
+
+    % v2_cloth = clothoid_v2(init_pos, init_tan,k(i), k(i)+dk(i)*L(i),L(i),1000 );
+    % figure;
+    % v2_cloth.plotPlain();
 end
 title('Clothoid Path')
 xlabel('x (m)')
 ylabel('y (m)')
 grid on
+
+
+
+
 
 %% Test new methods
 % Every clothoid has 420 = ( (clothoid_order + 1) * 20) data points in them.
@@ -50,7 +66,7 @@ grid on
 % turn left positive curvature
 
 % fitCircles(curvature,centers,theta)
-num_arc_points = 420;
+num_arc_points = 500;
 
 
 [arcSegments] = plotCircles_v2(curvature,centers,xEast,yNorth,num_arc_points);
