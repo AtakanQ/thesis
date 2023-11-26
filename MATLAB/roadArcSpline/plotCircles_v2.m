@@ -1,5 +1,5 @@
 function [arcSegments] = plotCircles_v2(curvature,centers,xEast,yNorth,num_arc_points)
-
+% Point i is connected to point i+1 using the curvature at point i+1.
 num_arcs = length(curvature);
 arcSegments = cell(1,num_arcs);
 radii = abs(1./curvature);

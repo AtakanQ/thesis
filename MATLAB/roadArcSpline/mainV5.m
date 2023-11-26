@@ -22,47 +22,10 @@ diffxy = diff([xEast yNorth]);
 % Use clothoid fitting 
 [theta,k,dk,L,nevalG1,nevalF,iter,Fvalue,Fgradnorm] = G1spline( [xEast yNorth]);
 
-centers_test = findCenters([xEast yNorth], theta,k);
+% centers_test = findCenters([xEast yNorth], theta,k);
 
-
-
-%generate clothoid between consecutive points. 
-num_clothoids = length(k);
-dummy_arcSeg= arcSegment;
-
-figure;
-for i=1:num_clothoids
-    init_pos = [xEast(i) yNorth(i)]; 
-    init_tan = theta(i); 
-
-    %OBSOLETE WITH clothoid_v2
-    % all_clothoids(i) = clothoid(init_pos,init_tan,k(i),k(i)+dk(i)*L(i),...
-    %     L(i),20,dummy_arcSeg);
-    if i == length(k)
-        all_clothoids(i) = clothoid_v2(init_pos, init_tan, ...
-            k(i), k(i)+dk(i)*L(i),L(i),500 );
-    else
-        all_clothoids(i) = clothoid_v2(init_pos, init_tan, ...
-            k(i), k(i+1),L(i),500 );        
-    end
-
-    %OBSOLETE WITH clothoid_v2
-    % all_clothoids(i).generateArcSegments();
-
-    all_clothoids(i).plotPlain();
-    hold on
-
-    % v2_cloth = clothoid_v2(init_pos, init_tan,k(i), k(i)+dk(i)*L(i),L(i),1000 );
-    % figure;
-    % v2_cloth.plotPlain();
-end
-title('Clothoid Path')
-xlabel('x (m)')
-ylabel('y (m)')
-grid on
-
-
-
+% Generate clothoids.
+[all_clothoids] = generateClothoids(xEast,yNorth,theta,k,dk,L);
 
 
 %% Test new methods
@@ -75,14 +38,17 @@ grid on
 num_arc_points = 500;
 
 
-% [arcSegments] = plotCircles_v2(curvature,centers,xEast,yNorth,num_arc_points);
-[arcSegments] = plotCircles_v2(k,centers_test,xEast,yNorth,num_arc_points);
+[arcSegments] = plotCircles_v2(curvature,centers,xEast,yNorth,num_arc_points);
+% [arcSegments] = plotCircles_v2(k,centers_test,xEast,yNorth,num_arc_points);
 hold on
 plot(xEast,yNorth,'*','Color',[1 0 0])
 % legend('Arcs','Road data points');
 
+%Compute errors for each point along each segment.
+%Additionally compute rms errors for each segment.
+[errors, rms_errors] = computeError(arcSegments,all_clothoids);
 
-errors = computeError(arcSegments,all_clothoids);
+
 
 figure;
 first = 1;
