@@ -22,9 +22,12 @@ diffxy = diff([xEast yNorth]);
 % Use clothoid fitting 
 [theta,k,dk,L,nevalG1,nevalF,iter,Fvalue,Fgradnorm] = G1spline( [xEast yNorth]);
 
+centers_test = findCenters([xEast yNorth], theta,k);
+
+
 
 %generate clothoid between consecutive points. 
-num_clothoids = length(curvature);
+num_clothoids = length(k);
 dummy_arcSeg= arcSegment;
 
 figure;
@@ -35,11 +38,14 @@ for i=1:num_clothoids
     %OBSOLETE WITH clothoid_v2
     % all_clothoids(i) = clothoid(init_pos,init_tan,k(i),k(i)+dk(i)*L(i),...
     %     L(i),20,dummy_arcSeg);
+    if i == length(k)
+        all_clothoids(i) = clothoid_v2(init_pos, init_tan, ...
+            k(i), k(i)+dk(i)*L(i),L(i),500 );
+    else
+        all_clothoids(i) = clothoid_v2(init_pos, init_tan, ...
+            k(i), k(i+1),L(i),500 );        
+    end
 
-    % Using k(i+1) instead of k(i)+dk(i)*L(i) should be better ?. TODO
-    all_clothoids(i) = clothoid_v2(init_pos, init_tan, ...
-        k(i), k(i)+dk(i)*L(i),L(i),5000 );
-    
     %OBSOLETE WITH clothoid_v2
     % all_clothoids(i).generateArcSegments();
 
@@ -69,7 +75,8 @@ grid on
 num_arc_points = 500;
 
 
-[arcSegments] = plotCircles_v2(curvature,centers,xEast,yNorth,num_arc_points);
+% [arcSegments] = plotCircles_v2(curvature,centers,xEast,yNorth,num_arc_points);
+[arcSegments] = plotCircles_v2(k,centers_test,xEast,yNorth,num_arc_points);
 hold on
 plot(xEast,yNorth,'*','Color',[1 0 0])
 % legend('Arcs','Road data points');
@@ -78,14 +85,17 @@ plot(xEast,yNorth,'*','Color',[1 0 0])
 errors = computeError(arcSegments,all_clothoids);
 
 figure;
-plot(errors{1})
-title('Error')
+first = 1;
+plot(errors{first})
+title(strcat('Error for curvature:',num2str(curvature(first)),...
+    'Segment Length:  ', num2str(L(first))))
 figure;
-plot(errors{10})
-title('Error')
+second = 10;
+plot(errors{second})
+title(strcat('Error for curvature:',num2str(curvature(second)),...
+    'Segment Length:  ', num2str(L(second))))
 figure;
-plot(errors{21})
-title('Error')
-figure;
-plot(errors{31})
-title('Error')
+third = 21;
+plot(errors{third})
+title(strcat('Error for curvature:',num2str(curvature(third)),...
+    'Segment Length:  ', num2str(L(third))))
