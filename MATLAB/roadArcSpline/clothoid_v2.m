@@ -2,6 +2,7 @@ classdef clothoid_v2 < handle
    properties
       init_pos
       init_tan
+      final_tan
       init_curv
       final_curv
       curv_length
@@ -76,6 +77,7 @@ classdef clothoid_v2 < handle
             x(i) = x(i - 1) + ds * cos(tangent(i - 1)) ;
             y(i) = y(i - 1) + ds * sin(tangent(i - 1)) ;
         end
+        obj.final_tan = tangent(end);
     end
 
        function plotPlain(obj)
