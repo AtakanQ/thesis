@@ -52,12 +52,14 @@ curvature_differences = abs(diff(curvature));
 figure;
 plot(curvature_differences,'Color',[0 0 1])
 hold on
+ylabel('Curvature difference')
 yyaxis right
 plot(rms_errors(2:end),'Color',[1 0 0])
+ylabel('RMS error')
 legend('Abs Curvature differences', 'RMS errors');
 title('Absolute Curvature Differences and RMS Errors')
 grid on
-
+xlabel('Segment index')
 % inspect a specific segment.
 segment_idx = 36;
 figure;
@@ -70,3 +72,9 @@ arcSegments{segment_idx}.plotArc();
 hold on
 all_clothoids(segment_idx).plotPlain();
 title('Generated Arc and Clothoid for Specified Segment')
+axis equal
+heading_change_for_specified_index = rad2deg(all_clothoids(segment_idx).final_tan -...
+    all_clothoids(segment_idx).init_tan)
+
+
+
