@@ -29,7 +29,6 @@ diffxy = diff([xEast yNorth]);
 
 
 %% Test new methods
-% Every clothoid has 420 = ( (clothoid_order + 1) * 20) data points in them.
 
 % arcSegment_v3(center, startAngle, endAngle, radius,num_points)
 % turn left positive curvature
@@ -48,20 +47,26 @@ plot(xEast,yNorth,'*','Color',[1 0 0])
 %Additionally compute rms errors for each segment.
 [errors, rms_errors] = computeError(arcSegments,all_clothoids);
 
+curvature_differences = abs(diff(curvature));
 
+figure;
+plot(curvature_differences,'Color',[0 0 1])
+hold on
+yyaxis right
+plot(rms_errors(2:end),'Color',[1 0 0])
+legend('Abs Curvature differences', 'RMS errors');
+title('Absolute Curvature Differences and RMS Errors')
+grid on
+
+% inspect a specific segment.
+segment_idx = 36;
+figure;
+plot(errors{segment_idx})
+title(strcat('Error for radius:',num2str(abs( 1/curvature(segment_idx)) ),...
+    'Segment Length:  ', num2str(L(segment_idx))))
 
 figure;
-first = 1;
-plot(errors{first})
-title(strcat('Error for curvature:',num2str(curvature(first)),...
-    'Segment Length:  ', num2str(L(first))))
-figure;
-second = 10;
-plot(errors{second})
-title(strcat('Error for curvature:',num2str(curvature(second)),...
-    'Segment Length:  ', num2str(L(second))))
-figure;
-third = 21;
-plot(errors{third})
-title(strcat('Error for curvature:',num2str(curvature(third)),...
-    'Segment Length:  ', num2str(L(third))))
+arcSegments{segment_idx}.plotArc();
+hold on
+all_clothoids(segment_idx).plotPlain();
+title('Generated Arc and Clothoid for Specified Segment')

@@ -22,45 +22,50 @@ diffxy = diff([xEast yNorth]);
 % Use clothoid fitting 
 [theta,k,dk,L,nevalG1,nevalF,iter,Fvalue,Fgradnorm] = G1spline( [xEast yNorth]);
 
+% centers_test = findCenters([xEast yNorth], theta,k);
 
-%generate clothoid between consecutive points. 
-num_clothoids = length(curvature) - 1;
-dummy_arcSeg= arcSegment;
+% Generate clothoids.
+[all_clothoids] = generateClothoids(xEast,yNorth,theta,k,dk,L);
 
-figure;
-for i=1:num_clothoids
-    init_pos = [xEast(i) yNorth(i)]; 
-    init_tan = theta(i); 
-    all_clothoids(i) = clothoid(init_pos,init_tan,k(i),k(i)+dk(i)*L(i),...
-        L(i),20,dummy_arcSeg);
-
-    all_clothoids(i).generateArcSegments();
-    all_clothoids(i).plotPlain();
-    hold on
-end
-title('Clothoid Path')
-xlabel('x (m)')
-ylabel('y (m)')
-grid on
 
 %% Test new methods
-% Every clothoid has 420 = ( (clothoid_order + 1) * 20) data points in them.
 
 % arcSegment_v3(center, startAngle, endAngle, radius,num_points)
 % turn left positive curvature
 
 % fitCircles(curvature,centers,theta)
-num_arc_points = 420;
+num_arc_points = 500;
 
 
 [arcSegments] = plotCircles_v2(curvature,centers,xEast,yNorth,num_arc_points);
+% [arcSegments] = plotCircles_v2(k,centers_test,xEast,yNorth,num_arc_points);
 hold on
 plot(xEast,yNorth,'*','Color',[1 0 0])
 % legend('Arcs','Road data points');
 
+%Compute errors for each point along each segment.
+%Additionally compute rms errors for each segment.
+[errors, rms_errors] = computeError(arcSegments,all_clothoids);
 
-errors = computeError(arcSegments,all_clothoids);
+curvature_differences = abs(diff(curvature));
 
 figure;
-plot(errors{1})
-title('Error')
+plot(curvature_differences,'Color',[0 0 1])
+hold on
+yyaxis right
+plot(rms_errors(2:end),'Color',[1 0 0])
+legend('Abs Curvature differences', 'RMS errors');
+title('Absolute Curvature Differences and RMS Errors')
+grid on
+
+% inspect a specific segment.
+figure;
+segment_idx = 36;
+plot(errors{segment_idx})
+title(strcat('Error for radius:',num2str(abs( 1/curvature(segment_idx)) ),...
+    'Segment Length:  ', num2str(L(segment_idx))))
+
+figure;
+arcSegments{i}.plotArc();
+
+
