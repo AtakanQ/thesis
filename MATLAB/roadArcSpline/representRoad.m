@@ -6,6 +6,7 @@ function [segments] = representRoad(xEast,...
 %   indicating each segment's nature. Meaning, some segments may be
 %   represented with multiple arcs while some segments may be represented
 %   as a straight line.
+%Atakan
 numSegment = length(L);
 
 sampleStruct.type = 'undefined'; % Segment type (line,arc,arcs or empty)
