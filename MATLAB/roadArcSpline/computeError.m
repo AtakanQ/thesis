@@ -1,6 +1,5 @@
 function [all_errors, rms_errors] = computeError(arcSegments,all_clothoids)
 
-%Number of arc segments is one lesser than clothoids. TODO
 numSegments = length(arcSegments);
 all_errors = cell(numSegments,1);
 num_coor_arc = length(arcSegments{1}.Coordinates);

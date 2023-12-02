@@ -1,9 +1,8 @@
 %% REAL DATA 
 %inherited from V3
 close all
-clear
+% clear
 addpath('../../CLOTHOIDFITTING/G1fitting')
-
 
 lonlat = readCSV('..\..\PYTHON\O-21___4.csv');
 refLat = mean(lonlat(:,2));
@@ -15,66 +14,58 @@ figure;
 plot(xEast,yNorth)
 title('Real road')
 
-[curvature, centers] = findCurvature([xEast yNorth]);
-
-diffxy = diff([xEast yNorth]);
+[curvature_MVRC, centers_MVRC] = findCurvature([xEast yNorth]);
 
 % Use clothoid fitting 
-[theta,k,dk,L,nevalG1,nevalF,iter,Fvalue,Fgradnorm] = G1spline( [xEast yNorth]);
+[theta,curvature_GT,dk,L,nevalG1,nevalF,iter,Fvalue,Fgradnorm] = G1spline( [xEast yNorth]);
 
-% centers_test = findCenters([xEast yNorth], theta,k);
+centers_GT = findCenters([xEast yNorth], theta,curvature_GT);
 
 % Generate clothoids.
-[all_clothoids] = generateClothoids(xEast,yNorth,theta,k,dk,L);
+[all_clothoids] = generateClothoids(xEast,yNorth,theta,curvature_GT,dk,L);
 
 
-%% Test new methods
-
-% arcSegment_v3(center, startAngle, endAngle, radius,num_points)
+%% Generate arc segments
 % turn left positive curvature
 
-% fitCircles(curvature,centers,theta)
 num_arc_points = 500;
 
+%plotCircles_v2(curvature,centers,xEast,yNorth,num_arc_points,MVRC)
+[arcSegments_MVRC] = plotCircles_v2(curvature_MVRC,centers_MVRC,xEast,yNorth,num_arc_points,true);
 
-[arcSegments] = plotCircles_v2(curvature,centers,xEast,yNorth,num_arc_points);
-% [arcSegments] = plotCircles_v2(k,centers_test,xEast,yNorth,num_arc_points);
-hold on
-plot(xEast,yNorth,'*','Color',[1 0 0])
-% legend('Arcs','Road data points');
+[arcSegments_GT] = plotCircles_v2(curvature_GT,centers_GT,xEast,yNorth,num_arc_points,false);
 
 %Compute errors for each point along each segment.
 %Additionally compute rms errors for each segment.
-[errors, rms_errors] = computeError(arcSegments,all_clothoids);
+[errors_MVRC, rms_errors_MVRC] = computeError(arcSegments_MVRC,all_clothoids);
+[errors_GT, rms_errors_GT] = computeError(arcSegments_GT,all_clothoids);
 
-curvature_differences = abs(diff(curvature));
-
-figure;
-plot(curvature_differences,'Color',[0 0 1])
-hold on
-ylabel('Curvature difference')
-yyaxis right
-plot(rms_errors(2:end),'Color',[1 0 0])
-ylabel('RMS error')
-legend('Abs Curvature differences', 'RMS errors');
-title('Absolute Curvature Differences and RMS Errors')
-grid on
-xlabel('Segment index')
-% inspect a specific segment.
-segment_idx = 36;
-figure;
-plot(errors{segment_idx})
-title(strcat('Error for radius:',num2str(abs( 1/curvature(segment_idx)) ),...
-    'Segment Length:  ', num2str(L(segment_idx))))
-
-figure;
-arcSegments{segment_idx}.plotArc();
-hold on
-all_clothoids(segment_idx).plotPlain();
-title('Generated Arc and Clothoid for Specified Segment')
-axis equal
-heading_change_for_specified_index = rad2deg(all_clothoids(segment_idx).final_tan -...
-    all_clothoids(segment_idx).init_tan)
+curvature_differences_MVRC = inspectArcs(curvature_MVRC,L,rms_errors_MVRC,true);
+curvature_differences_GT = inspectArcs(curvature_GT,L,rms_errors_GT,false);
 
 
+% figure;
+% plot(curvature_MVRC)
+% hold on
+% plot(curvature_GT(2:end))
+% title('Curvature for each method')
+% legend('MVRC method','Clothoid fitting')
+% ylabel('Curvature')
+% xlabel('Segment index')
+
+
+%% inspect a specific segment.
+segment_idx = 16;
+
+inspectSegment(segment_idx, curvature_MVRC, L, arcSegments_MVRC,...
+    all_clothoids,errors_MVRC,xEast,yNorth,theta);
+
+% heading_change_for_specified_index_for_LINE = rad2deg(theta(segment_idx) - ...
+%     atan2(yNorth(segment_idx + 1 )-yNorth(segment_idx),...
+%     (xEast(segment_idx+1)-xEast(segment_idx)) ) )
+
+
+
+% correlation_coefficient_length = corrcoef(L(1:end-1),rms_errors)
+% correlation_coefficient_curvature_diff = corrcoef(curvature_differences,rms_errors(2:end))
 
