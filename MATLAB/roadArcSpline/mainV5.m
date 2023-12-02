@@ -37,21 +37,21 @@ num_arc_points = 500;
 
 %Compute errors for each point along each segment.
 %Additionally compute rms errors for each segment.
-[errors_MVRC, rms_errors_MVRC] = computeError(arcSegments_MVRC,all_clothoids);
-[errors_GT, rms_errors_GT] = computeError(arcSegments_GT,all_clothoids);
+[errors_MVRC, rms_errors_MVRC] = computeErrors(arcSegments_MVRC,all_clothoids);
+[errors_GT, rms_errors_GT] = computeErrors(arcSegments_GT,all_clothoids);
 
 curvature_differences_MVRC = inspectArcs(curvature_MVRC,L,rms_errors_MVRC,true);
 curvature_differences_GT = inspectArcs(curvature_GT,L,rms_errors_GT,false);
 
 
-% figure;
-% plot(curvature_MVRC)
-% hold on
-% plot(curvature_GT(2:end))
-% title('Curvature for each method')
-% legend('MVRC method','Clothoid fitting')
-% ylabel('Curvature')
-% xlabel('Segment index')
+figure;
+plot(curvature_MVRC)
+hold on
+plot(curvature_GT(2:end))
+title('Curvature for each method')
+legend('MVRC method','Clothoid fitting')
+ylabel('Curvature')
+xlabel('Segment index')
 
 
 %% inspect a specific segment.
@@ -59,11 +59,14 @@ segment_idx = 16;
 
 inspectSegment(segment_idx, curvature_MVRC, L, arcSegments_MVRC,...
     all_clothoids,errors_MVRC,xEast,yNorth,theta);
+%% Represent the road
+lineCfg.lineDegreeDeviation = 2; % Allowed heading devation at the end of the segment (degrees)
+lineCfg.rmsThreshold = 0.2; % RMS deviation from real road (meters)
+lineCfg.maximumAllowedDistance = 0.3; % Maximum deviation from real road (meters)
+lineCfg.numberOfPoints = 500; % Number of datapoints along the line segment
 
-% heading_change_for_specified_index_for_LINE = rad2deg(theta(segment_idx) - ...
-%     atan2(yNorth(segment_idx + 1 )-yNorth(segment_idx),...
-%     (xEast(segment_idx+1)-xEast(segment_idx)) ) )
-
+segments = representRoad(xEast(2:end-1),yNorth(2:end-1),theta(2:end-1),curvature_MVRC,...
+    L(2:end-1),lineCfg,all_clothoids(2:end-1));
 
 
 % correlation_coefficient_length = corrcoef(L(1:end-1),rms_errors)
