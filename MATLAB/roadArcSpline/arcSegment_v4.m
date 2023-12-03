@@ -8,6 +8,8 @@ classdef arcSegment_v4 < handle
         allY
         tangents
         numPoints
+        curv_sign
+        arcLen
     end
     
     methods
@@ -20,6 +22,7 @@ classdef arcSegment_v4 < handle
             obj.numPoints = 200;
             obj.curv_sign = curv_sign;
             obj.generateArc();
+            obj.computeArcLength();
         end
         
         function generateArc(obj)
@@ -64,6 +67,24 @@ classdef arcSegment_v4 < handle
             % Add legend
             legend('Arc', 'Turning Center', 'Start Point', 'End Point');
         end
+        function computeArcLength(obj)
+            % Compute the arc length
+            angleStart = atan2(obj.StartPoint(2) - obj.TurningCenter(2), obj.StartPoint(1) - obj.TurningCenter(1));
+            angleEnd = atan2(obj.EndPoint(2) - obj.TurningCenter(2), obj.EndPoint(1) - obj.TurningCenter(1));
+            
+            % Ensure the angle is positive (clockwise direction)
+            if angleEnd < angleStart
+                angleEnd = angleEnd + 2*pi;
+            end
+            
+            % Calculate arc length
+            obj.arcLen = obj.Radius * (angleEnd - angleStart);
+        end
+        function length = getArcLen(obj,index)
+            %returns the arc length until specified index
+            length = index/obj.numPoints * obj.arcLen;
+        end
+
     end
 end
 
