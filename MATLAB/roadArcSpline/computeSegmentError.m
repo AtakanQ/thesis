@@ -1,4 +1,4 @@
-function [rms_error, max_error] = computeSegmentError(measurement_xy,ground_truth_xy)
+function [rms_error, max_error, errors] = computeSegmentError(measurement_xy,ground_truth_xy)
 
 num_coor_arc = length(measurement_xy);
 errors = zeros(num_coor_arc,1);
@@ -18,8 +18,6 @@ for k = 1:num_coor_arc
 end
 rms_error = rms(errors);
 max_error = max(errors);
-
-
 
 end
 

@@ -65,8 +65,11 @@ lineCfg.rmsThreshold = 0.2; % RMS deviation from real road (meters)
 lineCfg.maximumAllowedDistance = 0.3; % Maximum deviation from real road (meters)
 lineCfg.numberOfPoints = 500; % Number of datapoints along the line segment
 
-segments = representRoad(xEast(2:end-1),yNorth(2:end-1),theta(2:end-1),curvature_MVRC,...
-    L(2:end-1),lineCfg,all_clothoids(2:end-1));
+arcCfg.maximumDistance = 0.1; % Maximum allowed distance to deviate from real road.
+arcCfg.maximumNumArcs = 5;
+
+segments = representRoad(xEast(2:end-1),yNorth(2:end-1),theta(2:end-1),curvature_MVRC,centers_MVRC,...
+    L(2:end-1),all_clothoids(2:end-1),lineCfg,arcCfg);
 
 
 % correlation_coefficient_length = corrcoef(L(1:end-1),rms_errors)

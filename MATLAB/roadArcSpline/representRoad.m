@@ -1,5 +1,5 @@
 function [segments] = representRoad(xEast,...
-    yNorth,theta,curvature,L,lineCfg,all_clothoids)
+    yNorth,theta,curvature,turning_centers,L,all_clothoids,lineCfg,arcCfg)
 %REPRESENTROAD Summary of this function goes here
 %   Every tangent and curvature at every point is known inside this
 %   function. This function's purpose is to return segments as structs
@@ -9,9 +9,11 @@ function [segments] = representRoad(xEast,...
 %Atakan
 numSegment = length(L);
 
+%% Sample road segment definiton.
 sampleStruct.type = 'undefined'; % Segment type (line,arc,arcs or empty)
 sampleStruct.numArcs = 0; % Number of arcs. Zero if segment is line.
 sampleStruct.arcCurvatures = []; % Curvatures of all arcs
+sampleStruct.arcCenters = []; % turning centers as x,y pairs.
 sampleStruct.intermediatePoints = []; % List of x,y pairs
 sampleStruct.segmentLength = 0; % Segment length from clothoid fitting
 sampleStruct.headingInitial = 0;
@@ -72,16 +74,71 @@ for i = 1:numSegment
     end
 end
 % DEBUG LINE SEGMENTS START
-figure;
-for j = 1:length(lineIndices)
-    curr_seg_num = lineIndices(j);
-    all_clothoids(curr_seg_num).plotPlain();
-    hold on
-    plot(segments(curr_seg_num).allX,segments(curr_seg_num).allY,'--','Color',[0 1 1])
-end
-title("Debugging Line Segments")
-axis equal
+% figure;
+% for j = 1:length(lineIndices)
+%     curr_seg_num = lineIndices(j);
+%     all_clothoids(curr_seg_num).plotPlain();
+%     hold on
+%     plot(segments(curr_seg_num).allX,segments(curr_seg_num).allY,'--','Color',[0 1 1])
+% end
+% title("Debugging Line Segments")
+% axis equal
 % DEBUG LINE SEGMENTS END
+%% Fit arc segments
+for i = 1:numSegment
+    % This segment was a straight line. Pass this segment.
+    if ismember(i,lineIndices) 
+        continue
+    end
+
+    %Generate first arc
+    curr_center = turning_centers(i,:);
+    radius = abs(1/curvature(i));
+    startPoint = [xEast(i) yNorth(i)];
+    endPoint = [xEast(i+1) yNorth(i+1)];
+    % arcSegment_v4(turningCenter, radius, startPoint, endPoint)
+    tempArcSegment = arcSegment_v4(curr_center,radius,startPoint,endPoint,sign(curvature(i)) );
+
+    % Compute the error.
+    % [rms_error, max_error] = computeSegmentError(measurement_xy,ground_truth_xy)
+    measurement_xy = [tempArcSegment.allX tempArcSegment.allY];
+    ground_truth_xy = [all_clothoids(i).allX' all_clothoids(i).allY'];
+
+    [rms_error, max_error, errors] = computeSegmentError(measurement_xy,ground_truth_xy);
+    
+    % 1 arc is enough. Take the segment and break the loop.
+    if max_error < arcCfg.maximumDistance
+        segments(i).type = 'arc'; % Segment type (line,arc,arcs or empty)
+        segments(i).numArcs = 1; % Number of arcs. Zero if segment is line.
+        segments(i).arcCurvatures = curvature(i); % Curvatures of all arcs
+        segments(i).arcCenters = curr_center; % turning centers as x,y pairs.
+        segments(i).intermediatePoints = []; % List of x,y pairs
+        segments(i).segmentLength = 0; % Segment length from clothoid fitting
+        segments(i).headingInitial = 0;
+        segments(i).headingFinal = 0;
+        segments(i).headingChange = 0; % Heading change from clothoid fitting
+        segments(i).initialCurvature = curvature(i); % Initial curvature provided in the function
+        segments(i).finalCurvature = curvature(i); % Final curvature provided in the function
+        segments(i).curvatureChange = 0; % Difference between initial and final curvatures
+        segments(i).rmsError = rms_error;
+        segments(i).maxError = max_error;
+        segments(i).allX = tempArcSegment.allX;
+        segments(i).allY = tempArcSegment.allY;
+        break
+    end
+    
+    % If 1 arc was not enough, find where it exceeds the maximum
+    % allowed error.
+    % if ~strcmp(segments(i).type,'arc')
+    %     %At this stage there is 1 arc which does not meet requirements.
+    %     segments(i).type = 'arcs'
+    %     for j = 1:arcCfg.maximumNumArcs
+    % 
+    %     end
+    % end
+end
+
+
 
 end
 
