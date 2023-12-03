@@ -5,6 +5,6 @@
 		=Segment length
 	find intervals for each dependency.
 	-Decide whether to use MVRC method or ground truth.
--FIT STRAIGHT LINES
+*-FIT STRAIGHT LINES
 	-Use your own heading values if possible rather than ground truth
--USE MVRC METHOD AND GROUND TRUTH SIMULTANEOUSLY TO GENERATE PATHS
+*-USE MVRC METHOD AND GROUND TRUTH SIMULTANEOUSLY TO GENERATE PATHS

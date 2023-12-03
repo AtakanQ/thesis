@@ -90,6 +90,7 @@ for i = 1:numSegment
     if ismember(i,lineIndices) 
         continue
     end
+    
 
     %Generate first arc
     curr_center = turning_centers(i,:);
@@ -124,18 +125,58 @@ for i = 1:numSegment
         segments(i).maxError = max_error;
         segments(i).allX = tempArcSegment.allX;
         segments(i).allY = tempArcSegment.allY;
-        break
+        continue
     end
-    
+    figure;
+    tempArcSegment.plotArc();
     % If 1 arc was not enough, find where it exceeds the maximum
     % allowed error.
-    % if ~strcmp(segments(i).type,'arc')
-    %     %At this stage there is 1 arc which does not meet requirements.
-    %     segments(i).type = 'arcs'
-    %     for j = 1:arcCfg.maximumNumArcs
-    % 
-    %     end
-    % end
+    if ~strcmp(segments(i).type,'arc')
+        %At this stage there is 1 arc which does not meet requirements.
+        segments(i).type = 'arcs';
+        prevArcLen = 0;
+        for j = 1:arcCfg.maximumNumArcs
+            temp_idx = find( (errors > arcCfg.maximumDistance) );
+            idx = temp_idx(1) - 1; % error is not breached at this index
+
+            startPoint = [tempArcSegment.allX(idx) tempArcSegment.allY(idx)];
+            endPoint = [xEast(i+1) yNorth(i+1)]; % try to generate until the end
+            prevArcLen = prevArcLen + tempArcSegment.getArcLen(idx);
+            len_ratio = prevArcLen / L(i); % this should be cumulative
+
+            curr_curvature = curvature(i) + ...
+                (curvature(i+1) - curvature(i)) * len_ratio;
+            
+            pts = [ tempArcSegment.allX(1) tempArcSegment.allY(1);...
+                startPoint;
+                endPoint];
+            [curvature_test, center_test] = findCurvature(pts);
+
+            radius = abs(1/curr_curvature);
+
+            lastTangent = tempArcSegment.tangents(idx);
+
+            vector_angle_inward = lastTangent + sign(tempArcSegment.curv_sign)*pi/2;
+            vector_inward = radius * [cos(vector_angle_inward) sin(vector_angle_inward)];
+            curr_center = startPoint + vector_inward;
+            %Generate first arc
+            
+
+            % arcSegment_v4(turningCenter, radius, startPoint, endPoint)
+            tempArcSegment = arcSegment_v4(curr_center,radius,startPoint,endPoint,sign(curvature(i)) );
+            measurement_xy = [tempArcSegment.allX tempArcSegment.allY];
+
+            [rms_error, max_error, errors] = computeSegmentError(measurement_xy,ground_truth_xy)
+            tempArcSegment.plotArc();
+            if max_error < arcCfg.maximumDistance % error is small
+                break
+            end
+
+        end
+    end
+
+
+
 end
 
 

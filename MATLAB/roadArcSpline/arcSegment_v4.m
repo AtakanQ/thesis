@@ -45,8 +45,8 @@ classdef arcSegment_v4 < handle
 
         end
         function plotArc(obj)
-                        % Plot the arc
-            plot(obj.allX, obj.allY, 'b-', 'LineWidth', 2);
+            % Plot the arc
+            plot(obj.allX, obj.allY, 'LineWidth', 2);
             
             % Plot the turning center
             hold on;
