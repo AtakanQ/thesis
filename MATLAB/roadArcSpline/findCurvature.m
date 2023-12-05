@@ -1,8 +1,8 @@
-function [curvature, center] = findCurvature(pts)
+function [curvature, center, tangents] = findCurvature(pts)
 
 curvature = zeros(length(pts)-2,1);
 center = zeros(length(pts)-2,2);
-
+tangents = zeros(length(pts)-2,2);
     for i = 2: (length(pts) - 1)
         %Calculate AB
         AB = pts(i - 1,:) - pts(i,:);
@@ -38,9 +38,13 @@ center = zeros(length(pts)-2,2);
         
         crossProduct = AC(1) * rho(2) - AC(2) * rho(1);
 
-
+        
         curvature(i - 1) = sign(crossProduct) * 1/norm(rho);
         center(i - 1,:) = pts(i,:) + rho(1:2);
+
+        angle_to_point = atan2( pts(i,2) - center(i - 1,2),...
+            pts(i,1) - center(i - 1 , 1) );
+        tangents(i - 1,:) = angle_to_point + sign( curvature(i - 1) ) * pi/2;
         % disp(['Points: ',num2str(pts(i,:)) ])
         % disp(['Curvature: ',num2str(curvature(i - 1)*1000,3) ])
         
