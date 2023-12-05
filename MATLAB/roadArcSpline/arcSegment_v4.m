@@ -11,6 +11,7 @@ classdef arcSegment_v4 < handle
         curv_sign
         arcLen
         final_tan
+        init_tan
     end
     
     methods
@@ -43,7 +44,7 @@ classdef arcSegment_v4 < handle
             obj.allX = obj.TurningCenter(1) + obj.Radius * cos(t);
             obj.allY = obj.TurningCenter(2) + obj.Radius * sin(t);
             obj.final_tan = obj.tangents(end);
-
+            obj.init_tan = obj.tangents(1);
         end
         function plotArc(obj)
             % Plot the arc
