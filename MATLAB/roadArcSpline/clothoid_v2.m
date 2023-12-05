@@ -10,6 +10,8 @@ classdef clothoid_v2 < handle
       allX
       allY
       numPoints
+      allTangent
+      allCurvature
    end
 
    methods
@@ -44,7 +46,7 @@ classdef clothoid_v2 < handle
         s = linspace(0, obj.curv_length, obj.numPoints);
     
         % Numerical integration to calculate position, tangent, and curvature
-        [obj.allX, obj.allY, ~, ~] = ...
+        [obj.allX, obj.allY,obj.allTangent , obj.allCurvature] = ...
         obj.clothoidIntegration(s, ...
         obj.init_pos, ...
         obj.init_tan, ...
