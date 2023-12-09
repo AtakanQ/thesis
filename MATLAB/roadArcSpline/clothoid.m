@@ -31,7 +31,8 @@ classdef clothoid < handle
             obj.curv_increment = (final_curvature - init_curvature) / order;
             obj.curv_sign = sign(final_curvature - init_curvature);
             obj.arcSegments = arcSegClass;
-            obj.numPointsPerSegment = 20;
+            obj.numPointsPerSegment = 100;
+            obj.generateArcSegments();
             if(obj.curv_sign == 0)
                 error('Curvature is zero')
             end
@@ -39,9 +40,9 @@ classdef clothoid < handle
        end
 
        function generateArcSegments(obj)
-           if obj.order <= 3
-               error('Order is too low.')
-           end
+           % if obj.order <= 3
+           %     error('Order is too low.')
+           % end
 
            obj.centers = zeros(obj.order+1,2);
            obj.arcX = zeros(obj.order+1,obj.numPointsPerSegment);
