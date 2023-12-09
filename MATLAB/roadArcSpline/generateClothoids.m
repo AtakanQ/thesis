@@ -12,10 +12,10 @@ for i=1:num_clothoids
     %     L(i),20,dummy_arcSeg);
     if i == length(k)
         all_clothoids(i) = clothoid_v2(init_pos, init_tan, ...
-            k(i), k(i)+dk(i)*L(i),L(i),5000 );
+            k(i), k(i)+dk(i)*L(i),L(i),25000 );
     else
         all_clothoids(i) = clothoid_v2(init_pos, init_tan, ...
-            k(i), k(i+1),L(i),5000 );        
+            k(i), k(i+1),L(i),25000 );        
     end
 
     %OBSOLETE WITH clothoid_v2
