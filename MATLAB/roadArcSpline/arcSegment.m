@@ -17,13 +17,13 @@ classdef arcSegment < handle
 
 
    methods
-       function obj = arcSegment(init_pos,init_tan, radius, length,curv_sign)
+       function obj = arcSegment(init_pos,init_tan, radius, length,curv_sign,numPointsPerSegment)
          if nargin > 0
             obj.init_pos = init_pos;
             obj.init_tan = init_tan;
             obj.radius = radius;
             obj.length = length;
-            obj.numPointsPerSegment = 20;
+            obj.numPointsPerSegment = numPointsPerSegment;
             if radius ~= Inf
                 obj.theta = length / radius;
             end
