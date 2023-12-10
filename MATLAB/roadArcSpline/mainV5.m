@@ -77,14 +77,16 @@ lineCfg.numberOfPoints = 500; % Number of datapoints along the line segment
 arcCfg.maximumDistance = 0.05; % Maximum allowed distance to deviate from real road.
 arcCfg.initialTry = 5;
 arcCfg.maximumNumArcs = 25;
-close all;
+% close all;
 DEBUG = false;
 % segments = representRoad_v2(xEast(2:end-1),yNorth(2:end-1),theta_MVRC,curvature_MVRC,centers_MVRC,...
 %     L(2:end-1),all_clothoids(2:end-1),lineCfg,arcCfg,DEBUG);
-segments = representRoad_v2(xEast(2:end-1),yNorth(2:end-1),theta_GT(2:end-1),curvature_GT(2:end),centers_GT(2:end),...
+segments = representRoad_v2(xEast(2:end-1),yNorth(2:end-1),theta_GT(2:end-1),curvature_GT(2:end),...
     L(2:end-1),all_clothoids(2:end-1),lineCfg,arcCfg,DEBUG);
 % correlation_coefficient_length = corrcoef(L(1:end-1),rms_errors)
 % correlation_coefficient_curvature_diff = corrcoef(curvature_differences,rms_errors(2:end))
+
+
 
 figure;
 temp_clothoids = all_clothoids(2:end-1);
@@ -92,7 +94,15 @@ for k = 1:length(segments)
     plot(segments(k).allX,segments(k).allY)
     hold on
     temp_clothoids(k).plotPlain()
-
 end
- grid on
+title('Real Road and Generated Road')
+grid on
 axis equal
+
+%% Try concatenating
+errorTol = 0.15; % percent. 
+% This parameter is the tolerance to decide while making the decision to
+% concatenate. It is the percent tolerance between consecutive clothoids'
+% derivatives.
+
+[result] = combineSegments(segments,all_clothoids(2:end-1),errorTol);
