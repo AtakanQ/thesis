@@ -1,5 +1,5 @@
 function [segments] = representRoad_v2(xEast,...
-    yNorth,theta,curvature,turning_centers,L,all_clothoids,lineCfg,arcCfg,DEBUG)
+    yNorth,theta,curvature,L,all_clothoids,lineCfg,arcCfg,DEBUG)
 %REPRESENTROAD Summary of this function goes here
 %   Every tangent and curvature at every point is known inside this
 %   function. This function's purpose is to return segments as structs
@@ -14,7 +14,6 @@ sampleStruct.type = 'undefined'; % Segment type (line,arc,arcs or empty)
 sampleStruct.numArcs = 0; % Number of arcs. Zero if segment is line.
 sampleStruct.arcCurvatures = []; % Curvatures of all arcs
 sampleStruct.arcCenters = []; % turning centers as x,y pairs.
-sampleStruct.intermediatePoints = []; % List of x,y pairs
 sampleStruct.segmentLength = 0; % Segment length from clothoid fitting
 sampleStruct.headingInitial = 0;
 sampleStruct.headingFinal = 0;
@@ -22,6 +21,7 @@ sampleStruct.headingChange = 0; % Heading change from clothoid fitting
 sampleStruct.initialCurvature = 0; % Initial curvature provided in the function
 sampleStruct.finalCurvature = 0; % Final curvature provided in the function
 sampleStruct.curvatureChange = 0; % Difference between initial and final curvatures
+sampleStruct.curvatureDerivative = 0;
 sampleStruct.rmsError = 0;
 sampleStruct.maxError = 0;
 sampleStruct.allX = [];
@@ -58,7 +58,6 @@ for i = 1:numSegment
             segments(i).type = 'line';
             segments(i).numArcs = 0;
             segments(i).arcCurvatures = []; % Curvatures of all arcs
-            segments(i).intermediatePoints = []; % List of x,y pairs
             segments(i).segmentLength = norm([x_values(end)-x_values(1) y_values(end)-y_values(1)]); % Segment length from clothoid fitting
             segments(i).headingInitial = heading;
             segments(i).headingFinal = heading;
@@ -66,10 +65,12 @@ for i = 1:numSegment
             segments(i).initialCurvature = 0; % Initial curvature provided in the function
             segments(i).finalCurvature = 0; % Final curvature provided in the function
             segments(i).curvatureChange = 0; % Difference between initial and final curvatures
+            segments(i).curvatureDerivative = 0;
             segments(i).allX = x_values;
             segments(i).allY = y_values;
             segments(i).rmsError = rms_error;
             segments(i).maxError = max_error;
+            
         end
     end
 end
@@ -108,11 +109,11 @@ for i = 1:numSegment
     
     [rms_error, max_error, errors] = computeSegmentError(measurement_xy,ground_truth_xy);
     
-    if i == 28
-        DEBUG = true;
-    else
-        DEBUG = false;
-    end
+    % if i == 28
+    %     DEBUG = true;
+    % else
+    %     DEBUG = false;
+    % end
 
     if DEBUG
         figure;
@@ -155,6 +156,7 @@ for i = 1:numSegment
             segments(i).initialCurvature = tempClothoid.init_curv;
             segments(i).finalCurvature = tempClothoid.final_curv;
             segments(i).curvatureChange = tempClothoid.final_curv - tempClothoid.init_curv;
+            segments(i).curvatureDerivative = segments(i).curvatureChange/tempClothoid.length;
             segments(i).rmsError = nextRms_error;
             segments(i).maxError = nextMax_error;
 
@@ -193,6 +195,7 @@ for i = 1:numSegment
                 segments(i).initialCurvature = tempClothoid.init_curv;
                 segments(i).finalCurvature = tempClothoid.final_curv;
                 segments(i).curvatureChange = tempClothoid.final_curv - tempClothoid.init_curv;
+                segments(i).curvatureDerivative = segments(i).curvatureChange/tempClothoid.length;
                 segments(i).rmsError = nextRms_error;
                 segments(i).maxError = nextMax_error;
                 break
