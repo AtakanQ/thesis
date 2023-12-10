@@ -12,6 +12,7 @@ classdef clothoid_v2 < handle
       numPoints
       allTangent
       allCurvature
+      curv_derivative
    end
 
    methods
@@ -32,7 +33,7 @@ classdef clothoid_v2 < handle
             obj.final_curv = final_curvature;
             obj.curv_length = curv_length;
             obj.curv_sign = sign(final_curvature - init_curvature);
-
+            obj.curv_derivative = (final_curvature - init_curvature)/curv_length;
             obj.generateClothoid();
 
             if(obj.curv_sign == 0)
@@ -85,7 +86,7 @@ classdef clothoid_v2 < handle
        function plotPlain(obj)
             % figure;
 
-            plot(obj.allX,obj.allY,'LineWidth',1.5);
+            plot(obj.allX,obj.allY,'LineWidth',1.5,'Color',[0 0 1]);
             % title('Clothoid Path')
             % xlabel('x')
             % ylabel('y')

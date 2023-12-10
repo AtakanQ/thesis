@@ -17,6 +17,7 @@ classdef clothoid < handle
       final_tangent
       numPointsPerSegment
       curvatures
+      curv_derivative
    end
 
    methods
@@ -33,6 +34,7 @@ classdef clothoid < handle
             obj.curv_sign = sign(final_curvature - init_curvature);
             obj.arcSegments = arcSegClass;
             obj.numPointsPerSegment = 500;
+            obj.curv_derivative = (final_curvature - init_curvature)/length;
             obj.generateArcSegments();
             if(obj.curv_sign == 0)
                 error('Curvature is zero')
@@ -118,7 +120,7 @@ classdef clothoid < handle
        function plotPlain(obj)
             % figure;
 
-            plot(obj.allX,obj.allY,'LineWidth',1.5);
+            plot(obj.allX,obj.allY,'--','LineWidth',1.5);
             % title('Clothoid Path')
             % xlabel('x')
             % ylabel('y')
