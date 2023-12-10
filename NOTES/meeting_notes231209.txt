@@ -1,0 +1,6 @@
+TRY INITIAL CLOTHOID METHOD (approximation)
+	- if it works decrease the number of arcs. if it doesn't increase the number of arcs
+	- after line try to fit a clothoid with 5 approximation
+FIND A METHOD TO COMBINE ARCS, SEGMENTS
+FIND A METHOD TO COMBINE CLOTHOIDS, SEGMENTS
+TRY NEW ROADS FROM OSM ON WESTERN EUROPE (FRANCE,ENGLAND,GERMANY,SPAIN,ITALY,NETHERLANDS,BELGIUM,LUXEMBOURG)
