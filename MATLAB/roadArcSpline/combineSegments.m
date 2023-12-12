@@ -59,8 +59,8 @@ for j = 1:length(concat_indices)
     for k = 0:(length(concat_indices) - 1)
         cloth_length = cloth_length + segments(start_idx+k).segmentLength;
     end
-    % TODO order should be tried.
-    order = ceil(  (segments(start_idx).numArcs+ segments(end).numArcs ) /2 ) + 2;
+
+    order = ceil(  (segments(start_idx).numArcs+ segments(end).numArcs ) /2 );
     % clothoid(init_pos,init_tan, init_curvature, final_curvature,...
     %            length,order,arcSegClass)
     tempClothoid = clothoid(init_pos,init_tan, init_curvature, final_curvature,...
