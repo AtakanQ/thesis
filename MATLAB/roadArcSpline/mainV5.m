@@ -4,7 +4,8 @@ close all
 % clear
 addpath('../../CLOTHOIDFITTING/G1fitting')
 
-lonlat = readCSV('..\..\PYTHON\turn_left\O-21___4.csv');
+% lonlat = readCSV('..\..\PYTHON\turn_left\O-21___4.csv');
+lonlat = readCSV('..\..\PYTHON\germany_straight\B 1___70.csv'); % germany straight
 refLat = mean(lonlat(:,2));
 refLon = mean(lonlat(:,1));
 [xEast, yNorth, zUp] = geodetic2enu(lonlat(:,2), ...
