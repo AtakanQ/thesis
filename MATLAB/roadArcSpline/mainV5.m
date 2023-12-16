@@ -1,11 +1,13 @@
 %% REAL DATA 
 %inherited from V3
 close all
-% clear
+clear
 addpath('../../CLOTHOIDFITTING/G1fitting')
 
 % lonlat = readCSV('..\..\PYTHON\turn_left\O-21___4.csv');
-lonlat = readCSV('..\..\PYTHON\germany_straight\B 1___70.csv'); % germany straight
+% lonlat = readCSV('..\..\PYTHON\germany_straight\B 1___70.csv'); % germany straight
+lonlat = readCSV('..\..\PYTHON\germany_turn\2224___2.csv'); lonlat = lonlat(16:end-23,:);% germany turn
+
 refLat = mean(lonlat(:,2));
 refLon = mean(lonlat(:,1));
 [xEast, yNorth, zUp] = geodetic2enu(lonlat(:,2), ...
@@ -14,7 +16,7 @@ refLon = mean(lonlat(:,1));
 figure;
 plot(xEast,yNorth)
 title('Real road')
-
+axis equal
 [curvature_MVRC, centers_MVRC, theta_MVRC] = findCurvature([xEast yNorth]);
 
 % Use clothoid fitting 
@@ -101,7 +103,9 @@ grid on
 axis equal
 
 %% Try concatenating
-errorTol = 0.15; % percent. 
+errorCfg.errorTol =  0.5;% percent. 
+errorCfg.rmsError = 0.2; % Computed after concatenation
+errorCfg.maxError = 0.3; % Computed after concatenation
 % This parameter is the tolerance to decide while making the decision to
 % concatenate. It is the percent tolerance between consecutive clothoids'
 % derivatives.
@@ -111,4 +115,4 @@ errorTol = 0.15; % percent.
 figure;
 plot(curvature_GT(2:end-1))
 title('Ground Truth Curvature')
-[result] = combineSegments(segments,all_clothoids(2:end-1),errorTol);
+[result] = combineSegments(segments,all_clothoids(2:end-1),errorCfg);
