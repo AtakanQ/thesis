@@ -1,7 +1,7 @@
-function [result] = combineSegments(segments,all_clothoids,errorTol)
+function [result_clothoids,concat_indices] = combineSegments(segments,all_clothoids,errorCfg)
 %errorTol is the maximum allowed difference between curvature derivatives
 %in percentage
-result = [];
+result_clothoids = [];
 maximumNumConcat = 5; %  Maximum 5 clothoids can be concatenated
 i = 1;
 concat_indices = {};
@@ -26,7 +26,7 @@ while (i < numel(segments)) % keep the current segment.
             ratio = next_curv_derivative / curr_curv_derivative;
 
             %in the range
-            if ( (ratio > (1-errorTol)) && (ratio < (1+errorTol)) )
+            if ( (ratio > (1-errorCfg.errorTol)) && (ratio < (1+errorCfg.errorTol)) )
                 concat_list = [concat_list i+j]; % append the current 
             else
                 break
@@ -93,6 +93,11 @@ for j = 1:length(concat_indices)
     ground_truth_xy = [groundX groundY];
     [rms_error, max_error, errors] = ...
         computeSegmentError(measurement_xy,ground_truth_xy);
+    if((rms_error < errorCfg.rmsError) && (max_error < errorCfg.maxError) )
+        disp(['Segments ',num2str(start_idx),'-',num2str(end_idx), ' are concatenated']  )
+        disp(['RMS error: ',num2str(rms_error), ' Max error:',num2str(max_error)]  )
+        result_clothoids = [result_clothoids tempClothoid];
+    end
     figure;
     plot(errors)
     title(strcat('Error along curve for concatenation indices:', num2str(start_idx),' and ',...
