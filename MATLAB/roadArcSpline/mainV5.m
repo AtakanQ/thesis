@@ -77,7 +77,7 @@ lineCfg.numberOfPoints = 500; % Number of datapoints along the line segment
 
 arcCfg.maximumDistance = 0.05; % Maximum allowed distance to deviate from real road.
 arcCfg.initialTry = 5;
-arcCfg.maximumNumArcs = 25;
+arcCfg.maximumNumArcs = 50;
 % close all;
 DEBUG = false;
 % segments = representRoad_v2(xEast(2:end-1),yNorth(2:end-1),theta_MVRC,curvature_MVRC,centers_MVRC,...
