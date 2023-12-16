@@ -7,12 +7,18 @@ i = 1;
 concat_indices = {};
 concat_counter = 1;
 while (i < numel(segments)) % keep the current segment.
-    curr_curv_derivative = segments(i).curvatureDerivative;
+    if ( ~isempty(segments(i).numArcs)) % exists
+        curr_curv_derivative = segments(i).curvatureDerivative;
+    else %fitting was failed, continue
+        i = i+1;
+        continue;
+    end
+    
 
     concat_list = i;
 
     for j = 1:maximumNumConcat
-        if( (i + j) < numel(segments))
+        if( (i + j) < numel(segments) && ( ~isempty(segments(i + j).numArcs)))
             next_curv_derivative =  segments(i + j).curvatureDerivative;
 
             %do not take absolute value here!
@@ -61,6 +67,7 @@ for j = 1:length(concat_indices)
     end
 
     order = ceil(  (segments(start_idx).numArcs+ segments(end).numArcs ) /2 );
+    order = 10;
     % clothoid(init_pos,init_tan, init_curvature, final_curvature,...
     %            length,order,arcSegClass)
     tempClothoid = clothoid(init_pos,init_tan, init_curvature, final_curvature,...
@@ -79,7 +86,7 @@ for j = 1:length(concat_indices)
         all_clothoids(start_idx+n).plotPlain();
         
     end
-    title('Real and concatenated curves')
+    title(strcat('Real and concatenated curves ',num2str(start_idx), ' and ',num2str(end_idx)))
     xlabel('m')
     ylabel('m')
 
