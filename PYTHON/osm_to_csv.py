@@ -1,13 +1,19 @@
 import osmnx as ox
 import csv
 
-features = ox.features.features_from_bbox(37.6636, 37.6218, 34.6771, 34.7412, {'highway': True})
+#features = ox.features.features_from_bbox(lat1, lat2, lon1, lon2, {'highway': True})
+#features = ox.features.features_from_bbox(37.6636, 37.6218, 34.6771, 34.7412, {'highway': True}) #basmakci
+features = ox.features.features_from_bbox(52.357817, 52.310913, 11.996033,12.095047, {'highway': True}) #Hohenseeden - Parchen
 road_tuples = [ ]
+road_counter = 0
 for i in range(len(features['geometry'])):
     if(features['geometry'][i].type == 'LineString'):
         road_tuples.append([])
+        
         for j in range( len(features['geometry'][i].coords) ):
-            road_tuples[i].append(features['geometry'][i].coords[j])
+            road_tuples[road_counter].append(features['geometry'][i].coords[j])
+        road_counter += 1
+            
     
 print(len(road_tuples))
 print(len(road_tuples[0]))
