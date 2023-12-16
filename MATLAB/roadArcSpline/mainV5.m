@@ -4,7 +4,7 @@ close all
 % clear
 addpath('../../CLOTHOIDFITTING/G1fitting')
 
-lonlat = readCSV('..\..\PYTHON\O-21___4.csv');
+lonlat = readCSV('..\..\PYTHON\turn_left\O-21___4.csv');
 refLat = mean(lonlat(:,2));
 refLon = mean(lonlat(:,1));
 [xEast, yNorth, zUp] = geodetic2enu(lonlat(:,2), ...
@@ -105,4 +105,9 @@ errorTol = 0.15; % percent.
 % concatenate. It is the percent tolerance between consecutive clothoids'
 % derivatives.
 
+
+% close all
+figure;
+plot(curvature_GT(2:end-1))
+title('Ground Truth Curvature')
 [result] = combineSegments(segments,all_clothoids(2:end-1),errorTol);
