@@ -31,6 +31,7 @@ end
 title('Clothoid Path')
 xlabel('x (m)')
 ylabel('y (m)')
+axis equal
 grid on
 end
 
