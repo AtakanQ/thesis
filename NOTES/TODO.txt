@@ -1,2 +1,4 @@
--Calculate the distance between corresponding points between approximation and analytic solution
--Calculate the angle difference between corresponding points.
+-concatenated clothoids have a fixed order. It should be flexible
+-concatenation results should be similar to segments() struct
+-line concatenation stops if start to end concatenation does not work 
+(if there are 4 segments it tries to concatenate all 4 or nothing)
