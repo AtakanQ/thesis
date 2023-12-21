@@ -116,6 +116,7 @@ axis equal
 errorCfg.errorTol =  0.5;% percent. 
 errorCfg.rmsError = 0.2; % Computed after concatenation
 errorCfg.maxError = 0.3; % Computed after concatenation
+errorCfg.headingDeviation = 2; % Degrees deviation allowed for concatenated lines
 % This parameter is the tolerance to decide while making the decision to
 % concatenate. It is the percent tolerance between consecutive clothoids'
 % derivatives.
@@ -125,4 +126,5 @@ errorCfg.maxError = 0.3; % Computed after concatenation
 figure;
 plot(curvature_GT(2:end-1))
 title('Ground Truth Curvature')
-[result,concat_indices] = combineSegments(segments,all_clothoids(2:end-1),errorCfg);
+[result_clothoids,concat_indices_clothoid,result_lines,concat_indices_line]...
+    = combineSegments(segments,all_clothoids(2:end-1),errorCfg);
