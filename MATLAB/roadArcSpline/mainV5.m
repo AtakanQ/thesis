@@ -1,12 +1,22 @@
 %% REAL DATA 
 %inherited from V3
 close all
-clear
+% clear
 addpath('../../CLOTHOIDFITTING/G1fitting')
 
+lat1 = 52.008223;
+lat2 = 51.971608;
+lon1 = 13.209138;
+lon2 = 13.299734;
+folderName = 'Test';
+roadName = '115';
+
+lonlat_filename = retrieveOSM(lat1, lat2, lon1, lon2,roadName, folderName);
+% lonlat_filename = strcat(folderName,'\','B 102___9');
 % lonlat = readCSV('..\..\PYTHON\turn_left\O-21___4.csv');
-lonlat = readCSV('..\..\PYTHON\germany_straight\B 1___70.csv'); % germany straight
+% lonlat = readCSV('..\..\PYTHON\germany_straight\B 1___70.csv'); % germany straight
 % lonlat = readCSV('..\..\PYTHON\germany_turn\2224___2.csv'); lonlat = lonlat(16:end-23,:);% germany turn
+lonlat = readCSV(lonlat_filename);
 
 refLat = mean(lonlat(:,2));
 refLon = mean(lonlat(:,1));
@@ -115,4 +125,4 @@ errorCfg.maxError = 0.3; % Computed after concatenation
 figure;
 plot(curvature_GT(2:end-1))
 title('Ground Truth Curvature')
-[result] = combineSegments(segments,all_clothoids(2:end-1),errorCfg);
+[result,concat_indices] = combineSegments(segments,all_clothoids(2:end-1),errorCfg);
