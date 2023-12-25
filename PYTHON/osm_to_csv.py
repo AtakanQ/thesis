@@ -17,11 +17,11 @@ folder_name = sys.argv[5]
 #features = ox.features.features_from_bbox(37.6636, 37.6218, 34.6771, 34.7412, {'highway': True}) #basmakci
 #features = ox.features.features_from_bbox(52.357817, 52.310913, 11.996033,12.095047, {'highway': True}) #Germany straight
 #features = ox.features.features_from_bbox(51.9941, 51.9848, 13.0050,13.0281, {'highway': True}) #Germany turn
-features = ox.features.features_from_bbox(lat1, lat2, lon1, lon2, {'highway': True}) #Germany turn
+features = ox.features.features_from_bbox(lat1, lat2, lon1, lon2, {'highway': 'motorway'}) #Germany turn
 road_tuples = [ ]
 road_counter = 0
 for i in range(len(features['geometry'])):
-    if(features['geometry'][i].type == 'LineString'):
+    if(features['geometry'][i].geom_type == 'LineString'):
         road_tuples.append([])
         
         for j in range( len(features['geometry'][i].coords) ):
@@ -29,7 +29,7 @@ for i in range(len(features['geometry'])):
         road_counter += 1
             
     
-print(len(road_tuples))
+print(len(road_tuples)) 
 print(len(road_tuples[0]))
 
 os.mkdir(folder_name)
