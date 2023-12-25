@@ -111,37 +111,37 @@ for j = 1:length(concat_indices_clothoid)
     order = 10;
     % clothoid(init_pos,init_tan, init_curvature, final_curvature,...
     %            length,order,arcSegClass)
-    tempClothoid = clothoid(init_pos,init_tan, init_curvature, final_curvature,...
-               cloth_length,order,arcSegClass);
+    % tempClothoid = clothoid(init_pos,init_tan, init_curvature, final_curvature,...
+    %            cloth_length,order,arcSegClass);
 
-    measurement_xy = [tempClothoid.allX' tempClothoid.allY'];
+    % measurement_xy = [tempClothoid.allX' tempClothoid.allY'];
     groundX = [];
     groundY = [];
-    figure;
-    tempClothoid.plotPlain();
-    axis equal
+    % figure;
+    % tempClothoid.plotPlain();
+    % axis equal
     for n = 0:(length(concat_indices_clothoid) - 1)
         groundX = [groundX; all_clothoids(start_idx+n).allX' ];
         groundY = [groundY; all_clothoids(start_idx+n).allY' ];
-        hold on
-        all_clothoids(start_idx+n).plotPlain();
+        % hold on
+        % all_clothoids(start_idx+n).plotPlain();
         
     end
-    title(strcat('Real and concatenated curves ',num2str(start_idx), ' and ',num2str(end_idx)))
-    xlabel('m')
-    ylabel('m')
+    % title(strcat('Real and concatenated curves ',num2str(start_idx), ' and ',num2str(end_idx)))
+    % xlabel('m')
+    % ylabel('m')
 
     [res_clothoid] = concatenateClothoid(init_pos,init_tan, init_curvature, final_curvature,...
                cloth_length,groundX,groundY,errorCfg);
 
     result_clothoids = [result_clothoids res_clothoid];
 
-    figure;
-    plot(errors)
-    title(strcat('Error along curve for concatenation indices:', num2str(start_idx),' and ',...
-        num2str(end_idx )) )
-    xlabel('index')
-    ylabel('Error (m)')
+    % figure;
+    % plot(errors)
+    % title(strcat('Error along curve for concatenation indices:', num2str(start_idx),' and ',...
+    %     num2str(end_idx )) )
+    % xlabel('index')
+    % ylabel('Error (m)')
 
     
 end
@@ -159,19 +159,19 @@ for j = 1:length(concat_indices_line)
     
         groundX = [];
         groundY = [];
-        figure;
-        plot(xVal,yVal,'--','LineWidth',1.5,'Color',[0 0 1]);
-        axis equal
+        % figure;
+        % plot(xVal,yVal,'--','LineWidth',1.5,'Color',[0 0 1]);
+        % axis equal
         for n = 0:(numSegments - 1)
             groundX = [groundX; all_clothoids(start_idx+n).allX' ];
             groundY = [groundY; all_clothoids(start_idx+n).allY' ];
-            hold on
-            all_clothoids(start_idx+n).plotPlain();
+            % hold on
+            % all_clothoids(start_idx+n).plotPlain();
         end
-        title(strcat('Real and concatenated curves (for line segment) ',num2str(start_idx), ' and ',num2str(end_idx)))
-        xlabel('m')
-        ylabel('m')
-        legend('Concatenated Line','Ground Truth Clothoid')
+        % title(strcat('Real and concatenated curves (for line segment) ',num2str(start_idx), ' and ',num2str(end_idx)))
+        % xlabel('m')
+        % ylabel('m')
+        % legend('Concatenated Line','Ground Truth Clothoid')
     
         ground_truth_xy = [groundX groundY];
         [rms_error, max_error, errors] = ...
@@ -183,13 +183,14 @@ for j = 1:length(concat_indices_line)
             lineStruct.allX = xVal;
             lineStruct.allY = yVal;
             result_lines = [result_lines lineStruct];
+            break
         end
-        figure;
-        plot(errors)
-        title(strcat('Error along curve for concatenation indices:', num2str(start_idx),' and ',...
-            num2str(end_idx )) )
-        xlabel('index')
-        ylabel('Error (m)')
+        % figure;
+        % plot(errors)
+        % title(strcat('Error along curve for concatenation indices:', num2str(start_idx),' and ',...
+        %     num2str(end_idx )) )
+        % xlabel('index')
+        % ylabel('Error (m)')
     end
 end
 
