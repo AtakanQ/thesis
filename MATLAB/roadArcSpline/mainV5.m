@@ -4,12 +4,12 @@ close all
 % clear
 addpath('../../CLOTHOIDFITTING/G1fitting')
 
-lat1 = 52.008223;
-lat2 = 51.971608;
-lon1 = 13.209138;
-lon2 = 13.299734;
+lat1 = 52.356656;
+lat2 = 52.340777;
+lon1 = 12.531865;
+lon2 = 12.594751;
 folderName = 'Test';
-roadName = '115';
+roadName = '2';
 
 lonlat_filename = retrieveOSM(lat1, lat2, lon1, lon2,roadName, folderName);
 % lonlat_filename = strcat(folderName,'\','B 102___9');

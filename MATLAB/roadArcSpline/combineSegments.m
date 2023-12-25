@@ -131,14 +131,11 @@ for j = 1:length(concat_indices_clothoid)
     xlabel('m')
     ylabel('m')
 
-    ground_truth_xy = [groundX groundY];
-    [rms_error, max_error, errors] = ...
-        computeSegmentError(measurement_xy,ground_truth_xy);
-    if((rms_error < errorCfg.rmsError) && (max_error < errorCfg.maxError) )
-        disp(['Clothoid segments ',num2str(start_idx),'-',num2str(end_idx), ' are concatenated']  )
-        disp(['RMS error: ',num2str(rms_error), ' Max error:',num2str(max_error)]  )
-        result_clothoids = [result_clothoids tempClothoid];
-    end
+    [res_clothoid] = concatenateClothoid(init_pos,init_tan, init_curvature, final_curvature,...
+               cloth_length,groundX,groundY,errorCfg);
+
+    result_clothoids = [result_clothoids res_clothoid];
+
     figure;
     plot(errors)
     title(strcat('Error along curve for concatenation indices:', num2str(start_idx),' and ',...
@@ -164,7 +161,7 @@ for j = 1:length(concat_indices_line)
     figure;
     plot(xVal,yVal,'--','LineWidth',1.5,'Color',[0 0 1]);
     axis equal
-    for n = 0:(length(concat_indices_line) - 1)
+    for n = 0:(numSegments - 1)
         groundX = [groundX; all_clothoids(start_idx+n).allX' ];
         groundY = [groundY; all_clothoids(start_idx+n).allY' ];
         hold on
