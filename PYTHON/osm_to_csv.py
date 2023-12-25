@@ -8,6 +8,10 @@ print("Total arguments passed:", n)
 if(n != 6):
     print("Wrong number of arguments passed to Python script")
     exit(1)
+if(os.path.isdir(sys.argv[5])): #path exists
+    print("This path name already exists. Will not attempt to overwrite. (Information inside may be obsolete)")
+    exit(1)
+
 lat1 = float(sys.argv[1])
 lat2 = float(sys.argv[2])
 lon1 = float(sys.argv[3])
@@ -31,6 +35,9 @@ for i in range(len(features['geometry'])):
     
 print(len(road_tuples)) 
 print(len(road_tuples[0]))
+
+
+
 
 os.mkdir(folder_name)
 for k in range(len(road_tuples)):
