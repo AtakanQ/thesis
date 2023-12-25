@@ -147,48 +147,50 @@ for j = 1:length(concat_indices_clothoid)
 end
 
 for j = 1:length(concat_indices_line)
-    start_idx = concat_indices_line{j}(1);
-    end_idx   = concat_indices_line{j}(end);
-    numSegments = length(concat_indices_line{j});
-
-    xVal = linspace( segments(start_idx).allX(1), segments(end_idx).allX(end))';
-    yVal = linspace( segments(start_idx).allY(1), segments(end_idx).allY(end))';
-
-    measurement_xy = [xVal yVal];
-
-    groundX = [];
-    groundY = [];
-    figure;
-    plot(xVal,yVal,'--','LineWidth',1.5,'Color',[0 0 1]);
-    axis equal
-    for n = 0:(numSegments - 1)
-        groundX = [groundX; all_clothoids(start_idx+n).allX' ];
-        groundY = [groundY; all_clothoids(start_idx+n).allY' ];
-        hold on
-        all_clothoids(start_idx+n).plotPlain();
+    for k = 0:(length(concat_indices_line{j}) - 2)
+        start_idx = concat_indices_line{j}(1);
+        end_idx   = concat_indices_line{j}(end - k);
+        numSegments = end_idx - start_idx + 1;
+    
+        xVal = linspace( segments(start_idx).allX(1), segments(end_idx).allX(end),numSegments*500)';
+        yVal = linspace( segments(start_idx).allY(1), segments(end_idx).allY(end),numSegments*500)';
+    
+        measurement_xy = [xVal yVal];
+    
+        groundX = [];
+        groundY = [];
+        figure;
+        plot(xVal,yVal,'--','LineWidth',1.5,'Color',[0 0 1]);
+        axis equal
+        for n = 0:(numSegments - 1)
+            groundX = [groundX; all_clothoids(start_idx+n).allX' ];
+            groundY = [groundY; all_clothoids(start_idx+n).allY' ];
+            hold on
+            all_clothoids(start_idx+n).plotPlain();
+        end
+        title(strcat('Real and concatenated curves (for line segment) ',num2str(start_idx), ' and ',num2str(end_idx)))
+        xlabel('m')
+        ylabel('m')
+        legend('Concatenated Line','Ground Truth Clothoid')
+    
+        ground_truth_xy = [groundX groundY];
+        [rms_error, max_error, errors] = ...
+            computeSegmentError(measurement_xy,ground_truth_xy);
+        if((rms_error < errorCfg.rmsError) && (max_error < errorCfg.maxError) )
+            disp(['Line segments ',num2str(start_idx),'-',num2str(end_idx), ' are concatenated']  )
+            disp(['RMS error: ',num2str(rms_error), ' Max error:',num2str(max_error)]  )
+    
+            lineStruct.allX = xVal;
+            lineStruct.allY = yVal;
+            result_lines = [result_lines lineStruct];
+        end
+        figure;
+        plot(errors)
+        title(strcat('Error along curve for concatenation indices:', num2str(start_idx),' and ',...
+            num2str(end_idx )) )
+        xlabel('index')
+        ylabel('Error (m)')
     end
-    title(strcat('Real and concatenated curves (for line segment) ',num2str(start_idx), ' and ',num2str(end_idx)))
-    xlabel('m')
-    ylabel('m')
-    legend('Concatenated Line','Ground Truth Clothoid')
-
-    ground_truth_xy = [groundX groundY];
-    [rms_error, max_error, errors] = ...
-        computeSegmentError(measurement_xy,ground_truth_xy);
-    if((rms_error < errorCfg.rmsError) && (max_error < errorCfg.maxError) )
-        disp(['Line segments ',num2str(start_idx),'-',num2str(end_idx), ' are concatenated']  )
-        disp(['RMS error: ',num2str(rms_error), ' Max error:',num2str(max_error)]  )
-
-        lineStruct.allX = xVal;
-        lineStruct.allY = yVal;
-        result_lines = [result_lines lineStruct];
-    end
-    figure;
-    plot(errors)
-    title(strcat('Error along curve for concatenation indices:', num2str(start_idx),' and ',...
-        num2str(end_idx )) )
-    xlabel('index')
-    ylabel('Error (m)')
 end
 
 
