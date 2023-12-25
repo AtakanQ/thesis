@@ -107,8 +107,6 @@ for j = 1:length(concat_indices_clothoid)
         cloth_length = cloth_length + segments(start_idx+k).segmentLength;
     end
 
-    order = ceil(  (segments(start_idx).numArcs+ segments(end).numArcs ) /2 );
-    order = 10;
     % clothoid(init_pos,init_tan, init_curvature, final_curvature,...
     %            length,order,arcSegClass)
     % tempClothoid = clothoid(init_pos,init_tan, init_curvature, final_curvature,...
@@ -131,10 +129,15 @@ for j = 1:length(concat_indices_clothoid)
     % xlabel('m')
     % ylabel('m')
 
-    [res_clothoid] = concatenateClothoid(init_pos,init_tan, init_curvature, final_curvature,...
+    [res_clothoid,rms_error,max_error] = concatenateClothoid(init_pos,init_tan, init_curvature, final_curvature,...
                cloth_length,groundX,groundY,errorCfg);
+    if( ~isempty(res_clothoid)) %successfuly concatenated
+        result_clothoids = [result_clothoids res_clothoid];
 
-    result_clothoids = [result_clothoids res_clothoid];
+        disp(['Clothoid segments ',num2str(start_idx),'-',num2str(end_idx), ' are concatenated with order: ', num2str(res_clothoid.order)]  )
+        disp(['RMS error: ',num2str(rms_error), ' Max error:',num2str(max_error)]  )
+    end
+    
 
     % figure;
     % plot(errors)
