@@ -1,7 +1,6 @@
 %% REAL DATA 
-%inherited from V3
-% close all
-% clear
+close all
+clear
 addpath('../../CLOTHOIDFITTING/G1fitting')
 
 lat1 = 50.9516;
@@ -11,26 +10,9 @@ lon2 = 11.2261;
 folderName = 'autobahn_4';
 roadName = 'A 4';
 
-% lonlat_filename = retrieveOSM(lat1, lat2, lon1, lon2,roadName, folderName);
-
-% lonlat_filename = strcat(folderName,'\','B 102___9');
-% lonlat = readCSV('..\..\PYTHON\turn_left\O-21___4.csv');
-% lonlat = readCSV('..\..\PYTHON\germany_straight\B 1___70.csv'); % germany straight
-% lonlat = readCSV('..\..\PYTHON\germany_turn\2224___2.csv'); lonlat = lonlat(16:end-23,:);% germany turn
-% lonlat = readCSV(lonlat_filename);
-
-% refLat = mean(lonlat(:,2));
-% refLon = mean(lonlat(:,1));
-% [xEast, yNorth, ~] = geodetic2enu(lonlat(:,2), ...
-%     lonlat(:,1), 0, refLat, refLon, 0, wgs84Ellipsoid);
-
 [xEast, yNorth,number_of_roads] = ...
     retrieveOSM_v2(lat1, lat2, lon1, lon2, roadName,folderName);
 
-% figure;
-% plot(xEast,yNorth)
-% title('Real road')
-% axis equal
 [curvature_MVRC, centers_MVRC, theta_MVRC] = findCurvature([xEast yNorth]);
 
 % Use clothoid fitting 
@@ -47,20 +29,6 @@ centers_GT = findCenters([xEast yNorth], theta_GT,curvature_GT);
 
 num_arc_points = 500;
 
-%plotCircles_v2(curvature,centers,xEast,yNorth,num_arc_points,MVRC)
-% [arcSegments_MVRC] = plotCircles_v2(curvature_MVRC,centers_MVRC,xEast,yNorth,num_arc_points,true);
-
-% [arcSegments_GT] = plotCircles_v2(curvature_GT,centers_GT,xEast,yNorth,num_arc_points,false);
-
-%Compute errors for each point along each segment.
-%Additionally compute rms errors for each segment.
-% [errors_MVRC, rms_errors_MVRC] = computeErrors(arcSegments_MVRC,all_clothoids);
-% [errors_GT, rms_errors_GT] = computeErrors(arcSegments_GT,all_clothoids);
-
-% curvature_differences_MVRC = inspectArcs(curvature_MVRC,L,rms_errors_MVRC,true);
-% curvature_differences_GT = inspectArcs(curvature_GT,L,rms_errors_GT,false);
-
-
 figure;
 plot(curvature_MVRC)
 hold on
@@ -69,16 +37,6 @@ title('Curvature for each method')
 legend('MVRC method','Clothoid fitting')
 ylabel('Curvature')
 xlabel('Segment index')
-
-% figure;
-% plot(mod(rad2deg(theta_MVRC),360))
-% hold on
-% plot(mod(rad2deg(theta_GT(2:end-1)),360) )
-% title('Tangent for each method')
-% legend('MVRC method','Clothoid fitting')
-% ylabel('Degree')
-% xlabel('Segment index')
-
 
 %% inspect a specific segment.
 % segment_idx = 16;
@@ -130,5 +88,5 @@ errorCfg.headingDeviation = 2; % Degrees deviation allowed for concatenated line
 figure;
 plot(curvature_GT(2:end-1))
 title('Ground Truth Curvature')
-[result_clothoids,concat_indices_clothoid,result_lines,concat_indices_line]...
+[result_clothoids,concat_indices_clothoid,result_lines,concat_indices_line,mergedSegments]...
     = combineSegments(segments,all_clothoids(2:end-1),errorCfg);

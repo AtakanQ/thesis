@@ -1,4 +1,4 @@
-function [result_clothoids,concat_indices_clothoid,result_lines,concat_indices_line] = combineSegments(segments,all_clothoids,errorCfg)
+function [result_clothoids,concat_indices_clothoid,result_lines,concat_indices_line,mergedSegments] = combineSegments(segments,all_clothoids,errorCfg)
 %errorTol is the maximum allowed difference between curvature derivatives
 %in percentage
 result_clothoids = [];
@@ -92,6 +92,10 @@ disp(strcat(num2str(concat_counter_line - 1)," candidate combination (for lines)
 disp(concat_indices_line)
 %% Try concatenating and check error.
 arcSegClass = arcSegment;
+concat_successful_indices_clothoid = {};
+cloth_counter = 0;
+rms_errors_clothoid = [];
+max_errors_clothoid = [];
 for j = 1:length(concat_indices_clothoid)
     start_idx = concat_indices_clothoid{j}(1);
     end_idx   = concat_indices_clothoid{j}(end);
@@ -107,48 +111,32 @@ for j = 1:length(concat_indices_clothoid)
         cloth_length = cloth_length + segments(start_idx+k).segmentLength;
     end
 
-    % clothoid(init_pos,init_tan, init_curvature, final_curvature,...
-    %            length,order,arcSegClass)
-    % tempClothoid = clothoid(init_pos,init_tan, init_curvature, final_curvature,...
-    %            cloth_length,order,arcSegClass);
-
-    % measurement_xy = [tempClothoid.allX' tempClothoid.allY'];
     groundX = [];
     groundY = [];
-    % figure;
-    % tempClothoid.plotPlain();
-    % axis equal
     for n = 0:(length(concat_indices_clothoid) - 1)
         groundX = [groundX; all_clothoids(start_idx+n).allX' ];
         groundY = [groundY; all_clothoids(start_idx+n).allY' ];
-        % hold on
-        % all_clothoids(start_idx+n).plotPlain();
-        
     end
-    % title(strcat('Real and concatenated curves ',num2str(start_idx), ' and ',num2str(end_idx)))
-    % xlabel('m')
-    % ylabel('m')
 
     [res_clothoid,rms_error,max_error] = concatenateClothoid(init_pos,init_tan, init_curvature, final_curvature,...
                cloth_length,groundX,groundY,errorCfg);
     if( ~isempty(res_clothoid)) %successfuly concatenated
         result_clothoids = [result_clothoids res_clothoid];
-
+        cloth_counter = cloth_counter + 1;
+        concat_successful_indices_clothoid{cloth_counter} = start_idx:end_idx;
+        rms_errors_clothoid(cloth_counter) = rms_error;
+        max_errors_clothoid(cloth_counter) = max_error;
         disp(['Clothoid segments ',num2str(start_idx),'-',num2str(end_idx), ' are concatenated with order: ', num2str(res_clothoid.order)]  )
         disp(['RMS error: ',num2str(rms_error), ' Max error:',num2str(max_error)]  )
     end
     
-
-    % figure;
-    % plot(errors)
-    % title(strcat('Error along curve for concatenation indices:', num2str(start_idx),' and ',...
-    %     num2str(end_idx )) )
-    % xlabel('index')
-    % ylabel('Error (m)')
-
-    
 end
 
+
+concat_successful_indices_line = {};
+line_counter = 0;
+rms_errors_line = [];
+max_errors_line = [];
 for j = 1:length(concat_indices_line)
     for k = 0:(length(concat_indices_line{j}) - 2)
         start_idx = concat_indices_line{j}(1);
@@ -162,41 +150,108 @@ for j = 1:length(concat_indices_line)
     
         groundX = [];
         groundY = [];
-        % figure;
-        % plot(xVal,yVal,'--','LineWidth',1.5,'Color',[0 0 1]);
-        % axis equal
         for n = 0:(numSegments - 1)
             groundX = [groundX; all_clothoids(start_idx+n).allX' ];
             groundY = [groundY; all_clothoids(start_idx+n).allY' ];
             % hold on
             % all_clothoids(start_idx+n).plotPlain();
         end
-        % title(strcat('Real and concatenated curves (for line segment) ',num2str(start_idx), ' and ',num2str(end_idx)))
-        % xlabel('m')
-        % ylabel('m')
-        % legend('Concatenated Line','Ground Truth Clothoid')
     
         ground_truth_xy = [groundX groundY];
-        [rms_error, max_error, errors] = ...
+        [rms_error, max_error, ~] = ...
             computeSegmentError(measurement_xy,ground_truth_xy);
         if((rms_error < errorCfg.rmsError) && (max_error < errorCfg.maxError) )
             disp(['Line segments ',num2str(start_idx),'-',num2str(end_idx), ' are concatenated']  )
             disp(['RMS error: ',num2str(rms_error), ' Max error:',num2str(max_error)]  )
-    
+            line_counter = line_counter + 1;
+            concat_successful_indices_line{line_counter} = start_idx:end_idx;
+            rms_errors_line(line_counter) = rms_error;
+            max_errors_line(line_counter) = max_error;
             lineStruct.allX = xVal;
             lineStruct.allY = yVal;
             result_lines = [result_lines lineStruct];
             break
         end
-        % figure;
-        % plot(errors)
-        % title(strcat('Error along curve for concatenation indices:', num2str(start_idx),' and ',...
-        %     num2str(end_idx )) )
-        % xlabel('index')
-        % ylabel('Error (m)')
     end
 end
 
+%% Merge the segments and return the merged version
+% 
+
+%% Sample road segment definiton.
+
+mergedSegmentCounter = 0;
+i = 1;
+while(i <= length(segments))
+    mergedSegmentCounter = mergedSegmentCounter + 1;
+
+    isConcatenatedLine = false;
+    isConcatenatedClothoid = false;
+    for j = 1:length(concat_successful_indices_line) 
+        if (concat_successful_indices_line{j}(1) == i)
+            isConcatenatedLine = true;
+            break
+        end
+    end
+    if(~isConcatenatedLine)
+        for k = 1:length(concat_successful_indices_clothoid)
+            if (concat_successful_indices_clothoid{k}(1) == i)
+                isConcatenatedClothoid = true;
+                break
+            end
+        end
+    end
+    
+    if(isConcatenatedLine) % it is a concatenated line
+        sampleStruct.type = 'line'; % Segment type (line,arc,arcs or empty)
+        sampleStruct.numArcs = 0; % Number of arcs. Zero if segment is line.
+        sampleStruct.arcCurvatures = []; % Curvatures of all arcs
+        sampleStruct.arcCenters = []; % turning centers as x,y pairs.
+        sampleStruct.segmentLength = norm([result_lines(j).allX(1)-result_lines(j).allX(end)...
+            result_lines(j).allY(1)-result_lines(j).allY(end)]); % Segment length from clothoid fitting
+        sampleStruct.headingInitial = atan2( result_lines(j).allY(end) - result_lines(j).allY(1), ...
+            result_lines(j).allX(end) - result_lines(j).allX(1));
+        sampleStruct.headingFinal = sampleStruct.headingInitial;
+        sampleStruct.headingChange = 0; % Heading change from clothoid fitting
+        sampleStruct.initialCurvature = 0; % Initial curvature provided in the function
+        sampleStruct.finalCurvature = 0; % Final curvature provided in the function
+        sampleStruct.curvatureChange = 0; % Difference between initial and final curvatures
+        sampleStruct.curvatureDerivative = 0;
+        sampleStruct.rmsError = rms_errors_line(j);
+        sampleStruct.maxError = max_errors_line(j);
+        sampleStruct.allX = result_lines(j).allX;
+        sampleStruct.allY = result_lines(j).allY;
+        mergedSegments(mergedSegmentCounter) = sampleStruct;
+
+        i = i + length(concat_successful_indices_line{j});
+    elseif(isConcatenatedClothoid) % it is a concatenated clothoid
+        tempClothoid = result_clothoids(k);
+        sampleStruct.type = 'clothoid'; % Segment type (line,arc,arcs or empty)
+        sampleStruct.numArcs = tempClothoid.order; % Number of arcs. Zero if segment is line.
+        sampleStruct.arcCurvatures = tempClothoid.curvatures; % Curvatures of all arcs
+        sampleStruct.arcCenters = tempClothoid.centers; % turning centers as x,y pairs.
+        sampleStruct.segmentLength = tempClothoid.length; % Segment length from clothoid fitting
+        sampleStruct.headingInitial = tempClothoid.init_tan;
+        sampleStruct.headingFinal = tempClothoid.final_tan;
+        sampleStruct.headingChange = tempClothoid.final_tan - tempClothoid.init_tan; % Heading change from clothoid fitting
+        sampleStruct.initialCurvature = tempClothoid.init_curv; % Initial curvature provided in the function
+        sampleStruct.finalCurvature = tempClothoid.final_curv; % Final curvature provided in the function
+        sampleStruct.curvatureChange = tempClothoid.final_curv - tempClothoid.init_curv; % Difference between initial and final curvatures
+        sampleStruct.curvatureDerivative = sampleStruct.curvatureChange/sampleStruct.length;
+        sampleStruct.rmsError = rms_errors_clothoid(k);
+        sampleStruct.maxError = max_errors_clothoid(k);
+        sampleStruct.allX = tempClothoid.allX;
+        sampleStruct.allY = tempClothoid.allY;
+        mergedSegments(mergedSegmentCounter) = segments(i);
+        
+        i = i + length(concat_successful_indices_clothoid{k});
+    else % it is not concatenated
+        mergedSegments(mergedSegmentCounter) = segments(i);
+        i = i + 1;
+    end
+
+
+end
 
 end
 
