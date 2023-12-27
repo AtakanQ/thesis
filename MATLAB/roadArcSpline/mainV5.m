@@ -1,27 +1,31 @@
 %% REAL DATA 
 %inherited from V3
-close all
+% close all
 % clear
 addpath('../../CLOTHOIDFITTING/G1fitting')
 
-lat1 = 52.356656;
-lat2 = 52.340777;
-lon1 = 12.531865;
-lon2 = 12.594751;
-folderName = 'Test';
-roadName = '2';
+lat1 = 50.9516;
+lat2 = 50.9185;
+lon1 = 11.1279;
+lon2 = 11.2261;
+folderName = 'autobahn_4';
+roadName = 'A 4';
 
-lonlat_filename = retrieveOSM(lat1, lat2, lon1, lon2,roadName, folderName);
+% lonlat_filename = retrieveOSM(lat1, lat2, lon1, lon2,roadName, folderName);
+
 % lonlat_filename = strcat(folderName,'\','B 102___9');
 % lonlat = readCSV('..\..\PYTHON\turn_left\O-21___4.csv');
 % lonlat = readCSV('..\..\PYTHON\germany_straight\B 1___70.csv'); % germany straight
 % lonlat = readCSV('..\..\PYTHON\germany_turn\2224___2.csv'); lonlat = lonlat(16:end-23,:);% germany turn
-lonlat = readCSV(lonlat_filename);
+% lonlat = readCSV(lonlat_filename);
 
-refLat = mean(lonlat(:,2));
-refLon = mean(lonlat(:,1));
-[xEast, yNorth, zUp] = geodetic2enu(lonlat(:,2), ...
-    lonlat(:,1), 0, refLat, refLon, 0, wgs84Ellipsoid);
+% refLat = mean(lonlat(:,2));
+% refLon = mean(lonlat(:,1));
+% [xEast, yNorth, ~] = geodetic2enu(lonlat(:,2), ...
+%     lonlat(:,1), 0, refLat, refLon, 0, wgs84Ellipsoid);
+
+[xEast, yNorth,number_of_roads] = ...
+    retrieveOSM_v2(lat1, lat2, lon1, lon2, roadName,folderName);
 
 % figure;
 % plot(xEast,yNorth)

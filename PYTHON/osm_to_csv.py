@@ -32,13 +32,6 @@ for i in range(len(features['geometry'])):
             road_tuples[road_counter].append(features['geometry'][i].coords[j])
         road_counter += 1
             
-    
-print(len(road_tuples)) 
-print(len(road_tuples[0]))
-
-
-
-
 os.mkdir(folder_name)
 for k in range(len(road_tuples)):
     csv_file = folder_name +"\\" + str(features['ref'][k]) +  '___'+ str(k) + '.csv'

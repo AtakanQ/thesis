@@ -109,7 +109,7 @@ for i = 1:numSegment
     
     [rms_error, max_error, errors] = computeSegmentError(measurement_xy,ground_truth_xy);
     
-    % if i == 28
+    % if i == 8
     %     DEBUG = true;
     % else
     %     DEBUG = false;
