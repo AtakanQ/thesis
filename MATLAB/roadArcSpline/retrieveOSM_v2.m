@@ -20,6 +20,7 @@ maxFileSize = 0;
 
 % Loop through each file in the directory
 csv_counter = 0;
+figure;
 for i = 3:length(files)
     if (contains(files(i).name, roadName) && (files(i).name(1:3)~="nan"))
         csv_counter = csv_counter + 1;
@@ -34,6 +35,10 @@ for i = 3:length(files)
 
         [xEast{csv_counter}, yNorth{csv_counter}, ~] = geodetic2enu(all_lonlats{csv_counter}(:,2), ...
             all_lonlats{csv_counter}(:,1), 0, refLat, refLon, 0, wgs84Ellipsoid);
+
+        plot(xEast{csv_counter},yNorth{csv_counter})
+        hold on
+        axis equal
     end
 
 end
@@ -183,7 +188,11 @@ if (length(index_array_from_first_point) ~= 1) && (~isempty(index_array_from_end
     fprintf('Found %d csv files\n', (csv_counter - 1));
     fprintf('Extracted road with %d segments\n', (length(index_array_from_first_point)+length(index_array_from_end_point)));
 end
-xEast = unique(finalX);
-yNorth = unique(finalY);
+[~, ia, ~] = unique(finalX,'first');
+xEast = finalX(ia);
+yNorth = finalY(ia);
+% xEast = unique(finalX);
+% yNorth = unique(finalY);
 number_of_roads = length(index_array_from_first_point) + length(index_array_from_end_point);
+
 end
