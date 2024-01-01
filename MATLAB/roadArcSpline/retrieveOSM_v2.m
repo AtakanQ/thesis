@@ -37,7 +37,7 @@ for i = 3:length(files)
     end
 
 end
-number_of_roads = csv_counter;
+
 %% Parameters and variables
 distanceThreshold = 1;
 start_idx = 3;
@@ -185,4 +185,5 @@ if (length(index_array_from_first_point) ~= 1) && (~isempty(index_array_from_end
 end
 xEast = unique(finalX);
 yNorth = unique(finalY);
+number_of_roads = length(index_array_from_first_point) + length(index_array_from_end_point);
 end
