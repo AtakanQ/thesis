@@ -188,11 +188,18 @@ if (length(index_array_from_first_point) ~= 1) && (~isempty(index_array_from_end
     fprintf('Found %d csv files\n', (csv_counter - 1));
     fprintf('Extracted road with %d segments\n', (length(index_array_from_first_point)+length(index_array_from_end_point)));
 end
-[~, ia, ~] = unique(finalX,'first');
-xEast = finalX(ia);
-yNorth = finalY(ia);
-% xEast = unique(finalX);
-% yNorth = unique(finalY);
+% [~, ia, ~] = unique(finalX,'first');
+
+diffArr = diff(finalX);
+firstDuplicateIndices = find(diffArr == 0) + 1;
+finalX(firstDuplicateIndices) = [];
+finalY(firstDuplicateIndices) = [];
+xEast = finalX;
+yNorth = finalY;
+
+% xEast = finalX(ia);
+% yNorth = finalY(ia);
+
 number_of_roads = length(index_array_from_first_point) + length(index_array_from_end_point);
 
 end
