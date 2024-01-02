@@ -1,6 +1,0 @@
-lat1 = 50.9516;
-lat2 = 50.9185;
-lon1 = 11.1279;
-lon2 = 11.2261;
-folderName = 'autobahn_4';
-roadName = 'A 4';

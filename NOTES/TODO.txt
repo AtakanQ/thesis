@@ -1,5 +1,3 @@
--concatenated clothoids have a fixed order. It should be sweep a range of orders?
--concatenation results should be similar to segments() struct
 -line concatenation stops if start to end concatenation does not work 
 (if there are 4 segments it tries to concatenate all 4 or nothing)
--different road samples
+-different road samples (with here maps)

@@ -3,10 +3,10 @@ close all
 clear
 addpath('../../CLOTHOIDFITTING/G1fitting')
 
-lat1 = 50.9516;
-lat2 = 50.9185;
-lon1 = 11.1279;
-lon2 = 11.2261;
+lat1 = 51.009334;
+lat2 = 50.946392;
+lon1 = 10.426450;
+lon2 = 10.508444;
 folderName = 'autobahn_4';
 roadName = 'A 4';
 
@@ -28,15 +28,15 @@ centers_GT = findCenters([xEast yNorth], theta_GT,curvature_GT);
 % turn left positive curvature
 
 num_arc_points = 500;
-
-figure;
-plot(curvature_MVRC)
-hold on
-plot(curvature_GT(2:end))
-title('Curvature for each method')
-legend('MVRC method','Clothoid fitting')
-ylabel('Curvature')
-xlabel('Segment index')
+% 
+% figure;
+% plot(curvature_MVRC)
+% hold on
+% plot(curvature_GT(2:end))
+% title('Curvature for each method')
+% legend('MVRC method','Clothoid fitting')
+% ylabel('Curvature')
+% xlabel('Segment index')
 
 %% inspect a specific segment.
 % segment_idx = 16;
@@ -90,3 +90,55 @@ plot(curvature_GT(2:end-1))
 title('Ground Truth Curvature')
 [result_clothoids,concat_indices_clothoid,result_lines,concat_indices_line,mergedSegments]...
     = combineSegments(segments,all_clothoids(2:end-1),errorCfg);
+
+initial_segments.allX = [];
+initial_segments.allY = [];
+merged_segments.allX = [];
+merged_segments.allY = [];
+ground_truth.allX = [];
+ground_truth.allY = [];
+figure;
+axis equal
+for i = 1:length(segments)
+    dim = size(segments(i).allX);
+    if dim(2) == 1
+        initial_segments.allX = [initial_segments.allX; segments(i).allX];
+        initial_segments.allY = [initial_segments.allY; segments(i).allY];
+    else
+        initial_segments.allX = [initial_segments.allX; segments(i).allX'];
+        initial_segments.allY = [initial_segments.allY; segments(i).allY'];
+    end
+end
+for i = 1:length(mergedSegments)
+    dim = size(mergedSegments(i).allX);
+    if dim(2) == 1
+        merged_segments.allX = [merged_segments.allX; mergedSegments(i).allX];
+        merged_segments.allY = [merged_segments.allY; mergedSegments(i).allY];
+    else
+        merged_segments.allX = [merged_segments.allX;mergedSegments(i).allX'];
+        merged_segments.allY = [merged_segments.allY; mergedSegments(i).allY'];
+    end
+end
+for i = 1:length(all_clothoids)
+    dim = size(all_clothoids(i).allX);
+    if dim(2) == 1
+        ground_truth.allX = [ground_truth.allX; all_clothoids(i).allX];
+        ground_truth.allY = [ground_truth.allY; all_clothoids(i).allY];
+    else
+        ground_truth.allX = [ground_truth.allX; all_clothoids(i).allX'];
+        ground_truth.allY = [ground_truth.allY; all_clothoids(i).allY'];
+    end
+
+
+end
+plot(merged_segments.allX,merged_segments.allY,'Color',[0 0 1])
+hold on
+plot(initial_segments.allX,initial_segments.allY,'Color',[1 0 0])
+hold on
+plot(ground_truth.allX,ground_truth.allY,'Color',[0 1 0])
+hold on
+title("Road Representation Comparison")
+xlabel("m")
+ylabel("m")
+legend('Merged segments','Initial segments','Ground truth');
+axis equal
