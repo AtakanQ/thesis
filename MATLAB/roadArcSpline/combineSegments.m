@@ -3,6 +3,7 @@ function [result_clothoids,concat_indices_clothoid,result_lines,concat_indices_l
 %in percentage
 result_clothoids = [];
 result_lines = [];
+result_residual_lines = [];
 maximumNumConcat = 5; %  Maximum 5 clothoids can be concatenated
 i = 1;
 concat_indices_clothoid = {};
@@ -132,14 +133,20 @@ for j = 1:length(concat_indices_clothoid)
     
 end
 
-
 concat_successful_indices_line = {};
 line_counter = 0;
 rms_errors_line = [];
 max_errors_line = [];
+
+concat_successful_residual_indices_line = {};
+residual_line_counter = 0;
+rms_errors_residual_line = [];
+max_errors_residual_line = [];
+
 for j = 1:length(concat_indices_line)
+    start_idx = concat_indices_line{j}(1);
     for k = 0:(length(concat_indices_line{j}) - 2)
-        start_idx = concat_indices_line{j}(1);
+        
         end_idx   = concat_indices_line{j}(end - k);
         numSegments = end_idx - start_idx + 1;
     
@@ -173,13 +180,52 @@ for j = 1:length(concat_indices_line)
             break
         end
     end
+
+    % if concatenation did not reach end
+    if k ~= 0
+        % try to concatenate the rest
+        start_idx = concat_indices_line{j}(end - k + 1);
+        for rest_counter = 0:(k - 2)
+            end_idx   = concat_indices_line{j}(end - rest_counter);
+            numSegments = end_idx - start_idx + 1;
+        
+            xVal = linspace( segments(start_idx).allX(1), segments(end_idx).allX(end),numSegments*500)';
+            yVal = linspace( segments(start_idx).allY(1), segments(end_idx).allY(end),numSegments*500)';
+        
+            measurement_xy = [xVal yVal];
+        
+            groundX = [];
+            groundY = [];
+            for n = 0:(numSegments - 1)
+                groundX = [groundX; all_clothoids(start_idx+n).allX' ];
+                groundY = [groundY; all_clothoids(start_idx+n).allY' ];
+                % hold on
+                % all_clothoids(start_idx+n).plotPlain();
+            end
+        
+            ground_truth_xy = [groundX groundY];
+            [rms_error, max_error, ~] = ...
+                computeSegmentError(measurement_xy,ground_truth_xy);
+            if((rms_error < errorCfg.rmsError) && (max_error < errorCfg.maxError) )
+                disp(['Line segments ',num2str(start_idx),'-',num2str(end_idx), ' are concatenated [residual]']  )
+                disp(['RMS error: ',num2str(rms_error), ' Max error:',num2str(max_error)]  )
+                residual_line_counter = residual_line_counter + 1;
+                concat_successful_residual_indices_line{residual_line_counter} = start_idx:end_idx;
+                rms_errors_residual_line(residual_line_counter) = rms_error;
+                max_errors_residual_line(residual_line_counter) = max_error;
+                lineStruct.allX = xVal;
+                lineStruct.allY = yVal;
+                result_residual_lines = [result_residual_lines lineStruct];
+                break
+            end
+        end
+    end
 end
 
-%% Merge the segments and return the merged version
-% 
+
 
 %% Sample road segment definiton.
-
+% Merge the segments and return the merged version
 mergedSegmentCounter = 0;
 i = 1;
 while(i <= length(segments))
@@ -187,6 +233,7 @@ while(i <= length(segments))
 
     isConcatenatedLine = false;
     isConcatenatedClothoid = false;
+    isConcatenatedResidualLine = false;
     for j = 1:length(concat_successful_indices_line) 
         if (concat_successful_indices_line{j}(1) == i)
             isConcatenatedLine = true;
@@ -202,6 +249,15 @@ while(i <= length(segments))
         end
     end
     
+    if(~isConcatenatedLine && ~isConcatenatedClothoid)
+        for n = 1:length(concat_successful_residual_indices_line)
+            if (concat_successful_residual_indices_line{n}(1) == i)
+                isConcatenatedResidualLine = true;
+                break
+            end
+        end
+    end
+
     if(isConcatenatedLine) % it is a concatenated line
         sampleStruct.type = 'line'; % Segment type (line,arc,arcs or empty)
         sampleStruct.numArcs = 0; % Number of arcs. Zero if segment is line.
@@ -224,6 +280,29 @@ while(i <= length(segments))
         mergedSegments(mergedSegmentCounter) = sampleStruct;
 
         i = i + length(concat_successful_indices_line{j});
+
+    elseif(isConcatenatedResidualLine) % it is a concatenated residual line
+        sampleStruct.type = 'line'; % Segment type (line,arc,arcs or empty)
+        sampleStruct.numArcs = 0; % Number of arcs. Zero if segment is line.
+        sampleStruct.arcCurvatures = []; % Curvatures of all arcs
+        sampleStruct.arcCenters = []; % turning centers as x,y pairs.
+        sampleStruct.segmentLength = norm([result_residual_lines(n).allX(1)-result_residual_lines(n).allX(end)...
+            result_residual_lines(n).allY(1)-result_residual_lines(n).allY(end)]); % Segment length from clothoid fitting
+        sampleStruct.headingInitial = atan2( result_residual_lines(n).allY(end) - result_residual_lines(n).allY(1), ...
+            result_residual_lines(n).allX(end) - result_residual_lines(n).allX(1));
+        sampleStruct.headingFinal = sampleStruct.headingInitial;
+        sampleStruct.headingChange = 0; % Heading change from clothoid fitting
+        sampleStruct.initialCurvature = 0; % Initial curvature provided in the function
+        sampleStruct.finalCurvature = 0; % Final curvature provided in the function
+        sampleStruct.curvatureChange = 0; % Difference between initial and final curvatures
+        sampleStruct.curvatureDerivative = 0;
+        sampleStruct.rmsError = rms_errors_residual_line(n);
+        sampleStruct.maxError = max_errors_residual_line(n);
+        sampleStruct.allX = result_residual_lines(n).allX;
+        sampleStruct.allY = result_residual_lines(n).allY;
+        mergedSegments(mergedSegmentCounter) = sampleStruct;
+
+        i = i + length(concat_successful_residual_indices_line{n});
     elseif(isConcatenatedClothoid) % it is a concatenated clothoid
         tempClothoid = result_clothoids(k);
         sampleStruct.type = 'clothoid'; % Segment type (line,arc,arcs or empty)
@@ -242,7 +321,7 @@ while(i <= length(segments))
         sampleStruct.maxError = max_errors_clothoid(k);
         sampleStruct.allX = tempClothoid.allX;
         sampleStruct.allY = tempClothoid.allY;
-        mergedSegments(mergedSegmentCounter) = segments(i);
+        mergedSegments(mergedSegmentCounter) = sampleStruct;
         
         i = i + length(concat_successful_indices_clothoid{k});
     else % it is not concatenated
