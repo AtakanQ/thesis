@@ -20,7 +20,7 @@ maxFileSize = 0;
 
 % Loop through each file in the directory
 csv_counter = 0;
-figure;
+% figure;
 for i = 3:length(files)
     if (contains(files(i).name, roadName) && (files(i).name(1:3)~="nan"))
         csv_counter = csv_counter + 1;
@@ -36,9 +36,9 @@ for i = 3:length(files)
         [xEast{csv_counter}, yNorth{csv_counter}, ~] = geodetic2enu(all_lonlats{csv_counter}(:,2), ...
             all_lonlats{csv_counter}(:,1), 0, refLat, refLon, 0, wgs84Ellipsoid);
 
-        plot(xEast{csv_counter},yNorth{csv_counter})
-        hold on
-        axis equal
+        % plot(xEast{csv_counter},yNorth{csv_counter})
+        % hold on
+        % axis equal
     end
 
 end

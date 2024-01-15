@@ -1,0 +1,51 @@
+lat1 = 51.009334;
+lat2 = 50.946392;
+lon1 = 10.426450;
+lon2 = 10.508444;
+folderName = 'autobahn_4';
+roadName = 'A 4';
+
+2 candidate combination (for clothoids) will be tried.Here are the segment indices:
+    {[46 47]}    {[52 53]}
+
+20 candidate combination (for lines) will be tried.Here are the segment indices:
+  Columns 1 through 6
+
+    {[1 2]}    {[4 5]}    {[15 16 17]}    {[19 20 21]}    {[23 24]}    {[28 29 30]}
+
+  Columns 7 through 11
+
+    {[32 33 34 35 36 37]}    {[38 39]}    {[41 42 43]}    {[56 57]}    {[62 63]}
+
+  Columns 12 through 16
+
+    {[67 68 69]}    {[73 74]}    {[79 80]}    {[85 86 87 88]}    {[92 93 94 95 96 97]}
+
+  Columns 17 through 20
+
+    {[98 99 100 101 … ]}    {[104 105 106 107]}    {[109 110]}    {[113 114 115 … ]}
+
+Clothoid segments 46-47 are concatenated with order: 2
+RMS error: 0.11095 Max error:0.17777
+Clothoid segments 52-53 are concatenated with order: 2
+RMS error: 0.11037 Max error:0.19564
+Line segments 32-37 are concatenated
+RMS error: 0.15444 Max error:0.29092
+Line segments 41-42 are concatenated
+RMS error: 0.082011 Max error:0.1591
+Line segments 56-57 are concatenated
+RMS error: 0.13291 Max error:0.24368
+Line segments 67-68 are concatenated
+RMS error: 0.063165 Max error:0.098714
+Line segments 73-74 are concatenated
+RMS error: 0.055508 Max error:0.10487
+Line segments 79-80 are concatenated
+RMS error: 0.032872 Max error:0.055622
+Line segments 92-95 are concatenated
+RMS error: 0.1631 Max error:0.28033
+Line segments 98-103 are concatenated
+RMS error: 0.07169 Max error:0.12169
+Line segments 104-105 are concatenated
+RMS error: 0.022867 Max error:0.037414
+Line segments 109-110 are concatenated
+RMS error: 0.19245 Max error:0.28135
