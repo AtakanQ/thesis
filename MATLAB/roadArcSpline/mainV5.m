@@ -13,6 +13,11 @@ roadName = 'A 4';
 [xEast, yNorth,number_of_roads] = ...
     retrieveOSM_v2(lat1, lat2, lon1, lon2, roadName,folderName);
 
+if(folderName == 'autobahn_4') % there is some bug with this road
+    xEast = xEast(15:end);
+    yNorth = yNorth(15:end);
+end
+
 [curvature_MVRC, centers_MVRC, theta_MVRC] = findCurvature([xEast yNorth]);
 
 % Use clothoid fitting 
