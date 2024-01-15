@@ -1,4 +1,4 @@
-function [xEast, yNorth,number_of_roads] = retrieveOSM_v2(lat1, lat2, lon1, lon2, roadName,folderName)
+function [xEast, yNorth,number_of_roads,refLat,refLon] = retrieveOSM_v2(lat1, lat2, lon1, lon2, roadName,folderName)
 number_of_roads = 0;
 all_lonlats = {};
 all_lonlats_concatenated = [];
