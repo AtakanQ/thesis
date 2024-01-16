@@ -16,6 +16,9 @@ HEREname = 'A4_laneData.mat';
 
 [laneBorders,laneCenters] = retrieveHERE(folderName,HEREname,refLat,refLon);
 
+xEast = laneCenters(2).xEast;
+yNorth = laneCenters(2).yNorth;
+
 figure;
 for i = 1:size(laneCenters,2)    
     plot(laneCenters(i).xEast,laneCenters(i).yNorth,'DisplayName',strcat('Lane ',num2str(i)))
@@ -41,20 +44,6 @@ centers_GT = findCenters([xEast yNorth], theta_GT,curvature_GT);
 [all_clothoids] = generateClothoids(xEast,yNorth,theta_GT,curvature_GT,dk,L);
 
 
-%% Generate arc segments
-% turn left positive curvature
-
-num_arc_points = 500;
-% 
-% figure;
-% plot(curvature_MVRC)
-% hold on
-% plot(curvature_GT(2:end))
-% title('Curvature for each method')
-% legend('MVRC method','Clothoid fitting')
-% ylabel('Curvature')
-% xlabel('Segment index')
-
 %% inspect a specific segment.
 % segment_idx = 16;
 % 
@@ -62,11 +51,11 @@ num_arc_points = 500;
 %     all_clothoids,errors_MVRC,xEast,yNorth,theta);
 %% Represent the road
 lineCfg.lineDegreeDeviation = 2; % Allowed heading devation at the end of the segment (degrees)
-lineCfg.rmsThreshold = 0.2; % RMS deviation from real road (meters)
-lineCfg.maximumAllowedDistance = 0.3; % Maximum deviation from real road (meters)
+lineCfg.rmsThreshold = 0.1; % RMS deviation from real road (meters)
+lineCfg.maximumAllowedDistance = 0.15; % Maximum deviation from real road (meters)
 lineCfg.numberOfPoints = 500; % Number of datapoints along the line segment
 
-arcCfg.maximumDistance = 0.05; % Maximum allowed distance to deviate from real road.
+arcCfg.maximumDistance = 0.15; % Maximum allowed distance to deviate from real road.
 arcCfg.initialTry = 5;
 arcCfg.maximumNumArcs = 50;
 % close all;

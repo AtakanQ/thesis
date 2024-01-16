@@ -133,7 +133,7 @@ for i = 1:size(laneCenterData,2) % for each lane
         end
     end
     
-    if(~foundFirstTime && (j==2) )% failed to concatenate the first piece
+   if(~foundFirstTime && (j==2) )% failed to concatenate the first piece
         start_lat = laneCenterData{1,i}(end,2); % might have to look at other end as well
         start_lon = laneCenterData{1,i}(end,3);
     

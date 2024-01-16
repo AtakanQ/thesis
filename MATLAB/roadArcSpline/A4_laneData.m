@@ -1965,7 +1965,7 @@ for ll = 1:size(laneBorderData,1)
     geobasemap satellite
     hold all;
 end
-
+figure;
 for kk = 1:size(laneCenterData,2)
     for ll = 1:size(laneCenterData,1)
         latitude = laneCenterData{ll,kk}(:,2); 
@@ -1977,4 +1977,3 @@ for kk = 1:size(laneCenterData,2)
         hold all; 
     end
 end
-save('A4_laneData')
