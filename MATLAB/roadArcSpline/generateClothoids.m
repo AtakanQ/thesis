@@ -2,7 +2,7 @@ function [all_clothoids] = generateClothoids(xEast,yNorth,theta,k,dk,L)
 %generate clothoid between consecutive points. 
 num_clothoids = length(k);
 
-figure;
+% figure;
 for i=1:num_clothoids
     init_pos = [xEast(i) yNorth(i)]; 
     init_tan = theta(i); 
@@ -21,17 +21,17 @@ for i=1:num_clothoids
     %OBSOLETE WITH clothoid_v2
     % all_clothoids(i).generateArcSegments();
 
-    all_clothoids(i).plotPlain();
-    hold on
-    axis equal
+    % all_clothoids(i).plotPlain();
+    % hold on
+    % axis equal
     % v2_cloth = clothoid_v2(init_pos, init_tan,k(i), k(i)+dk(i)*L(i),L(i),1000 );
     % figure;
     % v2_cloth.plotPlain();
   end
-title('Clothoid Path')
-xlabel('x (m)')
-ylabel('y (m)')
-axis equal
-grid on
+% title('Clothoid Path')
+% xlabel('x (m)')
+% ylabel('y (m)')
+% axis equal
+% grid on
 end
 
