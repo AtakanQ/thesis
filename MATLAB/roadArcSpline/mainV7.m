@@ -9,7 +9,7 @@ lon1 = 10.426450;
 lon2 = 10.508444;
 folderName = 'autobahn_4';
 roadName = 'A 4';
-HEREname = 'A4_laneData.mat';
+HEREname = 'A4_laneData_v2.mat';
 
 [xEast, yNorth,number_of_roads,refLat,refLon] = ...
     retrieveOSM_v2(lat1, lat2, lon1, lon2, roadName,folderName);
@@ -32,20 +32,27 @@ end
 % plot(xEast,yNorth,'DisplayName','OSM')
 % legend()
 
-% if(folderName == 'autobahn_4') % there is some bug with this road
-%     xEast = xEast(15:end);
-%     yNorth = yNorth(15:end);
-% end
+if(folderName == 'autobahn_4') % there is some bug with this road
+    xEast = xEast(15:end);
+    yNorth = yNorth(15:end);
+end
 
 % Use clothoid fitting
 for i = 1:length(xEastCenter)
     [theta_GT{i},curvature_GT{i},dk{i},L{i},...
-        nevalG1,nevalF,iter,Fvalue,Fgradnorm] = ...
+        nevalG1,~,~,~,~] = ...
         G1spline( [xEastCenter{i} yNorthCenter{i}]);
 
     [all_clothoids{i}] = ...
         generateClothoids(xEastCenter{i},yNorthCenter{i},theta_GT{i},curvature_GT{i},dk{i},L{i});
 end
+
+
+[theta_OSM,curvature_OSM,dk_OSM,L_OSM,...
+    ~,~,~,~,~] = ...
+    G1spline( [xEast yNorth]);
+all_clothoids_OSM = generateClothoids(xEast,yNorth,...
+    theta_OSM,curvature_OSM,dk_OSM,L_OSM);
 
 %% Represent the road
 lineCfg.lineDegreeDeviation = 0.2; % Allowed heading devation at the end of the segment (degrees)
@@ -69,10 +76,14 @@ for i = 1:length(xEastCenter)
 end
 %% Test
 figure;
-for i = 2:(length(all_clothoids{2})-1)
-    plot(all_clothoids{2}(i).allX,all_clothoids{2}(i).allY)
+for i = 2:(length(all_clothoids{3})-1)
+    plot(all_clothoids{3}(i).allX,all_clothoids{3}(i).allY,'Color',[0 0 1])
     hold on
-    plot(segments{2}(i-1).allX,segments{2}(i-1).allY)
+    if(segments{3}(i-1).type == "clothoid")
+        plot(segments{3}(i-1).allX,segments{3}(i-1).allY,'--','Color',[1 0 0])
+    else
+        plot(segments{3}(i-1).allX,segments{3}(i-1).allY,'--','Color',[0 1 0])
+    end
     axis equal
 end
 
@@ -104,8 +115,9 @@ end
 %% Plot the results
 
 desiredNumElements = 10000;  % Replace with the desired number
+desiredNumElements_GT = 100000;
 for i = 1:numel(allX)
-    downsamplingFactor = floor(numel(allX{i}) / desiredNumElements);
+    downsamplingFactor = floor(numel(allX{i}) / desiredNumElements_GT);
     downsampledIndices = 1:downsamplingFactor:numel(allX{i});
     allX{i} = allX{i}(downsampledIndices);
     allY{i} = allY{i}(downsampledIndices);
@@ -116,6 +128,18 @@ for i = 1:numel(xEastShifted)
     xEastShifted{i} = xEastShifted{i}(downsampledIndices);
     yNorthShifted{i} = yNorthShifted{i}(downsampledIndices);
 end
+
+allX_OSM = [];
+allY_OSM = [];
+for i = 1:numel(all_clothoids_OSM)
+    allX_OSM = [allX_OSM all_clothoids_OSM(i).allX'];
+    allY_OSM = [allY_OSM all_clothoids_OSM(i).allY'];
+end
+
+downsamplingFactor = floor(numel(allX_OSM) / desiredNumElements);
+downsampledIndices = 1:downsamplingFactor:numel(allX_OSM);
+allX_OSM = allX_OSM(downsampledIndices);
+allY_OSM = allY_OSM(downsampledIndices);
 
 figure
 plot(allX{3},allY{3},'DisplayName','Ground Truth Reference','LineWidth',1.2)
@@ -130,5 +154,90 @@ hold on
 plot(xEastShifted{1},yNorthShifted{1},'DisplayName','Generated Right Lane(1)','LineWidth',1.2)
 hold on
 plot(xEastShifted{2},yNorthShifted{2},'DisplayName','Generated Right Lane(2)','LineWidth',1.2)
+
+plot(allX_OSM,allY_OSM,'DisplayName','OSM Road','LineWidth',1.2 )
+
 axis equal
 legend()
+
+
+
+%% Compute rms and curvatures
+segmentLength = 100;
+rms_array = cell(length(xEastShifted),1);
+max_err_array = cell(length(xEastShifted),1);
+curvatures = cell(length(xEastShifted),1);
+
+for i = 1:length(xEastShifted)
+    if i == 2
+        idx = 1;
+    elseif i == 1
+        idx = 2;
+    end
+
+    rms_array{i} = zeros(floor(length(xEastShifted{i})/segmentLength),1);
+    max_err_array{i} = zeros(floor(length(xEastShifted{i})/segmentLength),1);
+    ground_truth_xy = [allX{idx} allY{idx}];
+    for j = 1:floor(length(xEastShifted{i})/segmentLength)
+        start_idx = (j-1) * segmentLength + 1;
+        end_idx = j*segmentLength - 1;
+        measurement_xy = [xEastShifted{i}(start_idx:end_idx) yNorthShifted{i}(start_idx:end_idx)];
+
+        % [rms_error, max_error, errors] = computeSegmentError(measurement_xy,ground_truth_xy);
+        [rms_array{i}(j), max_err_array{i}(j), errors] = ...
+            computeSegmentError(measurement_xy,ground_truth_xy);
+    end
+
+    %Compute curvatures from ground truth data
+    curvatures{i} = findCurvature(ground_truth_xy);
+    
+    curvatures{i} = medfilt1(curvatures{i}, 10);
+
+    figure;
+    plot(rms_array{i},'DisplayName', strcat('RMS Error:',num2str(i)))
+    hold on
+    plot(max_err_array{i},'DisplayName', strcat('Max Error:',num2str(i)))
+    ylabel('Error (m)')
+    yyaxis right
+    ylabel('Curvature (m^-^1)')
+    xlabel('Segment Number')
+    xAxis = linspace(1,length(rms_array{i}),length(curvatures{i}));
+    plot(xAxis,curvatures{i} ,'DisplayName', strcat('Curvature:',num2str(i)))
+    legend()
+    title('Error With Respect To HERE Map')
+
+end
+
+%% OSM error
+rms_OSM = zeros(floor(length(xEastShifted{1})/segmentLength),1);
+max_err_OSM = zeros(floor(length(xEastShifted{1})/segmentLength),1);
+
+ground_truth_xy = [allX_OSM' allY_OSM'];
+for j = 1:floor(length(xEastShifted{1})/segmentLength)
+    start_idx = (j-1) * segmentLength + 1;
+    end_idx = j*segmentLength - 1;
+
+    %middle lane
+    measurement_xy = [xEastShifted{1}(start_idx:end_idx) yNorthShifted{1}(start_idx:end_idx)];
+
+    % [rms_error, max_error, errors] = computeSegmentError(measurement_xy,ground_truth_xy);
+    [rms_OSM(j), max_err_OSM(j), errors] = ...
+        computeSegmentError(measurement_xy,ground_truth_xy);
+end
+curvature_OSM = findCurvature(ground_truth_xy);
+curvatures{i} = medfilt1(curvatures{i}, 10);
+figure;
+plot(rms_OSM,'DisplayName', strcat('RMS Error:',num2str(1)))
+hold on
+plot(max_err_OSM,'DisplayName', strcat('Max Error:',num2str(1)))
+ylabel('Error (m)')
+yyaxis right
+ylabel('Curvature (m^-^1)')
+xlabel('Segment Number')
+xAxis = linspace(1,length(rms_OSM),length(curvature_OSM));
+plot(xAxis,curvature_OSM ,'DisplayName', strcat('Curvature:',num2str(1)))
+legend()
+title('Error With Respect To OSM Map')
+
+
+

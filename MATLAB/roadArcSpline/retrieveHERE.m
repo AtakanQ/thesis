@@ -102,7 +102,12 @@ for i = 1:size(laneCenterData,2) % for each lane
     laneCenter.lons = flip(laneCenterData{1,i}(:,3));
 
     foundFirstTime = false;
+
+
     for j = 2:size(laneCenterData,1)
+        if length(laneCenter.lats) == 51
+            disp("Debugging retrieveHERE")
+        end
         for k = 1:size(laneCenterData,2)
             target_lat = laneCenterData{j,k}(1,2);
             target_lon = laneCenterData{j,k}(1,3);

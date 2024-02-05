@@ -100,10 +100,6 @@ for i = 1:numLanes
             %     measurement_xy = [tempClothoid.allX' tempClothoid.allY'];
             %     ground_truth_xy = [all_clothoids{idx}(j+1).allX' all_clothoids{idx}(j+1).allY'];
             % 
-            %     % plot(measurement_xy(:,1),measurement_xy(:,2))
-            %     % hold on
-            %     % plot(ground_truth_xy(:,1),ground_truth_xy(:,2))
-            %     % axis equal
             %     [rms_error, max_error, ~] = ...
             %         computeSegmentError(measurement_xy,ground_truth_xy);
             % 
@@ -114,7 +110,7 @@ for i = 1:numLanes
                 otherLanes{i}(j).maxError = NaN;
             % end
             % tempClothoid.plotPlain();
-            
+
             % hold on
 
         elseif(segments(j).type == "line")
