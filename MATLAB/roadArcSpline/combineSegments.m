@@ -1,4 +1,5 @@
-function [result_clothoids,concat_indices_clothoid,result_lines,concat_indices_line,mergedSegments] = combineSegments(segments,all_clothoids,errorCfg)
+function [result_clothoids,concat_indices_clothoid,result_lines,concat_indices_line,mergedSegments] = ...
+    combineSegments(segments,all_clothoids,errorCfg)
 %errorTol is the maximum allowed difference between curvature derivatives
 %in percentage
 result_clothoids = [];
