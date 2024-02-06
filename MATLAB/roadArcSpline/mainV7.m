@@ -46,7 +46,7 @@ for i = 1:length(xEastCenter)
     [all_clothoids{i}] = ...
         generateClothoids(xEastCenter{i},yNorthCenter{i},theta_GT{i},curvature_GT{i},dk{i},L{i});
 end
-
+numAllClothoid = numel(all_clothoids{3});
 
 [theta_OSM,curvature_OSM,dk_OSM,L_OSM,...
     ~,~,~,~,~] = ...
@@ -74,18 +74,28 @@ for i = 1:length(xEastCenter)
         theta_GT{i}(2:end-1),curvature_GT{i}(2:end),...
         L{i}(2:end-1),all_clothoids{i}(2:end-1),lineCfg,arcCfg,DEBUG);
 end
+
+errorCfg.errorTol =  0.5;% percent. 
+errorCfg.rmsError = 0.1; % Computed after concatenation
+errorCfg.maxError = 0.2; % Computed after concatenation
+errorCfg.headingDeviation = 2; % Degrees deviation allowed for concatenated lines
+
+[result_clothoids,concat_indices_clothoid,result_lines,concat_indices_line,mergedSegments] = ...
+    combineSegments(segments{3},all_clothoids{3}(2:end-1),errorCfg);
+
+segments{3} = mergedSegments;
 %% Test
-figure;
-for i = 2:(length(all_clothoids{3})-1)
-    plot(all_clothoids{3}(i).allX,all_clothoids{3}(i).allY,'Color',[0 0 1])
-    hold on
-    if(segments{3}(i-1).type == "clothoid")
-        plot(segments{3}(i-1).allX,segments{3}(i-1).allY,'--','Color',[1 0 0])
-    else
-        plot(segments{3}(i-1).allX,segments{3}(i-1).allY,'--','Color',[0 1 0])
-    end
-    axis equal
-end
+% figure;
+% for i = 2:(length(all_clothoids{3})-1)
+%     plot(all_clothoids{3}(i).allX,all_clothoids{3}(i).allY,'Color',[0 0 1])
+%     hold on
+%     if(segments{3}(i-1).type == "clothoid")
+%         plot(segments{3}(i-1).allX,segments{3}(i-1).allY,'--','Color',[1 0 0])
+%     else
+%         plot(segments{3}(i-1).allX,segments{3}(i-1).allY,'--','Color',[0 1 0])
+%     end
+%     axis equal
+% end
 
 %% Generate other lanes
 laneWidth = 3.6; % meters
@@ -101,17 +111,25 @@ for j = 1:length(xEastCenter)
     for i = 2:(length(all_clothoids{j})-1)
         allX{j} = [allX{j}; all_clothoids{j}(i).allX'];
         allY{j} = [allY{j}; all_clothoids{j}(i).allY'];
-        if j == 3
-            if(segments{3}(i-1).type == "clothoid")
-                myX = [myX; segments{3}(i-1).allX'];
-                myY = [myY; segments{3}(i-1).allY'];
-            elseif(segments{3}(i-1).type == "line")
-                myX = [myX; segments{3}(i-1).allX];
-                myY = [myY; segments{3}(i-1).allY]; 
-            end
-        end
     end
 end
+
+numFinalClothoids = 0;
+numArcs = 0;
+numLines = 0;
+for j = 1:length(segments{3})
+    if(segments{3}(j).type == "clothoid")
+        numFinalClothoids = numFinalClothoids + 1;
+        numArcs = numArcs + segments{3}(j).numArcs + 1;
+        myX = [myX; segments{3}(j).allX'];
+        myY = [myY; segments{3}(j).allY'];
+    elseif(segments{3}(j).type == "line")
+        numLines = numLines + 1;
+        myX = [myX; segments{3}(j).allX];
+        myY = [myY; segments{3}(j).allY]; 
+    end
+end
+
 %% Plot the results
 
 desiredNumElements = 10000;  % Replace with the desired number
@@ -237,7 +255,12 @@ xlabel('Segment Number')
 xAxis = linspace(1,length(rms_OSM),length(curvature_OSM));
 plot(xAxis,curvature_OSM ,'DisplayName', strcat('Curvature:',num2str(1)))
 legend()
-title('Error With Respect To OSM Map')
+title('Error With Respect o OSM Map')
 
-
+%%
+disp(['The road initially had ', num2str(numAllClothoid) ,' clothoids.'])
+disp(['After approximation and combination of segments the road has ', num2str(numFinalClothoids),...
+    ' clothoids and ', num2str(numArcs) , ' arcs were used.'])
+disp(['Additionaly, ',num2str(numLines), ' lines were used.'])
+disp(['Initially there were ', num2str(numAllClothoid) ' segments. After combination there are ', num2str(numFinalClothoids + numLines), ' segments.'])
 
