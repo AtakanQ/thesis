@@ -151,9 +151,14 @@ for j = 1:length(concat_indices_line)
         end_idx   = concat_indices_line{j}(end - k);
         numSegments = end_idx - start_idx + 1;
     
-        xVal = linspace( segments(start_idx).allX(1), segments(end_idx).allX(end),numSegments*500)';
-        yVal = linspace( segments(start_idx).allY(1), segments(end_idx).allY(end),numSegments*500)';
-    
+        % xVal = linspace( segments(start_idx).allX(1), segments(end_idx).allX(end),numSegments*500)';
+        % yVal = linspace( segments(start_idx).allY(1), segments(end_idx).allY(end),numSegments*500)';
+        
+        segLength = norm([segments(start_idx).allX(1)-segments(end_idx).allX(end) ...
+            segments(start_idx).allY(1)-segments(end_idx).allY(end)]);
+        xVal = linspace( segments(start_idx).allX(1), segments(end_idx).allX(end),segLength/0.01)';
+        yVal = linspace( segments(start_idx).allY(1), segments(end_idx).allY(end),segLength/0.01)';
+
         measurement_xy = [xVal yVal];
     
         groundX = [];

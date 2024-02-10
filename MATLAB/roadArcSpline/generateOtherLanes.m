@@ -6,7 +6,7 @@ for i = 1:length(segments)
     end
 end
 
-singleArcNumPoints = length(segments(i).allX) / (segments(i).numArcs+1);
+
 
 otherLanes = cell(1,numLanes);
 
@@ -48,7 +48,8 @@ for i = 1:numLanes
         if(segments(j).type == "clothoid")
             %positive curvature turns left.
             %Assume left lane is given.
-            angles = findArcAngles(segments(j),singleArcNumPoints);
+            
+            angles = findArcAngles(segments(j));
             new_radii = abs(1./segments(j).arcCurvatures) + ...
                 sign(segments(j).arcCurvatures)*i*laneWidth;
             new_length = sum(angles .* new_radii);

@@ -1,9 +1,16 @@
-function [angles] = findArcAngles(tempClothoid,singleArcNumPoints)
+function [angles] = findArcAngles(tempClothoid)
+
+singleArcNumPoints = floor(tempClothoid.segmentLength / 0.01 / (tempClothoid.numArcs));
 
 numAngles = tempClothoid.numArcs + 1;
 angles = zeros(numAngles,1);
-
+inbetweenArcsPoints = singleArcNumPoints-1;
 for i = 1:numAngles
+    if (i == 1) || (i == numAngles)
+        singleArcNumPoints = floor(inbetweenArcsPoints / 2); 
+    else
+        singleArcNumPoints = inbetweenArcsPoints;
+    end
     center = tempClothoid.arcCenters(i,:);
     startX = tempClothoid.allX( (i-1)*singleArcNumPoints + 1 );
     startY = tempClothoid.allY( (i-1)*singleArcNumPoints + 1 );

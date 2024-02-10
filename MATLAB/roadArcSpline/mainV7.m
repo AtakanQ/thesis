@@ -60,7 +60,8 @@ lineCfg.rmsThreshold = 0.1; % RMS deviation from real road (meters)
 % disp('This implementation has no lines!!!!!!!')
 % lineCfg.rmsThreshold = -0.1; 
 lineCfg.maximumAllowedDistance = 0.15; % Maximum deviation from real road (meters)
-lineCfg.numberOfPoints = 500; % Number of datapoints along the line segment
+% lineCfg.numberOfPoints = 500; % Number of datapoints along the line
+% segment OBSOLETE
 
 arcCfg.maximumDistance = 0.15; % Maximum allowed distance to deviate from real road.
 arcCfg.initialTry = 5;
@@ -150,8 +151,8 @@ end
 allX_OSM = [];
 allY_OSM = [];
 for i = 1:numel(all_clothoids_OSM)
-    allX_OSM = [allX_OSM all_clothoids_OSM(i).allX'];
-    allY_OSM = [allY_OSM all_clothoids_OSM(i).allY'];
+    allX_OSM = [allX_OSM; all_clothoids_OSM(i).allX'];
+    allY_OSM = [allY_OSM; all_clothoids_OSM(i).allY'];
 end
 
 downsamplingFactor = floor(numel(allX_OSM) / desiredNumElements);
@@ -230,7 +231,7 @@ end
 rms_OSM = zeros(floor(length(xEastShifted{1})/segmentLength),1);
 max_err_OSM = zeros(floor(length(xEastShifted{1})/segmentLength),1);
 
-ground_truth_xy = [allX_OSM' allY_OSM'];
+ground_truth_xy = [allX_OSM allY_OSM];
 for j = 1:floor(length(xEastShifted{1})/segmentLength)
     start_idx = (j-1) * segmentLength + 1;
     end_idx = j*segmentLength - 1;

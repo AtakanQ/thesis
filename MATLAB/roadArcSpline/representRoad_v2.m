@@ -42,6 +42,8 @@ for i = 1:numSegment
 
     if (heading_change < lineCfg.lineDegreeDeviation) % Line does not make the segment deviate
         % Generate 500 points between the two coordinates.
+        lineCfg.numberOfPoints = norm([xEast(i)-xEast(i+1) yNorth(i)-yNorth(i+1)]) / 0.01;
+
         x_values = linspace(xEast(i), xEast(i+1) , lineCfg.numberOfPoints)';
         y_values = linspace(yNorth(i), yNorth(i+1), lineCfg.numberOfPoints)';
         heading = atan2(y_values(end)-y_values(1),x_values(end)-x_values(1));
