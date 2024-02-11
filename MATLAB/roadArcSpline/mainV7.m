@@ -9,12 +9,12 @@ lon1 = 10.426450;
 lon2 = 10.508444;
 folderName = 'autobahn_4';
 roadName = 'A 4';
-HEREname = 'A4_laneData_v2.mat';
+HEREname = 'A4_laneData_v3.mat';
 
 [xEast, yNorth,number_of_roads,refLat,refLon] = ...
     retrieveOSM_v2(lat1, lat2, lon1, lon2, roadName,folderName);
 
-[laneBorders,laneCenters] = retrieveHERE(folderName,HEREname,refLat,refLon);
+[laneBorders,laneCenters] = retrieveHERE_v2(folderName,HEREname,refLat,refLon);
 
 %Use left most lane
 for j = 1:length(laneCenters)
@@ -81,10 +81,10 @@ errorCfg.rmsError = 0.1; % Computed after concatenation
 errorCfg.maxError = 0.2; % Computed after concatenation
 errorCfg.headingDeviation = 2; % Degrees deviation allowed for concatenated lines
 
-[result_clothoids,concat_indices_clothoid,result_lines,concat_indices_line,mergedSegments] = ...
-    combineSegments(segments{3},all_clothoids{3}(2:end-1),errorCfg);
-
-segments{3} = mergedSegments;
+% [result_clothoids,concat_indices_clothoid,result_lines,concat_indices_line,mergedSegments] = ...
+%     combineSegments(segments{3},all_clothoids{3}(2:end-1),errorCfg);
+% 
+% segments{3} = mergedSegments;
 %% Test
 % figure;
 % for i = 2:(length(all_clothoids{3})-1)
@@ -227,6 +227,33 @@ for i = 1:length(xEastShifted)
 
 end
 
+%% TEST
+ground_truth_xy = [allX{2} allY{2}];
+j = 27;
+start_idx = (j-1) * segmentLength + 1;
+end_idx = j*segmentLength - 1;
+measurement_xy = [xEastShifted{1}(start_idx:end_idx) yNorthShifted{1}(start_idx:end_idx)];
+figure;
+plot(measurement_xy(:,1),measurement_xy(:,2),'Color',[0 1 0]);
+hold on
+plot(ground_truth_xy(:,1),ground_truth_xy(:,2),'Color',[1 0 0]);
+measurement_xy(1,1)
+measurement_xy(1,2)
+axis equal
+
+[~, ~, to_left] = computeSegmentError([allX{2} allY{2}],[allX{1} allY{1}]);
+[~, ~, to_right] = computeSegmentError([allX{2} allY{2}],[allX{3} allY{3}]);
+figure;
+plot(to_left)
+title('Distance Between Middle and Left Lane')
+xlabel('Index')
+ylabel('Distance (m)')
+figure;
+plot(to_right)
+title('Distance Between Middle and Right Lane')
+xlabel('Index')
+ylabel('Distance (m)')
+
 %% OSM error
 rms_OSM = zeros(floor(length(xEastShifted{1})/segmentLength),1);
 max_err_OSM = zeros(floor(length(xEastShifted{1})/segmentLength),1);
@@ -264,4 +291,5 @@ disp(['After approximation and combination of segments the road has ', num2str(n
     ' clothoids and ', num2str(numArcs) , ' arcs were used.'])
 disp(['Additionaly, ',num2str(numLines), ' lines were used.'])
 disp(['Initially there were ', num2str(numAllClothoid) ' segments. After combination there are ', num2str(numFinalClothoids + numLines), ' segments.'])
+save('last_work')
 
