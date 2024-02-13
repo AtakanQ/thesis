@@ -101,7 +101,7 @@ errorCfg.headingDeviation = 2; % Degrees deviation allowed for concatenated line
 %% Generate other lanes
 laneWidth = 3.6; % meters
 
-[otherLanes,xEastShifted,yNorthShifted] = generateOtherLanes(segments{3},laneWidth,2,all_clothoids);
+[otherLanes,xEastShifted,yNorthShifted] = generateOtherLanes(segments{3},laneWidth,2);
 allX = [];
 allY = [];
 myX = [];
@@ -182,11 +182,11 @@ legend()
 
 
 %% Compute rms and curvatures
-segmentLength = 100;
+segmentLength = 10000;
 rms_array = cell(length(xEastShifted),1);
 max_err_array = cell(length(xEastShifted),1);
 curvatures = cell(length(xEastShifted),1);
-
+roadLengths = cell(length(xEastShifted),1);
 for i = 1:length(xEastShifted)
     if i == 2
         idx = 1;
@@ -196,11 +196,15 @@ for i = 1:length(xEastShifted)
 
     rms_array{i} = zeros(floor(length(xEastShifted{i})/segmentLength),1);
     max_err_array{i} = zeros(floor(length(xEastShifted{i})/segmentLength),1);
+    roadLengths{i} = zeros(floor(length(xEastShifted{i})/segmentLength),1);
     ground_truth_xy = [allX{idx} allY{idx}];
     for j = 1:floor(length(xEastShifted{i})/segmentLength)
         start_idx = (j-1) * segmentLength + 1;
         end_idx = j*segmentLength - 1;
         measurement_xy = [xEastShifted{i}(start_idx:end_idx) yNorthShifted{i}(start_idx:end_idx)];
+        
+        
+        roadLengths{i}(j) = calculateRoadLength(measurement_xy);
 
         % [rms_error, max_error, errors] = computeSegmentError(measurement_xy,ground_truth_xy);
         [rms_array{i}(j), max_err_array{i}(j), errors] = ...
@@ -211,6 +215,8 @@ for i = 1:length(xEastShifted)
     curvatures{i} = findCurvature(ground_truth_xy);
     
     curvatures{i} = medfilt1(curvatures{i}, 10);
+
+    
 
     figure;
     plot(rms_array{i},'DisplayName', strcat('RMS Error:',num2str(i)))
@@ -225,65 +231,80 @@ for i = 1:length(xEastShifted)
     legend()
     title('Error With Respect To HERE Map')
 
+    figure;
+    plot(rms_array{i},'DisplayName', strcat('RMS Error:',num2str(i)))
+    hold on
+    plot(max_err_array{i},'DisplayName', strcat('Max Error:',num2str(i)))
+    ylabel('Error (m)')
+
+    hold on
+    yyaxis right
+    plot(roadLengths{i},'DisplayName', ['Path Length: ',num2str(i)])
+    ylabel('Road Length (m)')
+    xlabel('Segment Number')
+    legend()
+    title('Error With Respect To HERE Map')
+
+
 end
 
 %% TEST
-ground_truth_xy = [allX{2} allY{2}];
-j = 27;
-start_idx = (j-1) * segmentLength + 1;
-end_idx = j*segmentLength - 1;
-measurement_xy = [xEastShifted{1}(start_idx:end_idx) yNorthShifted{1}(start_idx:end_idx)];
-figure;
-plot(measurement_xy(:,1),measurement_xy(:,2),'Color',[0 1 0]);
-hold on
-plot(ground_truth_xy(:,1),ground_truth_xy(:,2),'Color',[1 0 0]);
-measurement_xy(1,1)
-measurement_xy(1,2)
-axis equal
+% % ground_truth_xy = [allX{2} allY{2}];
+% % j = 27;
+% % start_idx = (j-1) * segmentLength + 1;
+% % end_idx = j*segmentLength - 1;
+% % measurement_xy = [xEastShifted{1}(start_idx:end_idx) yNorthShifted{1}(start_idx:end_idx)];
+% % figure;
+% % plot(measurement_xy(:,1),measurement_xy(:,2),'Color',[0 1 0]);
+% % hold on
+% % plot(ground_truth_xy(:,1),ground_truth_xy(:,2),'Color',[1 0 0]);
+% % measurement_xy(1,1)
+% % measurement_xy(1,2)
+% % axis equal
 
-[~, ~, to_left] = computeSegmentError([allX{2} allY{2}],[allX{1} allY{1}]);
-[~, ~, to_right] = computeSegmentError([allX{2} allY{2}],[allX{3} allY{3}]);
-figure;
-plot(to_left)
-title('Distance Between Middle and Left Lane')
-xlabel('Index')
-ylabel('Distance (m)')
-figure;
-plot(to_right)
-title('Distance Between Middle and Right Lane')
-xlabel('Index')
-ylabel('Distance (m)')
+% [~, ~, to_left] = computeSegmentError([allX{2} allY{2}],[allX{1} allY{1}]);
+% [~, ~, to_right] = computeSegmentError([allX{2} allY{2}],[allX{3} allY{3}]);
+% figure;
+% plot(to_left)
+% title('Distance Between Middle and Left Lane')
+% xlabel('Index')
+% ylabel('Distance (m)')
+% figure;
+% plot(to_right)
+% title('Distance Between Middle and Right Lane')
+% xlabel('Index')
+% ylabel('Distance (m)')
 
 %% OSM error
-rms_OSM = zeros(floor(length(xEastShifted{1})/segmentLength),1);
-max_err_OSM = zeros(floor(length(xEastShifted{1})/segmentLength),1);
-
-ground_truth_xy = [allX_OSM allY_OSM];
-for j = 1:floor(length(xEastShifted{1})/segmentLength)
-    start_idx = (j-1) * segmentLength + 1;
-    end_idx = j*segmentLength - 1;
-
-    %middle lane
-    measurement_xy = [xEastShifted{1}(start_idx:end_idx) yNorthShifted{1}(start_idx:end_idx)];
-
-    % [rms_error, max_error, errors] = computeSegmentError(measurement_xy,ground_truth_xy);
-    [rms_OSM(j), max_err_OSM(j), errors] = ...
-        computeSegmentError(measurement_xy,ground_truth_xy);
-end
-curvature_OSM = findCurvature(ground_truth_xy);
-curvatures{i} = medfilt1(curvatures{i}, 10);
-figure;
-plot(rms_OSM,'DisplayName', strcat('RMS Error:',num2str(1)))
-hold on
-plot(max_err_OSM,'DisplayName', strcat('Max Error:',num2str(1)))
-ylabel('Error (m)')
-yyaxis right
-ylabel('Curvature (m^-^1)')
-xlabel('Segment Number')
-xAxis = linspace(1,length(rms_OSM),length(curvature_OSM));
-plot(xAxis,curvature_OSM ,'DisplayName', strcat('Curvature:',num2str(1)))
-legend()
-title('Error With Respect o OSM Map')
+% rms_OSM = zeros(floor(length(xEastShifted{1})/segmentLength),1);
+% max_err_OSM = zeros(floor(length(xEastShifted{1})/segmentLength),1);
+% 
+% ground_truth_xy = [allX_OSM allY_OSM];
+% for j = 1:floor(length(xEastShifted{1})/segmentLength)
+%     start_idx = (j-1) * segmentLength + 1;
+%     end_idx = j*segmentLength - 1;
+% 
+%     %middle lane
+%     measurement_xy = [xEastShifted{1}(start_idx:end_idx) yNorthShifted{1}(start_idx:end_idx)];
+% 
+%     % [rms_error, max_error, errors] = computeSegmentError(measurement_xy,ground_truth_xy);
+%     [rms_OSM(j), max_err_OSM(j), errors] = ...
+%         computeSegmentError(measurement_xy,ground_truth_xy);
+% end
+% curvature_OSM = findCurvature(ground_truth_xy);
+% curvatures{i} = medfilt1(curvatures{i}, 10);
+% figure;
+% plot(rms_OSM,'DisplayName', strcat('RMS Error:',num2str(1)))
+% hold on
+% plot(max_err_OSM,'DisplayName', strcat('Max Error:',num2str(1)))
+% ylabel('Error (m)')
+% yyaxis right
+% ylabel('Curvature (m^-^1)')
+% xlabel('Segment Number')
+% xAxis = linspace(1,length(rms_OSM),length(curvature_OSM));
+% plot(xAxis,curvature_OSM ,'DisplayName', strcat('Curvature:',num2str(1)))
+% legend()
+% title('Error With Respect o OSM Map')
 
 %%
 disp(['The road initially had ', num2str(numAllClothoid) ,' clothoids.'])

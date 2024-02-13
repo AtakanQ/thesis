@@ -1,13 +1,10 @@
-function [otherLanes,xEast,yNorth] = generateOtherLanes(segments,laneWidth,numLanes,all_clothoids)
+function [otherLanes,xEast,yNorth] = generateOtherLanes(segments,laneWidth,numLanes)
 % Assume left most lane is given.
 for i = 1:length(segments)
     if(segments(i).type == "clothoid")
         break
     end
 end
-
-
-
 otherLanes = cell(1,numLanes);
 
 %% Sample struct
