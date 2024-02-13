@@ -182,7 +182,7 @@ legend()
 
 
 %% Compute rms and curvatures
-segmentLength = 10000;
+segmentLength = 100;
 rms_array = cell(length(xEastShifted),1);
 max_err_array = cell(length(xEastShifted),1);
 curvatures = cell(length(xEastShifted),1);
