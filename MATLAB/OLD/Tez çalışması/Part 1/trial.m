@@ -79,12 +79,15 @@ tfinal = A-B;
 angle_zero = atan2d(tzero(2),tzero(1));
 new_direction = (45-angle_zero)/2 +angle_zero;
 
-rotation = [cosd(new_direction-angle_zero) sin(new_direction-angle_zero); -sin(new_direction-angle_zero) cos(new_direction-angle_zero)];
+rotation = [cosd(new_direction-angle_zero) sin(new_direction-angle_zero);...
+    -sin(new_direction-angle_zero) cos(new_direction-angle_zero)];
 tzero = tzero * rotation';
 
 angle_final = atan2d(tfinal(2),tfinal(1));
 new_direction = (-10+angle_final)/2;
-rotation = [cosd(new_direction-angle_final) sin(new_direction-angle_final); -sin(new_direction-angle_final) cos(new_direction-angle_final)];
+rotation = [cosd(new_direction-angle_final) sin(new_direction-angle_final);...
+    -sin(new_direction-angle_final) cos(new_direction-angle_final)];
+
 tfinal = tfinal* rotation';
 
 % plot the tangents
@@ -116,6 +119,7 @@ for n = 1:Nk
 end
 
 Curves = cell(4500,1);
+
 P_zero = A;
 P_five = B;
 curve_position = 1;
