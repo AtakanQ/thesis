@@ -62,7 +62,7 @@ classdef bezier < handle
             rot_ccw = [0 1; -1 0];
             %create an array to easily loop
             acceleration_multiplier = linspace(obj.mkmin,obj.mkmax,obj.Nk);
-            acceleration_tangential_multiplier = acceleration_multiplier * obj.dof;
+            acceleration_tangential_multiplier = acceleration_multiplier * obj.dof/5;
             %DOF IS TOO HIGH. MAKING IT SMALLER GIVES A MORE SENSIBLE ROUTE
             
             % for k = 1:obj.Nk
@@ -79,10 +79,10 @@ classdef bezier < handle
 
             for n = 1:obj.Nk
                 obj.acceleration_zero(n,:) =  acceleration_tangential_multiplier(n) * tzero +...
-                    curvature_zero * ( norm(tzero) )^2 * normal_tzero; %TODO
+                    obj.dof^2 * curvature_zero *  normal_tzero; %TODO
             
                 obj.acceleration_final(n,:) = acceleration_tangential_multiplier(n) * tfinal +...
-                    curvature_final * ( norm(tfinal) )^2 * normal_tfinal; %TODO
+                    obj.dof^2 * curvature_final *  normal_tfinal; %TODO
             end
 
         end
@@ -102,7 +102,7 @@ classdef bezier < handle
                             P_four = P_five - obj.tfinal_vectors(tan_final,:)/5;
             
                             P_three = obj.acceleration_final(acc_final,:)/20 + 2*P_four - P_five;
-                            obj.Curves{tan_zero + tan_final + acc_zero+ acc_final - 3} = zeros(101,2);
+                            obj.Curves{curve_position} = zeros(101,2);
                             pos = 1;
                             for t = 0:0.01:1
                                  obj.Curves{curve_position}(pos,:) =...
@@ -123,10 +123,6 @@ classdef bezier < handle
         function plotCurves(obj)
 
             figure;
-            for i = 1:numel(obj.Curves)
-                plot(obj.Curves{i}(:,1),obj.Curves{i}(:,2))
-                hold on
-            end
             plot(obj.start(1),obj.start(2),'*','MarkerSize',10,'LineWidth',1.5,'Color',[0 0 1]);
             hold on
             plot(obj.finish(1),obj.finish(2),'*','MarkerSize',10,'LineWidth',1.5,'Color',[1 0 0]);
@@ -134,6 +130,18 @@ classdef bezier < handle
             title("Generated Beziér Curves")
             xlabel(" Distance (m) ")
             ylabel(" Distance (m) ")
+            ylim([0 6])
+            xlim([-1 12])
+            for i = 1:numel(obj.Curves)
+                if(mod(i,100) == 0)
+                    disp('Debugging bezier')
+                end
+                color = floor(i/100) / 9;
+                plot(obj.Curves{i}(:,1),obj.Curves{i}(:,2),'Color',[0 color color])
+                hold on
+            end
+
+
         end
     end
 end

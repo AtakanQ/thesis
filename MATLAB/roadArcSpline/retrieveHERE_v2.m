@@ -201,11 +201,11 @@ for i = 1:size(laneCenters,2)
         laneCenters(i).lats(firstDuplicateIndices) = [];
         laneCenters(i).lons(firstDuplicateIndices) = [];
     end
-    valid_indices =  logical((laneCenters(i).lats < lats(1)) .* (laneCenters(i).lats < lats(2)) .*...
-        (laneCenters(i).lons < lons(1)) .* (laneCenters(i).lons < lons(2)) );
+    valid_indices =  logical((laneCenters(i).lats < lats(1)) .* (laneCenters(i).lats > lats(2)) .*...
+        (laneCenters(i).lons > lons(1)) .* (laneCenters(i).lons < lons(2)) );
     if(~isempty(valid_indices))
-        laneCenters(i).lats(valid_indices) = [];
-        laneCenters(i).lons(valid_indices) = [];
+        laneCenters(i).lats(~valid_indices) = [];
+        laneCenters(i).lons(~valid_indices) = [];
     end
     [laneCenters(i).xEast, laneCenters(i).yNorth]= ...
         geodetic2enu(laneCenters(i).lats,laneCenters(i).lons,0,...
