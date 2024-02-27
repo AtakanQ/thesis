@@ -17,9 +17,9 @@ HEREname = 'A38_laneData_v2.mat';
 [laneBorders,laneCenters] = retrieveHERE_v2(folderName,HEREname,refLat,refLon,[lat1 lat2], [lon1 lon2]);
 
 %Use left most lane
-for j = 1:length(laneCenters)
-    xEastCenter{j} = laneCenters(j).xEast;
-    yNorthCenter{j} = laneCenters(j).yNorth;
+for j = 2:length(laneCenters) %DONT TAKE FIRST
+    xEastCenter{j-1} = laneCenters(j).xEast;
+    yNorthCenter{j-1} = laneCenters(j).yNorth;
 end
 
 
@@ -32,7 +32,7 @@ end
 plot(xEast,yNorth,'DisplayName','OSM')
 legend()
 
-if(folderName == 'autobahn_4') % there is some bug with this road
+if(strcmp(folderName , "autobahn_4")) % there is some bug with this road
     xEast = xEast(15:end);
     yNorth = yNorth(15:end);
 end

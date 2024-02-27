@@ -14,7 +14,7 @@ HEREname = 'A4_laneData_v3.mat';
 [xEast, yNorth,number_of_roads,refLat,refLon] = ...
     retrieveOSM_v2(lat1, lat2, lon1, lon2, roadName,folderName);
 
-[laneBorders,laneCenters] = retrieveHERE_v2(folderName,HEREname,refLat,refLon);
+[laneBorders,laneCenters] = retrieveHERE_v2(folderName,HEREname,refLat,refLon,[lat1 lat2],[lon1 lon2oel]);
 
 %Use left most lane
 for j = 1:length(laneCenters)

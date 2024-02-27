@@ -18,6 +18,10 @@ classdef bezier < handle
     Curves
     start
     finish
+    init_tan
+    final_tan
+    curv_zero
+    curv_final
     end
     
     methods
@@ -27,6 +31,10 @@ classdef bezier < handle
             % tzero and tfinal are unit vectors
             tzero = tzero ./ norm(tzero);
             tfinal = tfinal ./ norm(tfinal);
+            obj.init_tan = atan2(tzero(2),tzero(1));
+            obj.final_tan = atan2(tfinal(2),tfinal(1));
+            obj.curv_zero = curvature_zero;
+            obj.curv_final = curvature_final;
             obj.Nt = 10;
             obj.Nk = 3;
             obj.mtmin = 0.3;
@@ -130,17 +138,19 @@ classdef bezier < handle
             title("Generated Beziér Curves")
             xlabel(" Distance (m) ")
             ylabel(" Distance (m) ")
-            ylim([0 6])
-            xlim([-1 12])
+            % ylim([0 6])
+            % xlim([-1 12])
             for i = 1:numel(obj.Curves)
-                if(mod(i,100) == 0)
-                    disp('Debugging bezier')
-                end
+                % if(mod(i,100) == 0)
+                %     disp('Debugging bezier')
+                % end
                 color = floor(i/100) / 9;
                 plot(obj.Curves{i}(:,1),obj.Curves{i}(:,2),'Color',[0 color color])
                 hold on
             end
 
+            annotation('textbox', [0.2, 0.1, 0.1, 0.1], 'String', string( ['init tan:',num2str(rad2deg(obj.init_tan)),...
+                '  init curv:',num2str(obj.curv_zero),'  final tan:',num2str(rad2deg(obj.final_tan)),'  final curv:',num2str(obj.curv_final) ] ),'FitBoxToText','on')
 
         end
     end

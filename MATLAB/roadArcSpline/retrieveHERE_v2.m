@@ -96,8 +96,8 @@ for i = 1:size(laneBorders,2)
         laneBorders(i).lons(firstDuplicateIndices) = [];
     end
 
-    valid_indices =  logical((laneBorders(i).lats < lats(1)) .* laneBorders(i).lats < lats(2) .*...
-    laneBorders(i).lons < lons(1) .* (laneBorders(i).lons < lons(2)));
+    valid_indices =  logical((laneBorders(i).lats < lats(1)) .* (laneBorders(i).lats < lats(2) ).*...
+    (laneBorders(i).lons < lons(1) ).* (laneBorders(i).lons < lons(2)));
     if(~isempty(valid_indices))
         laneBorders(i).lats(valid_indices) = [];
         laneBorders(i).lons(valid_indices) = [];
