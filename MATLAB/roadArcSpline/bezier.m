@@ -118,6 +118,7 @@ classdef bezier < handle
         end
         
         function generateCurves(obj,A,B)
+            t = (0:0.001:1)';
             P_zero = A;
             P_five = B;
             curve_position = 1;
@@ -134,22 +135,21 @@ classdef bezier < handle
                             obj.P_three(curve_position,:) = obj.acceleration_final(acc_final,:)/20 + 2*obj.P_four(curve_position,:) - P_five;
                             obj.Curves{curve_position} = zeros(1001,2);
                             obj.Tangents{curve_position} = zeros(1001,1);
-                            pos = 1;
-
-                            t = (0:0.001:1)';
+                            % pos = 1;
 
                             obj.Curves{curve_position} =...
                                  (1-t).^5 *P_zero + 5*t.*(1-t).^4*obj.P_one(curve_position,:) +...
                                   10* t.^2 .*(1-t).^3 *obj.P_two(curve_position,:) + 10 * t.^3.*(1-t).^2 *obj.P_three(curve_position,:)+...
                                  +5*t.^4.*(1-t)*obj.P_four(curve_position,:) + t.^5*P_five;
 
-                            dX = 5 * t.^4 * (obj.P_one(curve_position,:) - P_zero) + ...
-                                    20 * t.^3 * (obj.P_two(curve_position,:) - 2 * obj.P_one(curve_position,:) + P_zero) + ...
-                                    30 * t.^2 * (obj.P_three(curve_position,:) - 3 * obj.P_two(curve_position,:) + 3 * obj.P_one(curve_position,:) - P_zero) + ...
-                                    20 * t * (obj.P_four(curve_position,:) - 4 * obj.P_three(curve_position,:) + 6 * obj.P_two(curve_position,:) - 4 * obj.P_one(curve_position,:) + P_zero) + ...
-                                     5 * ones(length(t),1) * (P_five - obj.P_four(curve_position,:) + obj.P_three(curve_position,:) - obj.P_two(curve_position,:) + obj.P_one(curve_position,:) - P_zero);
-                            
-                            obj.Tangents{curve_position} = atan2(dX(:,2),dX(:,1));
+                            % dX = 5 * t.^4 * (obj.P_one(curve_position,:) - P_zero) + ...
+                            %         20 * t.^3 * (obj.P_two(curve_position,:) - 2 * obj.P_one(curve_position,:) + P_zero) + ...
+                            %         30 * t.^2 * (obj.P_three(curve_position,:) - 3 * obj.P_two(curve_position,:) + 3 * obj.P_one(curve_position,:) - P_zero) + ...
+                            %         20 * t * (obj.P_four(curve_position,:) - 4 * obj.P_three(curve_position,:) + 6 * obj.P_two(curve_position,:) - 4 * obj.P_one(curve_position,:) + P_zero) + ...
+                            %          5 * ones(length(t),1) * (P_five - obj.P_four(curve_position,:) + obj.P_three(curve_position,:) - obj.P_two(curve_position,:) + obj.P_one(curve_position,:) - P_zero);
+                            dx = diff(obj.Curves{curve_position}(:, 1));
+                            dy = diff(obj.Curves{curve_position}(:, 2));
+                            obj.Tangents{curve_position} = atan2(dy,dx);
 
                             % for t = 0:0.001:1
                             %     obj.Curves{curve_position}(pos,:) =...
