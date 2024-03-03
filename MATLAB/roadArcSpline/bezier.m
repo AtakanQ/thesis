@@ -32,6 +32,7 @@ classdef bezier < handle
     llb
     vehicleBoundaries
     Tangents
+    Curvatures
     end
     
     methods
@@ -54,6 +55,7 @@ classdef bezier < handle
             num_curves  = obj.Nt * obj.Nt * obj.Nk * obj.Nk;
             obj.Curves = cell(num_curves, 1);
             obj.Tangents = cell(num_curves, 1);
+            obj.Curvatures = cell(num_curves, 1);
             obj.vehicleBoundaries.rearLeft = zeros(num_curves, 2);
             obj.vehicleBoundaries.rearRight = zeros(num_curves, 2);
             obj.vehicleBoundaries.frontLeft = zeros(num_curves, 2);
@@ -135,6 +137,7 @@ classdef bezier < handle
                             obj.P_three(curve_position,:) = obj.acceleration_final(acc_final,:)/20 + 2*obj.P_four(curve_position,:) - P_five;
                             obj.Curves{curve_position} = zeros(1001,2);
                             obj.Tangents{curve_position} = zeros(1001,1);
+                            obj.Curvatures{curve_position} = zeros(1001,1);
                             % pos = 1;
 
                             obj.Curves{curve_position} =...
@@ -149,29 +152,14 @@ classdef bezier < handle
                             %          5 * ones(length(t),1) * (P_five - obj.P_four(curve_position,:) + obj.P_three(curve_position,:) - obj.P_two(curve_position,:) + obj.P_one(curve_position,:) - P_zero);
                             dx = diff(obj.Curves{curve_position}(:, 1));
                             dy = diff(obj.Curves{curve_position}(:, 2));
-                            obj.Tangents{curve_position} = atan2(dy,dx);
+                            obj.Tangents{curve_position} = [atan2(dy,dx); obj.final_tan];
+                            
+                                % Compute differential arc lengths
+                            ds = sqrt(dx.^2 + dy.^2);
+                            
+                            % Compute curvatures
+                            obj.Curvatures{curve_position} =[obj.curv_zero diff(obj.Tangents{curve_position}) ./ ds(2:end) obj.curv_final];
 
-                            % for t = 0:0.001:1
-                            %     obj.Curves{curve_position}(pos,:) =...
-                            %          (1-t)^5 *P_zero + 5*t*(1-t)^4*obj.P_one(curve_position,:) +...
-                            %           10* t^2 *(1-t)^3 *obj.P_two(curve_position,:) + 10 * t^3*(1-t)^2 *obj.P_three(curve_position,:)+...
-                            %          +5*t^4*(1-t)*obj.P_four(curve_position,:) + t^5*P_five;
-                            % 
-                            %     dX = 5 * (obj.P_one(curve_position,:) - P_zero) * t^4 + ...
-                            %         20 * (obj.P_two(curve_position,:) - 2 * obj.P_one(curve_position,:) + P_zero) * t^3 + ...
-                            %         30 * (obj.P_three(curve_position,:) - 3 * obj.P_two(curve_position,:) + 3 * obj.P_one(curve_position,:) - P_zero) * t^2 + ...
-                            %         20 * (obj.P_four(curve_position,:) - 4 * obj.P_three(curve_position,:) + 6 * obj.P_two(curve_position,:) - 4 * obj.P_one(curve_position,:) + P_zero) * t + ...
-                            %          5 * (P_five - obj.P_four(curve_position,:) + obj.P_three(curve_position,:) - obj.P_two(curve_position,:) + obj.P_one(curve_position,:) - P_zero);
-                            % 
-                            %     obj.Tangents{curve_position}(pos) = atan2(dX(2),dX(1));
-                            % 
-                            %     % Normalize the derivative vector to get the tangent vector
-                            %     % tangent_vector = dX / norm(dX);
-                            % 
-                            % 
-                            %     pos = pos +1;
-                            % end
-            
                             curve_position = curve_position+1;
                         end
                     end
