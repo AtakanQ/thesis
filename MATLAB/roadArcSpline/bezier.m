@@ -28,8 +28,8 @@ classdef bezier < handle
     P_four
     isInLaneArray
     ltw
-    lla
-    llb
+    lra
+    lrb
     vehicleBoundaries
     Tangents
     Curvatures
@@ -56,10 +56,10 @@ classdef bezier < handle
             obj.Curves = cell(num_curves, 1);
             obj.Tangents = cell(num_curves, 1);
             obj.Curvatures = cell(num_curves, 1);
-            obj.vehicleBoundaries.rearLeft = zeros(num_curves, 2);
-            obj.vehicleBoundaries.rearRight = zeros(num_curves, 2);
-            obj.vehicleBoundaries.frontLeft = zeros(num_curves, 2);
-            obj.vehicleBoundaries.frontRight = zeros(num_curves, 2);
+            obj.vehicleBoundaries.rearLeft = cell(num_curves, 1);
+            obj.vehicleBoundaries.rearRight = cell(num_curves, 1);
+            obj.vehicleBoundaries.frontLeft = cell(num_curves, 1);
+            obj.vehicleBoundaries.frontRight = cell(num_curves, 1);
             obj.isInLaneArray = zeros(length(obj.Curves),1);
             obj.P_one = zeros(num_curves,2);
             obj.P_two = zeros(num_curves,2);
@@ -158,7 +158,7 @@ classdef bezier < handle
                             ds = sqrt(dx.^2 + dy.^2);
                             
                             % Compute curvatures
-                            obj.Curvatures{curve_position} =[obj.curv_zero diff(obj.Tangents{curve_position}) ./ ds(2:end) obj.curv_final];
+                            obj.Curvatures{curve_position} =[obj.curv_zero; (diff(obj.Tangents{curve_position}(1:(end-1)) ) ./ ds(2:end)) ; obj.curv_final];
 
                             curve_position = curve_position+1;
                         end
@@ -168,12 +168,33 @@ classdef bezier < handle
 
         end
         
-        function addVehicleDimensions(obj,ltw ,lla, llb)
+        function addVehicleDimensions(obj,ltw ,lra, lrb)
             %The vehicle's position is assumed to be the center of rear
             %axle. dimensions = [ltw lla llb]
+            ninety = pi/2 * ones(length(obj.Tangents{1}),1);
             obj.ltw = ltw;
-            obj.lla = lla;
-            obj.llb = llb;
+            obj.lra = lra;
+            obj.lrb = lrb;
+            for j = 1:length(obj.Curves)
+                to_left_angle = ninety + obj.Tangents{j};
+                to_left_vectors = [cos(to_left_angle) sin(to_left_angle)] * obj.ltw / 2;
+                to_front_vectors =[cos(obj.Tangents{j}) sin(obj.Tangents{j})] * obj.lra;
+
+                obj.vehicleBoundaries.rearLeft{j} = obj.Curves{j} + to_left_vectors;
+                obj.vehicleBoundaries.rearRight{j} = obj.Curves{j} - to_left_vectors;
+                obj.vehicleBoundaries.frontLeft{j} = obj.vehicleBoundaries.rearLeft{j} + to_front_vectors;
+                obj.vehicleBoundaries.frontRight{j} = obj.vehicleBoundaries.rearRight{j} + to_front_vectors;             
+            end
+            figure;
+            
+            plot(obj.Curves{1}(:,1),obj.Curves{1}(:,2),'DisplayName','Curve')
+            axis equal
+            hold on
+            plot(obj.vehicleBoundaries.rearLeft{1}(:,1),obj.vehicleBoundaries.rearLeft{1}(:,2),'DisplayName','RearLeft')
+            plot(obj.vehicleBoundaries.rearRight{1}(:,1),obj.vehicleBoundaries.rearRight{1}(:,2),'DisplayName','RearRight')
+            plot(obj.vehicleBoundaries.frontLeft{1}(:,1),obj.vehicleBoundaries.frontLeft{1}(:,2),'DisplayName','FrontLeft') 
+            plot(obj.vehicleBoundaries.frontRight{1}(:,1),obj.vehicleBoundaries.frontRight{1}(:,2),'DisplayName','FrontRight') 
+            legend();
         end
         
 
