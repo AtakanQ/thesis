@@ -26,6 +26,12 @@ classdef bezier < handle
     P_two
     P_three
     P_four
+    isInLaneArray
+    ltw
+    lla
+    llb
+    vehicleBoundaries
+    Tangents
     end
     
     methods
@@ -47,6 +53,12 @@ classdef bezier < handle
             obj.mkmax = 5;
             num_curves  = obj.Nt * obj.Nt * obj.Nk * obj.Nk;
             obj.Curves = cell(num_curves, 1);
+            obj.Tangents = cell(num_curves, 1);
+            obj.vehicleBoundaries.rearLeft = zeros(num_curves, 2);
+            obj.vehicleBoundaries.rearRight = zeros(num_curves, 2);
+            obj.vehicleBoundaries.frontLeft = zeros(num_curves, 2);
+            obj.vehicleBoundaries.frontRight = zeros(num_curves, 2);
+            obj.isInLaneArray = zeros(length(obj.Curves),1);
             obj.P_one = zeros(num_curves,2);
             obj.P_two = zeros(num_curves,2);
             obj.P_three = zeros(num_curves,2);
@@ -120,15 +132,45 @@ classdef bezier < handle
                             obj.P_four(curve_position,:) = P_five - obj.tfinal_vectors(tan_final,:)/5;
             
                             obj.P_three(curve_position,:) = obj.acceleration_final(acc_final,:)/20 + 2*obj.P_four(curve_position,:) - P_five;
-                            obj.Curves{curve_position} = zeros(101,2);
+                            obj.Curves{curve_position} = zeros(1001,2);
+                            obj.Tangents{curve_position} = zeros(1001,1);
                             pos = 1;
-                            for t = 0:0.01:1
-                                 obj.Curves{curve_position}(pos,:) =...
-                                     (1-t)^5 *P_zero + 5*t*(1-t)^4*obj.P_one(curve_position,:) +...
-                                      10* t^2 *(1-t)^3 *obj.P_two(curve_position,:) + 10 * t^3*(1-t)^2 *obj.P_three(curve_position,:)+...
-                                     +5*t^4*(1-t)*obj.P_four(curve_position,:) + t^5*P_five;
-                                 pos = pos +1;
-                            end
+
+                            t = (0:0.001:1)';
+
+                            obj.Curves{curve_position} =...
+                                 (1-t).^5 *P_zero + 5*t.*(1-t).^4*obj.P_one(curve_position,:) +...
+                                  10* t.^2 .*(1-t).^3 *obj.P_two(curve_position,:) + 10 * t.^3.*(1-t).^2 *obj.P_three(curve_position,:)+...
+                                 +5*t.^4.*(1-t)*obj.P_four(curve_position,:) + t.^5*P_five;
+
+                            dX = 5 * t.^4 * (obj.P_one(curve_position,:) - P_zero) + ...
+                                    20 * t.^3 * (obj.P_two(curve_position,:) - 2 * obj.P_one(curve_position,:) + P_zero) + ...
+                                    30 * t.^2 * (obj.P_three(curve_position,:) - 3 * obj.P_two(curve_position,:) + 3 * obj.P_one(curve_position,:) - P_zero) + ...
+                                    20 * t * (obj.P_four(curve_position,:) - 4 * obj.P_three(curve_position,:) + 6 * obj.P_two(curve_position,:) - 4 * obj.P_one(curve_position,:) + P_zero) + ...
+                                     5 * ones(length(t),1) * (P_five - obj.P_four(curve_position,:) + obj.P_three(curve_position,:) - obj.P_two(curve_position,:) + obj.P_one(curve_position,:) - P_zero);
+                            
+                            obj.Tangents{curve_position} = atan2(dX(:,2),dX(:,1));
+
+                            % for t = 0:0.001:1
+                            %     obj.Curves{curve_position}(pos,:) =...
+                            %          (1-t)^5 *P_zero + 5*t*(1-t)^4*obj.P_one(curve_position,:) +...
+                            %           10* t^2 *(1-t)^3 *obj.P_two(curve_position,:) + 10 * t^3*(1-t)^2 *obj.P_three(curve_position,:)+...
+                            %          +5*t^4*(1-t)*obj.P_four(curve_position,:) + t^5*P_five;
+                            % 
+                            %     dX = 5 * (obj.P_one(curve_position,:) - P_zero) * t^4 + ...
+                            %         20 * (obj.P_two(curve_position,:) - 2 * obj.P_one(curve_position,:) + P_zero) * t^3 + ...
+                            %         30 * (obj.P_three(curve_position,:) - 3 * obj.P_two(curve_position,:) + 3 * obj.P_one(curve_position,:) - P_zero) * t^2 + ...
+                            %         20 * (obj.P_four(curve_position,:) - 4 * obj.P_three(curve_position,:) + 6 * obj.P_two(curve_position,:) - 4 * obj.P_one(curve_position,:) + P_zero) * t + ...
+                            %          5 * (P_five - obj.P_four(curve_position,:) + obj.P_three(curve_position,:) - obj.P_two(curve_position,:) + obj.P_one(curve_position,:) - P_zero);
+                            % 
+                            %     obj.Tangents{curve_position}(pos) = atan2(dX(2),dX(1));
+                            % 
+                            %     % Normalize the derivative vector to get the tangent vector
+                            %     % tangent_vector = dX / norm(dX);
+                            % 
+                            % 
+                            %     pos = pos +1;
+                            % end
             
                             curve_position = curve_position+1;
                         end
@@ -138,6 +180,15 @@ classdef bezier < handle
 
         end
         
+        function addVehicleDimensions(obj,ltw ,lla, llb)
+            %The vehicle's position is assumed to be the center of rear
+            %axle. dimensions = [ltw lla llb]
+            obj.ltw = ltw;
+            obj.lla = lla;
+            obj.llb = llb;
+        end
+        
+
         function plotCurves(obj)
 
             figure;
@@ -155,10 +206,10 @@ classdef bezier < handle
                     color = floor(i/100) / 9;
                     plot(obj.Curves{i}(:,1),obj.Curves{i}(:,2),'Color',[0 color color])
                     hold on
-                    plot(obj.P_one(i,1),obj.P_one(i,2),'o')
-                    plot(obj.P_two(i,1),obj.P_two(i,2),'o')
-                    plot(obj.P_three(i,1),obj.P_three(i,2),'o')
-                    plot(obj.P_four(i,1),obj.P_four(i,2),'o')
+                    % plot(obj.P_one(i,1),obj.P_one(i,2),'o')
+                    % plot(obj.P_two(i,1),obj.P_two(i,2),'o')
+                    % plot(obj.P_three(i,1),obj.P_three(i,2),'o')
+                    % plot(obj.P_four(i,1),obj.P_four(i,2),'o')
                     disp('Debugging bezier')
                 end
 
@@ -167,6 +218,28 @@ classdef bezier < handle
             annotation('textbox', [0.2, 0.1, 0.1, 0.1], 'String', string( ['init tan:',num2str(rad2deg(obj.init_tan)),...
                 '  init curv:',num2str(obj.curv_zero),'  final tan:',num2str(rad2deg(obj.final_tan)),'  final curv:',num2str(obj.curv_final) ] ),'FitBoxToText','on')
 
+        end
+
+        function isInLane(obj,segment)
+            % segments data points should not be sparse. It should be as
+            % frequent as possible
+            sz = size(segment.allX);
+            
+            for i = 1:length(obj.Curves)
+                if sz(1) == 1
+                    [rms_error, max_error, errors] = computeSegmentError(obj.Curves{i},[segment.allX' segment.allY']);
+                elseif sz(2) == 1
+                    [rms_error, max_error, errors] = computeSegmentError(obj.Curves{i},[segment.allX segment.allY]);
+                else
+                    disp('There is some sort of error with dimensions')
+                end
+
+                if(sum(errors > 1.8) > 0) %There is some curve that is far from lane center
+                    obj.isInLaneArray(i) = 0;
+                else
+                    obj.isInLaneArray(i) = 1;
+                end
+            end
         end
     end
 end
