@@ -46,7 +46,7 @@ classdef bezier < handle
             obj.final_tan = atan2(tfinal(2),tfinal(1));
             obj.curv_zero = curvature_zero;
             obj.curv_final = curvature_final;
-            obj.Nt = 10;
+            obj.Nt = 5;
             obj.Nk = 3;
             obj.mtmin = 0.3;
             obj.mtmax = 1.7;
@@ -176,6 +176,9 @@ classdef bezier < handle
             obj.lra = lra;
             obj.lrb = lrb;
             for j = 1:length(obj.Curves)
+                last_vector = [cos(obj.Tangents{j}(end)) sin(obj.Tangents{j}(end))];
+                last_point = obj.Curves{j}(end,:);
+
                 to_left_angle = ninety + obj.Tangents{j};
                 to_left_vectors = [cos(to_left_angle) sin(to_left_angle)] * obj.ltw / 2;
                 to_front_vectors =[cos(obj.Tangents{j}) sin(obj.Tangents{j})] * obj.lra;
@@ -183,7 +186,15 @@ classdef bezier < handle
                 obj.vehicleBoundaries.rearLeft{j} = obj.Curves{j} + to_left_vectors;
                 obj.vehicleBoundaries.rearRight{j} = obj.Curves{j} - to_left_vectors;
                 obj.vehicleBoundaries.frontLeft{j} = obj.vehicleBoundaries.rearLeft{j} + to_front_vectors;
-                obj.vehicleBoundaries.frontRight{j} = obj.vehicleBoundaries.rearRight{j} + to_front_vectors;             
+                obj.vehicleBoundaries.frontRight{j} = obj.vehicleBoundaries.rearRight{j} + to_front_vectors;
+
+                %Remove exceeding points
+                allVectors = obj.vehicleBoundaries.frontRight{j} - repmat(last_point,length(obj.vehicleBoundaries.frontRight{j}),1);
+                angles = abs( atan2(allVectors(:,2),allVectors(:,1)) - atan2(last_vector(2),last_vector(1)) );
+                angles(angles>pi) = 2*pi - angles(angles>pi);
+                indices = angles<(pi/2);
+                obj.vehicleBoundaries.frontLeft{j}(indices,:) = obj.vehicleBoundaries.rearLeft{j}(indices,:);
+                obj.vehicleBoundaries.frontRight{j}(indices,:) = obj.vehicleBoundaries.rearRight{j}(indices,:);
             end
             figure;
             
@@ -194,6 +205,7 @@ classdef bezier < handle
             plot(obj.vehicleBoundaries.rearRight{1}(:,1),obj.vehicleBoundaries.rearRight{1}(:,2),'DisplayName','RearRight')
             plot(obj.vehicleBoundaries.frontLeft{1}(:,1),obj.vehicleBoundaries.frontLeft{1}(:,2),'DisplayName','FrontLeft') 
             plot(obj.vehicleBoundaries.frontRight{1}(:,1),obj.vehicleBoundaries.frontRight{1}(:,2),'DisplayName','FrontRight') 
+            title('Example')
             legend();
         end
         
