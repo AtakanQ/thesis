@@ -17,15 +17,17 @@ HEREname = 'A38_laneData_v2.mat';
 [laneBorders,laneCenters] = retrieveHERE_v2(folderName,HEREname,refLat,refLon,[lat1 lat2], [lon1 lon2]);
 
 %Use left most lane
-for j = 2:length(laneCenters) %DONT TAKE FIRST
-    xEastCenter{j-1} = laneCenters(j).xEast;
-    yNorthCenter{j-1} = laneCenters(j).yNorth;
+laneCntr = 1;
+for j = 3:length(laneCenters) %DONT TAKE FIRST
+    xEastCenter{laneCntr} = laneCenters(j).xEast;
+    yNorthCenter{laneCntr} = laneCenters(j).yNorth;
+    laneCntr = laneCntr + 1;
 end
 
 
 figure;
-for i = 1:size(laneCenters,2)    
-    plot(laneCenters(i).xEast,laneCenters(i).yNorth,'DisplayName',strcat('Lane ',num2str(i)))
+for i = 1:size(xEastCenter,2)    
+    plot(xEastCenter{i},yNorthCenter{i},'DisplayName',strcat('Lane ',num2str(i)))
     hold on
     axis equal
 end
@@ -46,7 +48,6 @@ for i = 1:length(xEastCenter)
     [all_clothoids{i}] = ...
         generateClothoids(xEastCenter{i},yNorthCenter{i},theta_GT{i},curvature_GT{i},dk{i},L{i});
 end
-numAllClothoid = numel(all_clothoids{3});
 
 [theta_OSM,curvature_OSM,dk_OSM,L_OSM,...
     ~,~,~,~,~] = ...
@@ -60,7 +61,7 @@ lineCfg.rmsThreshold = 0.1; % RMS deviation from real road (meters)
 % disp('This implementation has no lines!!!!!!!')
 % lineCfg.rmsThreshold = -0.1; 
 lineCfg.maximumAllowedDistance = 0.15; % Maximum deviation from real road (meters)
-lineCfg.numberOfPoints = 500; % Number of datapoints along the line segment
+% lineCfg.numberOfPoints = 500; % Number of datapoints along the line segment
 
 arcCfg.maximumDistance = 0.15; % Maximum allowed distance to deviate from real road.
 arcCfg.initialTry = 5;
@@ -81,9 +82,9 @@ errorCfg.maxError = 0.2; % Computed after concatenation
 errorCfg.headingDeviation = 2; % Degrees deviation allowed for concatenated lines
 
 [result_clothoids,concat_indices_clothoid,result_lines,concat_indices_line,mergedSegments] = ...
-    combineSegments(segments{3},all_clothoids{3}(2:end-1),errorCfg);
+    combineSegments(segments{1},all_clothoids{1}(2:end-1),errorCfg);
 
-segments{3} = mergedSegments;
+segments{1} = mergedSegments;
 %% Test
 % figure;
 % for i = 2:(length(all_clothoids{3})-1)
@@ -99,8 +100,8 @@ segments{3} = mergedSegments;
 
 %% Generate other lanes
 laneWidth = 3.6; % meters
-
-[otherLanes,xEastShifted,yNorthShifted] = generateOtherLanes(segments{3},laneWidth,2,all_clothoids);
+numLanes = 1; % other lanes
+[otherLanes,xEastShifted,yNorthShifted] = generateOtherLanes(segments{1},laneWidth,numLanes);
 allX = [];
 allY = [];
 myX = [];
@@ -117,23 +118,23 @@ end
 numFinalClothoids = 0;
 numArcs = 0;
 numLines = 0;
-for j = 1:length(segments{3})
-    if(segments{3}(j).type == "clothoid")
+for j = 1:length(segments{1})
+    if(segments{1}(j).type == "clothoid")
         numFinalClothoids = numFinalClothoids + 1;
-        numArcs = numArcs + segments{3}(j).numArcs + 1;
-        myX = [myX; segments{3}(j).allX'];
-        myY = [myY; segments{3}(j).allY'];
-    elseif(segments{3}(j).type == "line")
+        numArcs = numArcs + segments{1}(j).numArcs + 1;
+        myX = [myX; segments{1}(j).allX'];
+        myY = [myY; segments{1}(j).allY'];
+    elseif(segments{1}(j).type == "line")
         numLines = numLines + 1;
-        myX = [myX; segments{3}(j).allX];
-        myY = [myY; segments{3}(j).allY]; 
+        myX = [myX; segments{1}(j).allX];
+        myY = [myY; segments{1}(j).allY]; 
     end
 end
 
 %% Plot the results
 
 desiredNumElements = 10000;  % Replace with the desired number
-desiredNumElements_GT = 100000;
+desiredNumElements_GT = 500000;
 for i = 1:numel(allX)
     downsamplingFactor = floor(numel(allX{i}) / desiredNumElements_GT);
     downsampledIndices = 1:downsamplingFactor:numel(allX{i});
@@ -150,28 +151,28 @@ end
 allX_OSM = [];
 allY_OSM = [];
 for i = 1:numel(all_clothoids_OSM)
-    allX_OSM = [allX_OSM all_clothoids_OSM(i).allX'];
-    allY_OSM = [allY_OSM all_clothoids_OSM(i).allY'];
+    allX_OSM = [allX_OSM all_clothoids_OSM(i).allX];
+    allY_OSM = [allY_OSM all_clothoids_OSM(i).allY];
 end
 
-downsamplingFactor = floor(numel(allX_OSM) / desiredNumElements);
-downsampledIndices = 1:downsamplingFactor:numel(allX_OSM);
-allX_OSM = allX_OSM(downsampledIndices);
-allY_OSM = allY_OSM(downsampledIndices);
+% downsamplingFactor = floor(numel(allX_OSM) / desiredNumElements);
+% downsampledIndices = 1:downsamplingFactor:numel(allX_OSM);
+% allX_OSM = allX_OSM(downsampledIndices);
+% allY_OSM = allY_OSM(downsampledIndices);
 
 figure
-plot(allX{3},allY{3},'DisplayName','Ground Truth Reference','LineWidth',1.2)
+plot(allX{1},allY{1},'DisplayName','Ground Truth Reference','LineWidth',1.2)
 hold on
 plot(allX{2},allY{2},'DisplayName','Ground Truth Right Lane(1)','LineWidth',1.2)
 hold on
-plot(allX{1},allY{1},'DisplayName','Ground Truth Right Lane(2)','LineWidth',1.2)
-hold on
+% plot(allX{1},allY{1},'DisplayName','Ground Truth Right Lane(2)','LineWidth',1.2)
+% hold on
 
 plot(myX,myY,'DisplayName','Generated Reference Lane','LineWidth',1.2)
 hold on
 plot(xEastShifted{1},yNorthShifted{1},'DisplayName','Generated Right Lane(1)','LineWidth',1.2)
-hold on
-plot(xEastShifted{2},yNorthShifted{2},'DisplayName','Generated Right Lane(2)','LineWidth',1.2)
+% hold on
+% plot(xEastShifted{2},yNorthShifted{2},'DisplayName','Generated Right Lane(2)','LineWidth',1.2)
 
 plot(allX_OSM,allY_OSM,'DisplayName','OSM Road','LineWidth',1.2 )
 
@@ -256,8 +257,11 @@ xAxis = linspace(1,length(rms_OSM),length(curvature_OSM));
 plot(xAxis,curvature_OSM ,'DisplayName', strcat('Curvature:',num2str(1)))
 legend()
 title('Error With Respect o OSM Map')
+%% Compute distance between centers
 
+[rms_error, max_error, errors] = computeSegmentError([allX{1} allY{1}],[allX{2} allY{2}]);
 %%
+numAllClothoid = numel(all_clothoids{1});
 disp(['The road initially had ', num2str(numAllClothoid) ,' clothoids.'])
 disp(['After approximation and combination of segments the road has ', num2str(numFinalClothoids),...
     ' clothoids and ', num2str(numArcs) , ' arcs were used.'])

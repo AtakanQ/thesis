@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="roadFollowing">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/MATLAB/roadFollowing.zip!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

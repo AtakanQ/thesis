@@ -14,7 +14,7 @@ HEREname = 'A4_laneData_v3.mat';
 [xEast, yNorth,number_of_roads,refLat,refLon] = ...
     retrieveOSM_v2(lat1, lat2, lon1, lon2, roadName,folderName);
 
-[laneBorders,laneCenters] = retrieveHERE_v2(folderName,HEREname,refLat,refLon,[lat1 lat2],[lon1 lon2oel]);
+[laneBorders,laneCenters] = retrieveHERE_v2(folderName,HEREname,refLat,refLon,[lat1 lat2],[lon1 lon2]);
 
 %Use left most lane
 for j = 1:length(laneCenters)
@@ -56,7 +56,7 @@ all_clothoids_OSM = generateClothoids(xEast,yNorth,...
 
 %% Represent the road
 lineCfg.lineDegreeDeviation = 0.2; % Allowed heading devation at the end of the segment (degrees)
-lineCfg.rmsThreshold = 0.1; % RMS deviation from real road (meters)
+lineCfg.rmsThreshold = 0.01; % RMS deviation from real road (meters)
 % disp('This implementation has no lines!!!!!!!')
 % lineCfg.rmsThreshold = -0.1; 
 lineCfg.maximumAllowedDistance = 0.15; % Maximum deviation from real road (meters)
@@ -100,8 +100,8 @@ errorCfg.headingDeviation = 2; % Degrees deviation allowed for concatenated line
 
 %% Generate other lanes
 laneWidth = 3.6; % meters
-
-[otherLanes,xEastShifted,yNorthShifted] = generateOtherLanes(segments{3},laneWidth,2);
+numLanes = 2;
+[otherLanes,xEastShifted,yNorthShifted] = generateOtherLanes(segments{3},laneWidth,numLanes);
 allX = [];
 allY = [];
 myX = [];

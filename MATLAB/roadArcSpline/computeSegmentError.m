@@ -2,7 +2,7 @@ function [rms_error, max_error, errors] = computeSegmentError(measurement_xy,gro
 
 num_coor_arc = length(measurement_xy);
 errors = zeros(num_coor_arc,1);
-for k = 1:num_coor_arc
+parfor k = 1:num_coor_arc
     curr_point = measurement_xy(k,:);
     
     % Calculate Euclidean distances between 'curr_point' and all points in 'curr_clothoid_points'
