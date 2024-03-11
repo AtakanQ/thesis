@@ -22,6 +22,10 @@ classdef bezier < handle
     final_tan
     curv_zero
     curv_final
+    P_one
+    P_two
+    P_three
+    P_four
     end
     
     methods
@@ -40,8 +44,14 @@ classdef bezier < handle
             obj.mtmin = 0.3;
             obj.mtmax = 1.7;
             obj.mkmin = 0;
-            obj.mkmax = 10;
-            obj.Curves = cell(obj.Nt * obj.Nt * obj.Nk * obj.Nk, 1);
+            obj.mkmax = 5;
+            num_curves  = obj.Nt * obj.Nt * obj.Nk * obj.Nk;
+            obj.Curves = cell(num_curves, 1);
+            obj.P_one = zeros(num_curves,2);
+            obj.P_two = zeros(num_curves,2);
+            obj.P_three = zeros(num_curves,2);
+            obj.P_four = zeros(num_curves,2);
+
             obj.start = A;
             obj.finish = B;
             obj.dof = norm(A-B);% distance between initial and final point???
@@ -67,7 +77,7 @@ classdef bezier < handle
         function generateAccelerations(obj,tzero,tfinal,curvature_zero,curvature_final)
             % rotation matrices
             rot_cw = [0 -1; 1 0];
-            rot_ccw = [0 1; -1 0];
+            % rot_ccw = [0 1; -1 0];
             %create an array to easily loop
             acceleration_multiplier = linspace(obj.mkmin,obj.mkmax,obj.Nk);
             acceleration_tangential_multiplier = acceleration_multiplier * obj.dof/5;
@@ -103,20 +113,20 @@ classdef bezier < handle
                 for tan_final = 1:obj.Nt
                     for acc_zero = 1:obj.Nk
                         for acc_final = 1:obj.Nk
-                            P_one = P_zero + obj.tzero_vectors(tan_zero,:)/5;
+                            obj.P_one(curve_position,:) = P_zero + obj.tzero_vectors(tan_zero,:)/5;
             
-                            P_two = obj.acceleration_zero(acc_zero,:)/20 + 2*P_one;
+                            obj.P_two(curve_position,:) = obj.acceleration_zero(acc_zero,:)/20 + 2*obj.P_one(curve_position,:) - P_zero;
             
-                            P_four = P_five - obj.tfinal_vectors(tan_final,:)/5;
+                            obj.P_four(curve_position,:) = P_five - obj.tfinal_vectors(tan_final,:)/5;
             
-                            P_three = obj.acceleration_final(acc_final,:)/20 + 2*P_four - P_five;
+                            obj.P_three(curve_position,:) = obj.acceleration_final(acc_final,:)/20 + 2*obj.P_four(curve_position,:) - P_five;
                             obj.Curves{curve_position} = zeros(101,2);
                             pos = 1;
                             for t = 0:0.01:1
                                  obj.Curves{curve_position}(pos,:) =...
-                                     (1-t)^5 *P_zero + 5*t*(1-t)^4*P_one +...
-                                      10* t^2 *(1-t)^3 *P_two + 10 * t^3*(1-t)^2 *P_three+...
-                                     +5*t^4*(1-t)*P_four + t^5*P_five;
+                                     (1-t)^5 *P_zero + 5*t*(1-t)^4*obj.P_one(curve_position,:) +...
+                                      10* t^2 *(1-t)^3 *obj.P_two(curve_position,:) + 10 * t^3*(1-t)^2 *obj.P_three(curve_position,:)+...
+                                     +5*t^4*(1-t)*obj.P_four(curve_position,:) + t^5*P_five;
                                  pos = pos +1;
                             end
             
@@ -141,12 +151,17 @@ classdef bezier < handle
             % ylim([0 6])
             % xlim([-1 12])
             for i = 1:numel(obj.Curves)
-                % if(mod(i,100) == 0)
-                %     disp('Debugging bezier')
-                % end
-                color = floor(i/100) / 9;
-                plot(obj.Curves{i}(:,1),obj.Curves{i}(:,2),'Color',[0 color color])
-                hold on
+                if(mod(i,100) == 0)
+                    color = floor(i/100) / 9;
+                    plot(obj.Curves{i}(:,1),obj.Curves{i}(:,2),'Color',[0 color color])
+                    hold on
+                    plot(obj.P_one(i,1),obj.P_one(i,2),'o')
+                    plot(obj.P_two(i,1),obj.P_two(i,2),'o')
+                    plot(obj.P_three(i,1),obj.P_three(i,2),'o')
+                    plot(obj.P_four(i,1),obj.P_four(i,2),'o')
+                    disp('Debugging bezier')
+                end
+
             end
 
             annotation('textbox', [0.2, 0.1, 0.1, 0.1], 'String', string( ['init tan:',num2str(rad2deg(obj.init_tan)),...
