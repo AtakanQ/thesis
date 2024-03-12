@@ -22,7 +22,10 @@ for j = 1:length(laneCenters)
     yNorthCenter{j} = laneCenters(j).yNorth;
 end
 
-
+for j = 1:length(laneBorders)
+    xEastCenter_LB{j} = laneBorders(j).xEast;
+    yNorthCenter_LB{j} = laneBorders(j).yNorth;
+end
 % figure;
 % for i = 1:size(laneCenters,2)    
 %     plot(laneCenters(i).xEast,laneCenters(i).yNorth,'DisplayName',strcat('Lane ',num2str(i)))
@@ -46,6 +49,17 @@ for i = 1:length(xEastCenter)
     [all_clothoids{i}] = ...
         generateClothoids(xEastCenter{i},yNorthCenter{i},theta_GT{i},curvature_GT{i},dk{i},L{i});
 end
+
+for i = 1:length(xEastCenter)
+    [theta_GT_LB{i},curvature_GT_LB{i},dk_LB{i},L_LB{i},...
+        nevalG1_LB,~,~,~,~] = ...
+        G1spline( [xEastCenter_LB{i} yNorthCenter_LB{i}]);
+
+    [all_clothoids_LB{i}] = ...
+        generateClothoids(xEastCenter_LB{i},yNorthCenter_LB{i},theta_GT_LB{i},curvature_GT_LB{i},dk_LB{i},L_LB{i});
+end
+
+
 numAllClothoid = numel(all_clothoids{3});
 
 [theta_OSM,curvature_OSM,dk_OSM,L_OSM,...
