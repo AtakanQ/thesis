@@ -50,7 +50,7 @@ for i = 1:length(xEastCenter)
         generateClothoids(xEastCenter{i},yNorthCenter{i},theta_GT{i},curvature_GT{i},dk{i},L{i});
 end
 
-for i = 1:length(xEastCenter)
+for i = 1:length(xEastCenter_LB)
     [theta_GT_LB{i},curvature_GT_LB{i},dk_LB{i},L_LB{i},...
         nevalG1_LB,~,~,~,~] = ...
         G1spline( [xEastCenter_LB{i} yNorthCenter_LB{i}]);
@@ -326,5 +326,5 @@ disp(['After approximation and combination of segments the road has ', num2str(n
     ' clothoids and ', num2str(numArcs) , ' arcs were used.'])
 disp(['Additionaly, ',num2str(numLines), ' lines were used.'])
 disp(['Initially there were ', num2str(numAllClothoid) ' segments. After combination there are ', num2str(numFinalClothoids + numLines), ' segments.'])
-save('last_work')
+save('last_work_V7')
 

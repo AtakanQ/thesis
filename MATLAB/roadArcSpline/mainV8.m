@@ -24,6 +24,10 @@ for j = 3:length(laneCenters) %DONT TAKE FIRST
     laneCntr = laneCntr + 1;
 end
 
+for j = 1:length(laneBorders)
+    xEastCenter_LB{j} = laneBorders(j).xEast;
+    yNorthCenter_LB{j} = laneBorders(j).yNorth;
+end
 
 figure;
 for i = 1:size(xEastCenter,2)    
@@ -48,7 +52,15 @@ for i = 1:length(xEastCenter)
     [all_clothoids{i}] = ...
         generateClothoids(xEastCenter{i},yNorthCenter{i},theta_GT{i},curvature_GT{i},dk{i},L{i});
 end
+% Use clothoid fitting to fit lane boundaries
+for i = 2:length(xEastCenter_LB)
+    [theta_GT_LB{i},curvature_GT_LB{i},dk_LB{i},L_LB{i},...
+        nevalG1_LB,~,~,~,~] = ...
+        G1spline( [xEastCenter_LB{i} yNorthCenter_LB{i}]);
 
+    [all_clothoids_LB{i}] = ...
+        generateClothoids(xEastCenter_LB{i},yNorthCenter_LB{i},theta_GT_LB{i},curvature_GT_LB{i},dk_LB{i},L_LB{i});
+end
 [theta_OSM,curvature_OSM,dk_OSM,L_OSM,...
     ~,~,~,~,~] = ...
     G1spline( [xEast yNorth]);
@@ -267,4 +279,4 @@ disp(['After approximation and combination of segments the road has ', num2str(n
     ' clothoids and ', num2str(numArcs) , ' arcs were used.'])
 disp(['Additionaly, ',num2str(numLines), ' lines were used.'])
 disp(['Initially there were ', num2str(numAllClothoid) ' segments. After combination there are ', num2str(numFinalClothoids + numLines), ' segments.'])
-
+save('last_work_V8')
