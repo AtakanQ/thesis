@@ -123,10 +123,10 @@ classdef clothoid < handle
             % ylabel('y')
             grid on
        end
-       function plotPlain(obj)
+       function p1 = plotPlain(obj)
             % figure;
 
-            plot(obj.allX,obj.allY,'LineWidth',1.5);
+            p1 = plot(obj.allX,obj.allY,'LineWidth',1.5);
             axis equal
             % title('Clothoid Path')
             % xlabel('x')

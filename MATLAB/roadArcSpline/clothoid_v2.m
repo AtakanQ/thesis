@@ -84,10 +84,10 @@ classdef clothoid_v2 < handle
         obj.final_tan = tangent(end);
     end
 
-       function plotPlain(obj)
+       function p1 = plotPlain(obj)
             % figure;
 
-            plot(obj.allX,obj.allY,'LineWidth',1.5,'Color',[0 0 1]);
+            p1 = plot(obj.allX,obj.allY,'LineWidth',1.5,'Color',[0 0 1]);
             % title('Clothoid Path')
             % xlabel('x')
             % ylabel('y')
