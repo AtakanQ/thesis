@@ -126,7 +126,7 @@ classdef clothoid < handle
        function p1 = plotPlain(obj)
             % figure;
 
-            p1 = plot(obj.allX,obj.allY,'LineWidth',1.5);
+            p1 = plot(obj.allX,obj.allY,'LineWidth',1.5,'DisplayName','Arc Approximated Clothoid');
             axis equal
             % title('Clothoid Path')
             % xlabel('x')
