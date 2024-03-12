@@ -69,3 +69,28 @@ legend([p1 p2 p3 p4 p5 p6 p7 p8]);
 title('First Candidate Beziér Curve')
 
 %% Generate arc-spline
+arcSegClass = arcSegment;
+init_pos = A;
+init_tan = atan2(tzero(2),tzero(1));
+init_curvature = curvature_zero;
+final_curvature = curvature_final;
+length = segments{laneNumber}(segmentNumber).segmentLength;
+order = 5;
+arc_spline = clothoid(init_pos,init_tan, init_curvature, final_curvature, length,order,arcSegClass);
+
+figure;
+axis equal
+p1 = arc_spline.plotPlain();
+hold on
+p2 = plot(arc_spline.allX(1),arc_spline.allY(1),'*','MarkerSize',12,'Color',[0 0 1],'DisplayName','Start Point');
+p3 = plot(arc_spline.allX(end),arc_spline.allY(end),'*','MarkerSize',12,'Color',[0 1 0],'DisplayName','End Point');
+p4 = plot(segments{laneNumber}(segmentNumber).allX,segments{laneNumber}(segmentNumber).allY,'--','Color',[1 0 0],'LineWidth',1,'DisplayName','LaneCenter');
+for i = 1:numel(all_clothoids_LB)
+
+    for j = 1:numel(all_clothoids_LB{i})
+        plot(all_clothoids_LB{i}(j).allX,all_clothoids_LB{i}(j).allY,'Color',[0 0 0],'LineWidth',2)
+
+    end
+end
+legend([p1 p2 p3 p4]);
+title('Arc Spline Curve')
