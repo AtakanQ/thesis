@@ -196,17 +196,7 @@ classdef bezier < handle
                 obj.vehicleBoundaries.frontLeft{j}(indices,:) = obj.vehicleBoundaries.rearLeft{j}(indices,:);
                 obj.vehicleBoundaries.frontRight{j}(indices,:) = obj.vehicleBoundaries.rearRight{j}(indices,:);
             end
-            figure;
-            
-            plot(obj.Curves{1}(:,1),obj.Curves{1}(:,2),'DisplayName','Curve')
-            axis equal
-            hold on
-            plot(obj.vehicleBoundaries.rearLeft{1}(:,1),obj.vehicleBoundaries.rearLeft{1}(:,2),'DisplayName','RearLeft')
-            plot(obj.vehicleBoundaries.rearRight{1}(:,1),obj.vehicleBoundaries.rearRight{1}(:,2),'DisplayName','RearRight')
-            plot(obj.vehicleBoundaries.frontLeft{1}(:,1),obj.vehicleBoundaries.frontLeft{1}(:,2),'DisplayName','FrontLeft') 
-            plot(obj.vehicleBoundaries.frontRight{1}(:,1),obj.vehicleBoundaries.frontRight{1}(:,2),'DisplayName','FrontRight') 
-            title('Example')
-            legend();
+
         end
         
 
