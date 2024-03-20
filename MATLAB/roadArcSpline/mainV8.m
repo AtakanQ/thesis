@@ -146,7 +146,7 @@ end
 %% Plot the results
 
 desiredNumElements = 10000;  % Replace with the desired number
-desiredNumElements_GT = 500000;
+desiredNumElements_GT = 50000;
 for i = 1:numel(allX)
     downsamplingFactor = floor(numel(allX{i}) / desiredNumElements_GT);
     downsampledIndices = 1:downsamplingFactor:numel(allX{i});

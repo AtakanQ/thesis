@@ -27,7 +27,7 @@ classdef clothoid_v2 < handle
 
          if nargin > 0
              % obj.numPoints = numPoints;
-            obj.numPoints = ceil(curv_length / 0.01); % data point for each 1 centimeter
+            obj.numPoints = ceil(curv_length / 0.1); % data point for each 10 centimeter
             obj.init_pos = init_pos;
             obj.init_tan = init_tan;
             obj.init_curv = init_curvature;

@@ -33,7 +33,7 @@ classdef clothoid < handle
             obj.curv_increment = (final_curvature - init_curvature) / order;
             obj.curv_sign = sign(final_curvature - init_curvature);
             obj.arcSegments = arcSegClass;
-            obj.numPointsPerSegment = ceil(length / 0.01) / order; % point for each 1 centimeter
+            obj.numPointsPerSegment = ceil(length / 0.1) / order; % point for each 10 centimeter
             obj.curv_derivative = (final_curvature - init_curvature)/length;
             obj.generateArcSegments();
             if(obj.curv_sign == 0)
