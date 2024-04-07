@@ -96,41 +96,41 @@ legend([p1 p2 p3 p4]);
 title('Arc Spline Curve')
 
 %% Generate clothoid-like
-myLength = deg2rad((final_tan - rad2deg(init_tan)) ) / (init_curvature/2 + final_curvature/2)
-
-idx = 147;
-myLength2 = (segments{1}(idx).headingFinal-segments{1}(idx).headingInitial) ...
-    / (segments{1}(idx).initialCurvature/2 + segments{1}(idx).finalCurvature/2)
-realLen = segments{1}(idx).segmentLength
-
-% clothoid(init_pos,init_tan, init_curvature, final_curvature, length,order,arcSegClass)
-
-arcSegClass = arcSegment;
-init_pos = A;
-init_tan = atan2(tzero(2),tzero(1));
-init_curvature = curvature_zero;
-final_curvature = curvature_final;
-length = myLength;
-order = 5;
-arc_spline = clothoid(init_pos,init_tan, init_curvature, final_curvature, length,order,arcSegClass);
-
-figure;
-axis equal
-p1 = arc_spline.plotPlain();
-hold on
-p2 = plot(arc_spline.allX(1),arc_spline.allY(1),'*','MarkerSize',12,'Color',[0 0 1],'DisplayName','Start Point');
-p3 = plot(arc_spline.allX(end),arc_spline.allY(end),'*','MarkerSize',12,'Color',[0 1 0],'DisplayName','End Point');
-p4 = plot(segments{laneNumber}(segmentNumber).allX,segments{laneNumber}(segmentNumber).allY,'--','Color',[1 0 0],'LineWidth',1,'DisplayName','LaneCenter');
-for i = 1:numel(all_clothoids_LB)
-
-    for j = 1:numel(all_clothoids_LB{i})
-        plot(all_clothoids_LB{i}(j).allX,all_clothoids_LB{i}(j).allY,'Color',[0 0 0],'LineWidth',2)
-
-    end
-end
-legend([p1 p2 p3 p4]);
-title('Arc Spline Curve with More Accurate Length')
+% myLength = deg2rad((final_tan - rad2deg(init_tan)) ) / (init_curvature/2 + final_curvature/2)
+% 
+% idx = 147;
+% myLength2 = (segments{1}(idx).headingFinal-segments{1}(idx).headingInitial) ...
+%     / (segments{1}(idx).initialCurvature/2 + segments{1}(idx).finalCurvature/2)
+% realLen = segments{1}(idx).segmentLength
+% 
+% % clothoid(init_pos,init_tan, init_curvature, final_curvature, length,order,arcSegClass)
+% 
+% arcSegClass = arcSegment;
+% init_pos = A;
+% init_tan = atan2(tzero(2),tzero(1));
+% init_curvature = curvature_zero;
+% final_curvature = curvature_final;
+% length = myLength;
+% order = 5;
+% arc_spline = clothoid(init_pos,init_tan, init_curvature, final_curvature, length,order,arcSegClass);
+% 
+% figure;
+% axis equal
+% p1 = arc_spline.plotPlain();
+% hold on
+% p2 = plot(arc_spline.allX(1),arc_spline.allY(1),'*','MarkerSize',12,'Color',[0 0 1],'DisplayName','Start Point');
+% p3 = plot(arc_spline.allX(end),arc_spline.allY(end),'*','MarkerSize',12,'Color',[0 1 0],'DisplayName','End Point');
+% p4 = plot(segments{laneNumber}(segmentNumber).allX,segments{laneNumber}(segmentNumber).allY,'--','Color',[1 0 0],'LineWidth',1,'DisplayName','LaneCenter');
+% for i = 1:numel(all_clothoids_LB)
+% 
+%     for j = 1:numel(all_clothoids_LB{i})
+%         plot(all_clothoids_LB{i}(j).allX,all_clothoids_LB{i}(j).allY,'Color',[0 0 0],'LineWidth',2)
+% 
+%     end
+% end
+% legend([p1 p2 p3 p4]);
+% title('Arc Spline Curve with More Accurate Length')
 %% Try to fit clothoid
 
 clothoid = all_clothoids{1}(158);
-[clothoidArray] = fitArcSpline([clothoid.allX(1)+0.2 clothoid.allY(1)-0.01],clothoid.init_tan+deg2rad(1),clothoid.init_curv,clothoid)
+[clothoidArray] = fitArcSpline([clothoid.allX(1)+0.2 clothoid.allY(1)-0.01],clothoid.init_tan+deg2rad(-3),clothoid.init_curv,clothoid);
