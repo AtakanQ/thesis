@@ -4,6 +4,7 @@ idx = floor(length(clothoid_GT.allTangent)*1/2);
 targetHeading = clothoid_GT.allTangent(idx);
 targetCurvature = clothoid_GT.allCurvature(idx);
 targetLength = idx / 100;
+% targetLength = targetLength*11/10
 arcSegClass = arcSegment;
 cloth_order = 5;
 deltaHeading = targetHeading - init_tan;
@@ -24,42 +25,16 @@ if(deltaHeading > 0)
     end
 else
 
-    % f = @(x) k1*k1/(2*sigma) - x*x/(2*sigma) - x*x*(L - k1/sigma + x/sigma) / (k3 - x) + k3*k3*(L - k1/sigma + x/sigma) / (k3 - x) - deltaHeading; % Define the function
-
-    % root = fzero(f, 0); % Solve for the root near x = 0
     l1 = k1/sigma;
-    syms x;
-    eqn = k1*k1/(2*sigma) - x*x/(2*sigma) - x*x*(L - k1/sigma + x/sigma) / (k3 - x) + k3*k3*(L - k1/sigma + x/sigma) / (k3 - x) - deltaHeading == 0
-    sol = vpasolve(eqn,x)
-
-    % find a feasible solution
-
-    for i = 1:numel(sol)
-        temp_k2 = double(sol(i));
-
-        if(temp_k2 > 0)
-            continue
-        else
-            if (-temp_k2/sigma) < (targetLength - l1)
-                k2 = temp_k2;
-            end
-        end
-
-    end
-
-    if( isempty(k2) )
-        error('k2 cannot be solved.')
-        
-    end
+    k2 = 2*deltaHeading * (l1 - targetLength) / (targetLength* ( 2*l1 - targetLength));
 
     l2 = -k2/sigma;
+   
+    secondClothoidSlope = (k3 - k2) / (targetLength - l1 - l2);
 
-    l3 = (targetLength -l1 - l2) * (1 - k3/(k3-k2));
-
-    l4 = (L - l1 - l2) / (1 - k2/k3);
-
+    l3 = - k2 / secondClothoidSlope;
+    l4 = targetLength - l1 - l2 -l3;
     first_clothoid_length = l1 + l2;
-
 end
 
 

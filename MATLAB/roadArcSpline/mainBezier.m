@@ -133,4 +133,4 @@ title('Arc Spline Curve')
 %% Try to fit clothoid
 
 clothoid = all_clothoids{1}(158);
-[clothoidArray] = fitArcSpline([clothoid.allX(1)+0.2 clothoid.allY(1)-0.01],clothoid.init_tan+deg2rad(-3),clothoid.init_curv,clothoid);
+[clothoidArray] = fitArcSpline([clothoid.allX(1)+0.2 clothoid.allY(1)-0.01],clothoid.init_tan+deg2rad(3),clothoid.init_curv,clothoid);
