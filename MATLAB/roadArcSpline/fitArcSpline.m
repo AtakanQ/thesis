@@ -1,5 +1,5 @@
 function [clothoidArray] = fitArcSpline(init_pos,init_tan,init_curv,clothoid_GT)
-sigma = 0.01; %This is the slope of the curvature plot
+% sigma = 0.01; %This is the slope of the curvature plot
 idx = floor(length(clothoid_GT.allTangent)*1/2);
 targetHeading = clothoid_GT.allTangent(idx);
 targetCurvature = clothoid_GT.allCurvature(idx);
@@ -7,61 +7,91 @@ targetLength = idx / 100;
 % targetLength = targetLength*11/10
 arcSegClass = arcSegment;
 cloth_order = 5;
-deltaHeading = targetHeading - init_tan;
+theta0 = init_tan - targetHeading;
 %% First rectify heading and curvature
-k1 = init_curv;
-k3 = targetCurvature;
-L = targetLength;
+k0 = init_curv - targetCurvature;
 
-k2 = [];
-if(deltaHeading > 0)
-    normallyHeadingChange = (k1 + k3) * L / 2;
-    if( (normallyHeadingChange-deltaHeading) < 0) % go above the normal line
-        k2 = (2*sigma*deltaHeading + k1*k1 - k3*L*sigma - k3*k1) / (L*sigma + k1 - k3);
-        first_clothoid_length = (k2 - k1) / sigma;
-    else % go under the normal line
-        k2 = (2*sigma*deltaHeading - k1*k1 - k3*L*sigma + k3*k1) / (L*sigma - k1 + k3);
-        first_clothoid_length = (k1 - k2) / sigma;
+sigma = k0 * k0 / (2 * theta0);
+if(theta0 > 0)
+    if(k0 < 0) % init curv is negative
+        L = -2 * theta0 / k0;
+        k1 = k0 + sigma * L + targetCurvature; % intermediate curvature
+        first_clothoid = clothoid_v2(init_pos, init_tan, init_curv, k1, L);
+        headingError = rad2deg(first_clothoid.final_tan - targetHeading)
+        verification = theta0 + k0 * L + sigma * L * L / 2
+    elseif(k0 > 0)
+        l1 = k0/sigma + sqrt(k0^2/2/sigma^2 + theta0/sigma);  
+        l2 = l1 - k0/sigma; 
+        L = l1 + l2;
+
+        k1 = k0 -sigma*l1; 
+        k2 = k1(end) + sigma*l2;
+        % this is not finished
     end
 else
 
-    l1 = k1/sigma;
-    k2 = 2*deltaHeading * (l1 - targetLength) / (targetLength* ( 2*l1 - targetLength));
 
-    l2 = -k2/sigma;
-   
-    secondClothoidSlope = (k3 - k2) / (targetLength - l1 - l2);
-
-    l3 = - k2 / secondClothoidSlope;
-    l4 = targetLength - l1 - l2 -l3;
-    first_clothoid_length = l1 + l2;
 end
-
-
-second_clothoid_length = targetLength - first_clothoid_length;
-
-figure;
-plot([0 first_clothoid_length targetLength],[k1 k2 k3])
-title("Curvature Plot")
-ylabel("m^-1")
-xlabel("Curve length (m)")
-
-first_clothoid = clothoid(init_pos, init_tan, init_curv, k2, first_clothoid_length, 5, arcSegClass);
-next_pos = [first_clothoid.allX(end) first_clothoid.allY(end)];
-next_tan = first_clothoid.final_tangent;
-next_curv = first_clothoid.final_curv;
-
-second_clothoid = clothoid(next_pos, next_tan, next_curv, targetCurvature, second_clothoid_length, 5, arcSegClass);
 
 figure;
 plot(clothoid_GT.allX,clothoid_GT.allY,'Color',[0 1 0],'DisplayName','Ground Truth')
 hold on
 axis equal
 first_clothoid.plotPlain();
-second_clothoid.plotPlain();
+% second_clothoid.plotPlain();
 legend();
 
+
+second_clothoid = [];
 clothoidArray = [first_clothoid second_clothoid];
+% if(deltaHeading > 0)
+%     normallyHeadingChange = (k1 + k3) * L / 2;
+%     if( (normallyHeadingChange-deltaHeading) < 0) % go above the normal line
+%         k2 = (2*sigma*deltaHeading + k1*k1 - k3*L*sigma - k3*k1) / (L*sigma + k1 - k3);
+%         first_clothoid_length = (k2 - k1) / sigma;
+%     else % go under the normal line
+%         k2 = (2*sigma*deltaHeading - k1*k1 - k3*L*sigma + k3*k1) / (L*sigma - k1 + k3);
+%         first_clothoid_length = (k1 - k2) / sigma;
+%     end
+% else
+% 
+%     l1 = k1/sigma;
+%     k2 = 2*deltaHeading * (l1 - targetLength) / (targetLength* ( 2*l1 - targetLength));
+% 
+%     l2 = -k2/sigma;
+% 
+%     secondClothoidSlope = (k3 - k2) / (targetLength - l1 - l2);
+% 
+%     l3 = - k2 / secondClothoidSlope;
+%     l4 = targetLength - l1 - l2 -l3;
+%     first_clothoid_length = l1 + l2;
+% end
+% 
+% 
+% second_clothoid_length = targetLength - first_clothoid_length;
+% 
+% figure;
+% plot([0 first_clothoid_length targetLength],[k1 k2 k3])
+% title("Curvature Plot")
+% ylabel("m^-1")
+% xlabel("Curve length (m)")
+% 
+% first_clothoid = clothoid(init_pos, init_tan, init_curv, k2, first_clothoid_length, 5, arcSegClass);
+% next_pos = [first_clothoid.allX(end) first_clothoid.allY(end)];
+% next_tan = first_clothoid.final_tangent;
+% next_curv = first_clothoid.final_curv;
+% 
+% second_clothoid = clothoid(next_pos, next_tan, next_curv, targetCurvature, second_clothoid_length, 5, arcSegClass);
+% 
+% figure;
+% plot(clothoid_GT.allX,clothoid_GT.allY,'Color',[0 1 0],'DisplayName','Ground Truth')
+% hold on
+% axis equal
+% first_clothoid.plotPlain();
+% second_clothoid.plotPlain();
+% legend();
+% 
+% clothoidArray = [first_clothoid second_clothoid];
 
 % optimized = false;
 % if( (targetCurvature>0) && (init_curv>0) && ((deltaHeading)<0))
