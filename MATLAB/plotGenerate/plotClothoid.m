@@ -16,11 +16,11 @@ myClothoidZeroInit = clothoid_v2( ...
 figure;
 myClothoidZeroInit.plotPlain()
 axis equal
-xlabel("xEast (m)")
-ylabel("yNorth (m)")
+xlabel("xEast (m)",'FontSize',13)
+ylabel("yNorth (m)",'FontSize',13)
 title_text = ['Zero Initial Valued Clothoid'];
 grid on
-title(title_text)
+title(title_text,'FontSize',13)
 
 %%  decreasing curvature
 
@@ -41,11 +41,11 @@ myClothoidPosInit = clothoid_v2( ...
 figure;
 myClothoidPosInit.plotPlain()
 axis equal
-xlabel("xEast (m)")
-ylabel("yNorth (m)")
+xlabel("xEast (m)",'FontSize',13)
+ylabel("yNorth (m)",'FontSize',13)
 title_text = ['Positive Initial Valued Clothoid'];
 grid on
-title(title_text)
+title(title_text,'FontSize',13)
 
 %% plot on top of each other
 
@@ -58,10 +58,10 @@ color = [0 0 1];
 legend_plt = 'Zero Initial';
 myClothoidZeroInit.plotPlain(color,legend_plt)
 axis equal
-xlabel("xEast (m)")
-ylabel("yNorth (m)")
+xlabel("xEast (m)",'FontSize',13)
+ylabel("yNorth (m)",'FontSize',13)
 title_text = ['Two Clothoids on Same Plot'];
-legend
+legend('FontSize',13)
 grid on
-title(title_text)
+title(title_text,'FontSize',13)
 

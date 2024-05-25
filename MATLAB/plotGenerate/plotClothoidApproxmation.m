@@ -15,9 +15,9 @@ k = k1 + a * s;
 figure;
 plot(s, k, 'LineWidth', 2,'DisplayName','Clothoid');
 grid on;
-xlabel('Arc Length, s');
-ylabel('Curvature, k');
-title('Curvature of a Clothoid Curve and Arc Approximated Clothoid Curve');
+xlabel('Arc Length, s','FontSize',12);
+ylabel('Curvature, k','FontSize',12);
+title('Curvature of a Clothoid Curve and Arc Approximated Clothoid Curve','FontSize',12);
 
 % Annotating the plot with k1, k2, and L
 hold on;
@@ -44,16 +44,20 @@ plot([startingLength +  (order-1)*L/order L], [k2 k2], 'Color',[1 0.5 0],'LineWi
 % Text annotations
 % text(0, k1, '  k_1', 'VerticalAlignment', 'middle', 'HorizontalAlignment', 'right', 'FontSize', 12);
 % text(0, k2, '  k_2', 'VerticalAlignment', 'middle', 'HorizontalAlignment', 'right', 'FontSize', 12);
-text(startingLength, 0, "  L/(2n)", 'VerticalAlignment', 'top', 'HorizontalAlignment', 'center', 'FontSize', 12);
+text(startingLength, 0, "$\frac{L}{2n}$", 'Interpreter', 'latex', 'VerticalAlignment', 'top', 'HorizontalAlignment', 'center', 'FontSize', 11);
 for i = 2:order
+    % if i == 2
+    %     text(startingLength+(i-1)*L/order, 0, "  L/(2n) + L/n", 'VerticalAlignment', 'top', 'HorizontalAlignment', 'center', 'FontSize', 9);
+    % else
+    %     text(startingLength+(i-1)*L/order, 0, "  L/(2n) + " + num2str(i-1) + "L/n", 'VerticalAlignment', 'top', 'HorizontalAlignment', 'center', 'FontSize', 9);
+    % end
     if i == 2
-        text(startingLength+(i-1)*L/order, 0, "  L/(2n) + L/n", 'VerticalAlignment', 'top', 'HorizontalAlignment', 'center', 'FontSize', 10);
+        text(startingLength+(i-1)*L/order, 0, '$\frac{L}{2n}$+$\frac{L}{n}$', 'Interpreter', 'latex', 'VerticalAlignment','top', 'HorizontalAlignment', 'center', 'FontSize', 11);
     else
-        text(startingLength+(i-1)*L/order, 0, "  L/(2n) + " + num2str(i-1) + "L/n", 'VerticalAlignment', 'top', 'HorizontalAlignment', 'center', 'FontSize', 10);
+        text(startingLength+(i-1)*L/order, 0, "$\frac{L}{2n}$+$\frac{"+num2str(i-1)+"L}{n}$", 'Interpreter', 'latex' , 'VerticalAlignment', 'top', 'HorizontalAlignment', 'center', 'FontSize', 11);
     end
-    
 end
-text(L, 0, '  L', 'VerticalAlignment', 'top', 'HorizontalAlignment', 'center', 'FontSize', 12);
+text(L, 0, '$\L$', 'Interpreter', 'latex', 'VerticalAlignment', 'top', 'HorizontalAlignment', 'center', 'FontSize', 11);
 
 % Adjusting plot limits if necessary
 ylim([-0.1*max(k), 1.1*max(k)]);
@@ -79,4 +83,4 @@ set(gca, 'XTick', xtck, 'YTick', ytck);
 yticklabels(ytck_labels)
 xticklabels({'0',''})
 hold off;   
-legend('Clothoid','Arc Spline Approximation');
+legend('Clothoid','Arc Spline Approximation','FontSize',12);
