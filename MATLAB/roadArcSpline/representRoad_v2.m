@@ -117,23 +117,23 @@ for i = 1:numSegment
     %     DEBUG = false;
     % end
 
-    if DEBUG
-        figure;
-        plot(errors)
-        title( strcat(['Euclidian Distance Error For Initial Try' ...
-            ' Segment Number:'],num2str(i)  ) )
-        xlabel('Data index')
-        ylabel('Error (m)')
-
-        figure;
-        tempClothoid.plotPlain();
-        % tempClothoid.plotClothoidWithCircles();
-        hold on
-        all_clothoids(i).plotPlain();
-        title( strcat('Trajectory For Initial Try Segment Number:',num2str(i)  ) )
-        legend("tempClothoid","Ground Truth")
-        axis equal
-    end
+    % if DEBUG
+    %     figure;
+    %     plot(errors)
+    %     title( strcat(['Euclidian Distance Error For Initial Try' ...
+    %         ' Segment Number:'],num2str(i)  ) )
+    %     xlabel('Data index')
+    %     ylabel('Error (m)')
+    % 
+    %     figure;
+    %     tempClothoid.plotPlain();
+    %     % tempClothoid.plotClothoidWithCircles();
+    %     hold on
+    %     all_clothoids(i).plotPlain();
+    %     title( strcat('Trajectory For Initial Try Segment Number:',num2str(i)  ) )
+    %     legend("tempClothoid","Ground Truth")
+    %     axis equal
+    % end
 
     % error is low. try fewer arcs started with 5
     if(max_error < arcCfg.maximumDistance)
@@ -205,20 +205,26 @@ for i = 1:numSegment
         end
     end
 
-    if DEBUG
+    if DEBUG && (tempClothoid.order > 1)
         figure;
-        plot(nextErrors)
-        title( strcat('Euclidian Distance Error For Segment Number:',num2str(i), ' Order Became',num2str(j)  ) )
-        xlabel('Data index')
-        ylabel('Error (m)')
-
+        plot(1:length(nextErrors),nextErrors,'.')
+        title( strcat('Euclidian Distance Error for Order: ' ,num2str(j)  ) ,'FontSize',12)
+        xlabel('Data index','FontSize',12)
+        ylabel('Error (m)','FontSize',12)
+        grid on
+        
         figure;
-        tempClothoid.plotPlain();
+        color = [1 0.5 0];
+        tempClothoid.plotPlain(color);
         % tempClothoid.plotClothoidWithCircles();
         hold on
-        all_clothoids(i).plotPlain();
-        title( strcat('Trajectory For Segment Number:',num2str(i), ' Order Became',num2str(j)  ) )
-        legend("tempClothoid","Ground Truth")
+        color = [ 0 0 1];
+        all_clothoids(i).plotPlain(color);
+        title( strcat('Ground Truth and Approximated Curve of Order:',num2str(j)  ) )
+        legend("Approximation","Ground Truth",'FontSize',12)
+        xlabel('xEast (m)','FontSize',12)
+        ylabel('yNorth (m)','FontSize',12)
+        grid on
         axis equal
     end
 
