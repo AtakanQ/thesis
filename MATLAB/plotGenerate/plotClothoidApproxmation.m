@@ -60,7 +60,7 @@ end
 text(L, 0, '$\L$', 'Interpreter', 'latex', 'VerticalAlignment', 'top', 'HorizontalAlignment', 'center', 'FontSize', 11);
 
 % Adjusting plot limits if necessary
-ylim([-0.1*max(k), 1.1*max(k)]);
+ylim([-0.1*max(k), 1.3*max(k)]);
 xlim([0 L*1.1])
 % Remove all ticks and labels
 xtck = [0 ];
@@ -84,3 +84,6 @@ yticklabels(ytck_labels)
 xticklabels({'0',''})
 hold off;   
 legend('Clothoid','Arc Spline Approximation','FontSize',12);
+
+%% Plot RMS error between ground truth and approximation
+

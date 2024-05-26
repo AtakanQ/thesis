@@ -65,3 +65,31 @@ legend('FontSize',13)
 grid on
 title(title_text,'FontSize',13)
 
+%% Plot with circle centers
+
+arcSegClass = arcSegment;                    
+init_pos = [0 0];
+init_tan = 0;
+init_curvature = 0.1;
+final_curvature = 0.2;
+curv_length = 10;
+
+myClothoidHighCurvature = clothoid( ...
+               init_pos, ...
+               init_tan, ...
+               init_curvature, ...
+               final_curvature,...
+               curv_length, ...
+               5, ...
+               arcSegClass...
+               );
+
+figure;
+myClothoidHighCurvature.plotClothoidWithCircles()
+axis equal
+xlabel("xEast (m)",'FontSize',13)
+ylabel("yNorth (m)",'FontSize',13)
+title_text = ['Arc Approximated Clothoid with Arc Centers'];
+grid on
+title(title_text,'FontSize',13)
+
