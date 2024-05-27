@@ -1943,6 +1943,8 @@ laneCenterData(20,3) = {[ ...
 % =======================================
 % Display
 % =======================================
+figure;
+,title("Lane Center Data From HERE Maps",'FontSize',12)
 for ll = 1:size(laneBorderData,1)
     for kk = 1:size(laneBorderData,2)
         latitude = laneBorderData{ll,kk}(:,2); 
@@ -1956,6 +1958,7 @@ for ll = 1:size(laneBorderData,1)
 end
 
 figure;
+title("Lane Center Data From HERE Maps",'FontSize',12)
 for ll = 1:size(laneBorderData,1)
     latitude = laneBorderData{ll,1}(:,2); 
     longitude = laneBorderData{ll,1}(:,3);
@@ -1966,6 +1969,7 @@ for ll = 1:size(laneBorderData,1)
     hold all;
 end
 figure;
+
 for kk = 1:size(laneCenterData,2)
     for ll = 1:size(laneCenterData,1)
         latitude = laneCenterData{ll,kk}(:,2); 
@@ -1977,3 +1981,6 @@ for kk = 1:size(laneCenterData,2)
         hold all; 
     end
 end
+% ylabel("Latitude","FontSize",12)
+% xlabel("Longitude","FontSize",12)
+title("Lane Center Data From HERE Maps",'FontSize',12)

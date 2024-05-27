@@ -104,7 +104,7 @@ classdef clothoid < handle
             % figure;
             for j = 1:(obj.order + 1)
                 color = c(mod(j,lenc)+1,:);
-                plot(obj.arcX{j}, obj.arcY{j}, 'Color',color);
+                plot(obj.arcX{j}, obj.arcY{j}, 'Color',color,'LineWidth',2.5);
                 hold on
                 if(obj.centers(j,1) ~= -1)
                     plot(obj.centers(j,1), obj.centers(j,2),'*', 'Color',color)
@@ -114,6 +114,8 @@ classdef clothoid < handle
                     hold on 
                     plot([obj.centers(j,1) obj.arcX{j}(end)], ...
                     [obj.centers(j,2) obj.arcY{j}(end)],'--', 'Color',color)
+                    text(obj.centers(j,1)*1.05,obj.centers(j,2)*1.05,"C_"+num2str(j),...
+                        'HorizontalAlignment','left','VerticalAlignment','middle','FontSize',9 ,'Color',color)
                 end
                 hold on
             end
@@ -122,11 +124,17 @@ classdef clothoid < handle
             % xlabel('x')
             % ylabel('y')
             grid on
+            ylim([0 12])
        end
-       function p1 = plotPlain(obj)
+       function p1 = plotPlain(obj,color,legend)
             % figure;
-
-            p1 = plot(obj.allX,obj.allY,'LineWidth',1.5,'DisplayName','Arc Approximated Clothoid');
+            if (nargin == 1 )
+                color = [0 0 1];
+                legend = 'Arc Approximated Clothoid';
+            elseif(nargin == 2)
+                legend = 'Arc Approximated Clothoid';
+            end
+            p1 = plot(obj.allX,obj.allY,'LineWidth',1.5,'DisplayName',legend,'Color',color);
             axis equal
             % title('Clothoid Path')
             % xlabel('x')

@@ -14,6 +14,13 @@ HEREname = 'A38_laneData_v2.mat';
 [xEast, yNorth,number_of_roads,refLat,refLon] = ...
     retrieveOSM_v2(lat1, lat2, lon1, lon2, roadName,folderName);
 
+[OSM_lats,OSM_lons,h] = enu2geodetic(xEast,yNorth,0,refLat,refLon,0,wgs84Ellipsoid);
+
+figure;
+geoplot(OSM_lats,OSM_lons,'LineWidth',2)
+title("OpenStreetMap Data Example","FontSize",12)
+geobasemap satellite
+
 [laneBorders,laneCenters] = retrieveHERE_v2(folderName,HEREname,refLat,refLon,[lat1 lat2], [lon1 lon2]);
 
 %Use left most lane
@@ -35,7 +42,9 @@ for i = 1:size(xEastCenter,2)
     hold on
     axis equal
 end
-plot(xEast,yNorth,'DisplayName','OSM')
+title("Ground Truth Road")
+grid on
+% plot(xEast,yNorth,'DisplayName','OSM')
 legend()
 
 if(strcmp(folderName , "autobahn_4")) % there is some bug with this road
@@ -186,14 +195,17 @@ plot(xEastShifted{1},yNorthShifted{1},'DisplayName','Generated Right Lane(1)','L
 % hold on
 % plot(xEastShifted{2},yNorthShifted{2},'DisplayName','Generated Right Lane(2)','LineWidth',1.2)
 
-plot(allX_OSM,allY_OSM,'DisplayName','OSM Road','LineWidth',1.2 )
-
+% plot(allX_OSM,allY_OSM,'DisplayName','OSM Road','LineWidth',1.2 )
+title("Real Road and Generated Road")
 axis equal
+xlabel("xEast (m)")
+ylabel("yNorth (m)")
+grid on
 legend()
 
 
 
-%% Compute rms and curvatures
+%% Compute rms and curvatures of shifted lanes
 segmentLength = 100;
 rms_array = cell(length(xEastShifted),1);
 max_err_array = cell(length(xEastShifted),1);
@@ -229,15 +241,64 @@ for i = 1:length(xEastShifted)
     hold on
     plot(max_err_array{i},'DisplayName', strcat('Max Error:',num2str(i)))
     ylabel('Error (m)')
-    yyaxis right
-    ylabel('Curvature (m^-^1)')
+    % yyaxis right
+    % ylabel('Curvature (m^-^1)')
     xlabel('Segment Number')
-    xAxis = linspace(1,length(rms_array{i}),length(curvatures{i}));
-    plot(xAxis,curvatures{i} ,'DisplayName', strcat('Curvature:',num2str(i)))
+    % xAxis = linspace(1,length(rms_array{i}),length(curvatures{i}));
+    % plot(xAxis,curvatures{i} ,'DisplayName', strcat('Curvature:',num2str(i)))
     legend()
-    title('Error With Respect To HERE Map')
-
+    title('Error With Respect to HERE Map of Shifted Lane')
 end
+
+%% Compute rms and max error of generated reference lane
+segmentLength = 100;
+xEastRef = [];
+yNorthRef = [];
+for i = 1:length(segments{1})
+    sz = size(segments{1}(i).allX);
+    if sz(1) == 1
+        xEastRef = [xEastRef segments{1}(i).allX];
+        yNorthRef = [yNorthRef segments{1}(i).allY];
+    else
+        xEastRef = [xEastRef segments{1}(i).allX'];
+        yNorthRef = [yNorthRef segments{1}(i).allY'];
+    end
+end
+rms_array_ref = zeros(floor(length(xEastRef)/segmentLength),1);
+max_err_array_ref = zeros(floor(length(yNorthRef)/segmentLength),1);
+ground_truth_xy = [allX{1} allY{1}];
+% figure
+% plot(xEastRef,yNorthRef)
+% hold on
+% plot(ground_truth_xy(:,1),ground_truth_xy(:,2))
+% axis equal
+for j = 1:floor(length(yNorthRef)/segmentLength)
+    start_idx = (j-1) * segmentLength + 1;
+    end_idx = j*segmentLength - 1;
+    measurement_xy = [xEastRef(start_idx:end_idx)' yNorthRef(start_idx:end_idx)'];
+
+    % [rms_error, max_error, errors] = computeSegmentError(measurement_xy,ground_truth_xy);
+    [rms_array(j), max_err_array(j), errors] = ...
+        computeSegmentError(measurement_xy,ground_truth_xy);
+end
+
+%Compute curvatures from ground truth data
+% curvatures{i} = findCurvature(ground_truth_xy);
+% 
+% curvatures{i} = medfilt1(curvatures{i}, 10);
+
+figure;
+plot(rms_array,'DisplayName', strcat('RMS Error:',num2str(i)))
+hold on
+plot(max_err_array,'DisplayName', strcat('Max Error:',num2str(i)))
+ylabel('Error (m)')
+% yyaxis right
+% ylabel('Curvature (m^-^1)')
+xlabel('Segment Number')
+% xAxis = linspace(1,length(rms_array{i}),length(curvatures{i}));
+% plot(xAxis,curvatures{i} ,'DisplayName', strcat('Curvature:',num2str(i)))
+legend()
+title('Error With Respect to HERE Map of Generated Lane')
 
 %% OSM error
 rms_OSM = zeros(floor(length(xEastShifted{1})/segmentLength),1);
