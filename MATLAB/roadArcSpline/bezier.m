@@ -200,7 +200,7 @@ classdef bezier < handle
         end
         
 
-        function plotCurves(obj)
+        function plotCurves(obj,numCurves)
 
             figure;
             plot(obj.start(1),obj.start(2),'*','MarkerSize',10,'LineWidth',1.5,'Color',[0 0 1]);
@@ -212,22 +212,24 @@ classdef bezier < handle
             ylabel(" Distance (m) ")
             % ylim([0 6])
             % xlim([-1 12])
-            for i = 1:numel(obj.Curves)
-                if(mod(i,100) == 0)
-                    color = floor(i/100) / 9;
-                    plot(obj.Curves{i}(:,1),obj.Curves{i}(:,2),'Color',[0 color color])
-                    hold on
+            plotList = floor(linspace(1,numel(obj.Curves),numCurves));
+            for i = 1:numel(plotList)
+                number = plotList(i);
+                color = i / numel(plotList);
+                plot(obj.Curves{number}(:,1),obj.Curves{number}(:,2),'Color',[0 color color],'LineWidth',1,...
+                    'DisplayName',"Bézier number:" + num2str(number))
+                hold on
                     % plot(obj.P_one(i,1),obj.P_one(i,2),'o')
                     % plot(obj.P_two(i,1),obj.P_two(i,2),'o')
                     % plot(obj.P_three(i,1),obj.P_three(i,2),'o')
                     % plot(obj.P_four(i,1),obj.P_four(i,2),'o')
-                    disp('Debugging bezier')
-                end
+                    % disp('Debugging bezier')
 
             end
 
-            annotation('textbox', [0.2, 0.1, 0.1, 0.1], 'String', string( ['init tan:',num2str(rad2deg(obj.init_tan)),...
-                '  init curv:',num2str(obj.curv_zero),'  final tan:',num2str(rad2deg(obj.final_tan)),'  final curv:',num2str(obj.curv_final) ] ),'FitBoxToText','on')
+            % annotation('textbox', [0.2, 0.1, 0.1, 0.1], 'String', string( ['init tan:',num2str(rad2deg(obj.init_tan)),...
+            %     '  init curv:',num2str(obj.curv_zero),'  final tan:',num2str(rad2deg(obj.final_tan)),'  final curv:',...
+            %     num2str(obj.curv_final) ] ),'FitBoxToText','on')
 
         end
 
