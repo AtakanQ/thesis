@@ -1,4 +1,4 @@
-function [clothoidArray] = fitArcSpline(init_pos,init_tan,init_curv,clothoid_GT)
+function [clothoidArray,middleArc] = fitArcSpline(init_pos,init_tan,init_curv,clothoid_GT)
 % sigma = 0.01; %This is the slope of the curvature plot
 
 theta0 = -(clothoid_GT.init_tan - init_tan);
@@ -18,7 +18,7 @@ if(theta0 > 0)
         
         [closest_point, idx] = findClosestPointOnLine(x0, y0, angle, xyPairs);
 
-        positionError = norm(closest_point - [x0 y0]);
+        positionError = norm(closest_point - [x0 y0])
         
         final_tangent = clothoidArray(1).final_tan;
         final_tangent_vector = [cos(final_tangent) sin(final_tangent) 0];
@@ -77,9 +77,9 @@ if(theta0 > 0)
 
         realRoadHeading = clothoid_GT.allTangent(idx2);
         realRoadCurvature = clothoid_GT.allCurvature(idx2);
-        headingError = rad2deg(clothoidArray(2).final_tan - realRoadHeading)
+        headingError = rad2deg(clothoidArray(2).final_tan - realRoadHeading);
         % verification = theta0 + k0 * L + sigma * L * L / 2
-        curvatureError = realRoadCurvature - clothoidArray(2).final_curv        
+        curvatureError = realRoadCurvature - clothoidArray(2).final_curv;        
         % this is not finished
         lengthSoFar = l1 + l2;
     end
@@ -134,7 +134,7 @@ currentCurvature = clothoidArray(end).final_curv;
 % keep moving with same curvature (corresponds to line part for bi elementary paths)
 middleArc = arcSegment(currentPosition,currentHeading, abs(1/currentCurvature), ...
     positionCompensationLength/2,sign(currentCurvature));
-middleArc.getXY()
+middleArc.getXY();
 currentPosition = [middleArc.x_coor(end) middleArc.y_coor(end)];
 currentHeading = middleArc.final_angle;
 
@@ -154,18 +154,17 @@ clothoidArray(numClothoids + 4) = clothoid_v2(...
     initialCurvature, positionCompensationLength/8);
 
 % update vehicle position
-currentPosition = [clothoidArray(end).allX(end) clothoidArray(end).allY(end)]
-currentHeading = clothoidArray(end).final_tan
-currentCurvature = clothoidArray(end).final_curv
+currentPosition = [clothoidArray(end).allX(end) clothoidArray(end).allY(end)];
+currentHeading = clothoidArray(end).final_tan;
+currentCurvature = clothoidArray(end).final_curv;
 
-figure;
-plot(clothoid_GT.allX,clothoid_GT.allY,'Color',[0 1 0],'DisplayName','Ground Truth')
-hold on
-axis equal
-for i = 1:numel(clothoidArray)
-    clothoidArray(i).plotPlain([i/10 i/10 0], "Clothoid num:" + num2str(i));
-end
-plot(middleArc.x_coor,middleArc.y_coor,"DisplayName","Arc","LineWidth",2)
-legend();
+
+
+[closest_point, idx] = findClosestPointOnLine(currentPosition(1), currentPosition(2)...
+    , currentHeading+pi/2, xyPairs);
+
+errorPosition = norm(currentPosition - [clothoid_GT.allX(idx) clothoid_GT.allY(idx)])
+errorHeading = rad2deg(currentHeading - clothoid_GT.allTangent(idx))
+errorCurvature = currentCurvature - clothoid_GT.allCurvature(idx)
 
 end
