@@ -22,10 +22,10 @@ classdef clothoid_v2 < handle
                init_curvature, ...
                final_curvature,...
                curv_length, ...
-               numPoints ...
+               dataPointSparsity ...
                )
 
-         if nargin > 0
+         if nargin < 6
              % obj.numPoints = numPoints;
             obj.numPoints = ceil(curv_length / 0.1); % data point for each 10 centimeter
             obj.init_pos = init_pos;
@@ -40,6 +40,21 @@ classdef clothoid_v2 < handle
             if(obj.curv_sign == 0)
                 error('Curvature is zero')
             end
+         elseif nargin == 6
+            obj.numPoints = ceil(curv_length / dataPointSparsity); % data point for each 10 centimeter
+            obj.init_pos = init_pos;
+            obj.init_tan = init_tan;
+            obj.init_curv = init_curvature;
+            obj.final_curv = final_curvature;
+            obj.curv_length = curv_length;
+            obj.curv_sign = sign(final_curvature - init_curvature);
+            obj.curv_derivative = (final_curvature - init_curvature)/curv_length;
+            obj.generateClothoid();
+
+            if(obj.curv_sign == 0)
+                error('Curvature is zero')
+            end
+
          end
        end
 
