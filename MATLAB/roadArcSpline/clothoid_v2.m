@@ -93,6 +93,7 @@ classdef clothoid_v2 < handle
                 legend = 'Integrated Clothoid';
             end
             p1 = plot(obj.allX,obj.allY,'LineWidth',1.5,'Color',color,'DisplayName',legend);
+            axis equal
             % title('Clothoid Path')
             % xlabel('x')
             % ylabel('y')

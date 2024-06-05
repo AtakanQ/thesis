@@ -123,6 +123,7 @@ classdef clothoid < handle
             % title('Clothoid Path')
             % xlabel('x')
             % ylabel('y')
+            axis equal
             grid on
             ylim([0 12])
        end
