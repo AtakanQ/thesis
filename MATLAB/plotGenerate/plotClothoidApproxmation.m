@@ -86,4 +86,51 @@ hold off;
 legend('Clothoid','Arc Spline Approximation','FontSize',12);
 
 %% Plot RMS error between ground truth and approximation
+init_pos = [0 0];
+init_tan = 0;
+init_curvature = 0;
+final_curvature = 0.1;
+length = 50;
+order = 5;
+dummyArcSeg = arcSegment;
+dataPointSparsity = 0.001; % m
+clothoid_GT = clothoid_v2(init_pos,init_tan, init_curvature, final_curvature,...
+               length,dataPointSparsity);
+ground_truth_xy = [clothoid_GT.allX' clothoid_GT.allY'];
 
+% [rms_error, max_error, errors] = computeSegmentError(measurement_xy,ground_truth_xy)
+clothoid_approx_low = clothoid(init_pos,init_tan, init_curvature, final_curvature,...
+               length,order,dummyArcSeg);
+
+measurement_xy1 = [clothoid_approx_low.allX' clothoid_approx_low.allY'];
+
+[rms_error, max_error, errors1] = computeSegmentError(measurement_xy1,ground_truth_xy);
+filtered_data1 = medfilt1(errors1, 10);
+figure
+plot(filtered_data1)
+title("Error for Low Order Approximation",'FontSize',13)
+xlabel("Sample Number")
+
+order = 10;
+clothoid_approx_high = clothoid(init_pos,init_tan, init_curvature, final_curvature,...
+               length,order,dummyArcSeg);
+
+measurement_xy2 = [clothoid_approx_high.allX' clothoid_approx_high.allY'];
+
+[rms_error, max_error, errors2] = computeSegmentError(measurement_xy2,ground_truth_xy);
+filtered_data2 = medfilt1(errors2, 10);
+figure
+plot(filtered_data2)
+title("Error for High Order Approximation",'FontSize',13)
+
+filtered_downsampled_data2 = resample(filtered_data2, size(filtered_data1,1), size(filtered_data2,1));
+
+figure;
+plot(filtered_data1,'LineWidth',1.5)
+hold on
+plot(filtered_downsampled_data2,'LineWidth',1.5)
+legend("5^t^h Order","10^t^h Order",'FontSize',13)
+title("Error for High and Low Order Approximation",'FontSize',13)
+xlabel("Sample Number")
+ylabel("Error (m)")
+ylim([0 0.25])
