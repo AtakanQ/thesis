@@ -1,0 +1,38 @@
+Mention about the required data for trajectory planning so we need a suitable road representation YES
+Important features for trajectory planning: position, heading and curvature. YES
+Roads are designed as clothoids. YES
+We want to find a method that removes these disadvantages and is able to match the road design.  YES
+Find other road representations and consider their advantages and disadvantages.
+Disadvantages:
+Not accurate, not able to parallel shift, do not have easy analytical representation
+Advantages:
+
+
+problem statement:
+- Find a suitable road representation
+Input:
+Waypoints (position, heading and curvature)
+Output:
+Suitable analytical representation of the road
+Directly use clothoids since they are already used in the design of the road, but they are not suitable since it does not have an analytical representation
+Explain what is an arc spline and it is a good approximation for clothoids.
+Find a suitable arc spline representation with small number of parameters.
+
+How is arc splines are computed
+How is clothoid is approximated
+How are road segments combined into one
+Maybe write pseuodocode
+How are different lanes are obtained from a single lane representation
+
+results
+Show some road segments
+Zoom in to real road and approximated road.
+Plot the rms and max position error along the trajectory.
+Give some results about the combined road segments. (how many were combined etc.)
+Think about a table (maybe change the order of arc splines and compare them to each other)
+
+	
+The road initially had 325 clothoids.
+After approximation and combination of segments the road has 86 clothoids and 179 arcs were used.
+Additionaly, 191 lines were used.
+Initially there were 325 segments. After combination there are 277 segments.
