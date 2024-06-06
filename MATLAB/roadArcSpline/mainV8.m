@@ -204,7 +204,7 @@ grid on
 legend()
 
 
-%% Compute rms and curvatures of a picked shifted lane
+%% Compute rms and curvatures of a picked shifted lane (arc spline)
 segmentNumShifted = 282;
 segmentLengthShifted = 1000;
 
@@ -242,6 +242,45 @@ legend()
 title('Error Between Parallel Shifted Lane and Ground Truth','FontSize',13)
 ylim([0 0.3])
 xlim([1 numel(rms_array_shifted)])
+
+%% Compute rms and curvatures of a picked shifted lane (line segment)
+segmentNumShifted = 272;
+segmentLengthShiftedLine = 1000;
+
+xEastShiftedLine = otherLanes{1}(segmentNumShifted).allX;
+yNorthShiftedLine = otherLanes{1}(segmentNumShifted).allY;
+ground_truth_xy_shifted_line = [ [all_clothoids{2}(segmentNumShifted+1).allX'; all_clothoids{2}(segmentNumShifted+2).allX']...
+    [all_clothoids{2}(segmentNumShifted+1).allY'; all_clothoids{2}(segmentNumShifted+2).allY']];
+
+rms_array_shifted_line = zeros(floor(length(xEastShiftedLine)/segmentLengthShiftedLine),1);
+max_err_array_shifted_line = zeros(floor(length(yNorthShiftedLine)/segmentLengthShiftedLine),1);
+
+for j = 1:numel(rms_array_shifted_line)
+    start_idx = (j-1) * segmentLengthShiftedLine + 1;
+    end_idx = j*segmentLengthShiftedLine - 1;
+    measurement_xy = [xEastShiftedLine(start_idx:end_idx) yNorthShiftedLine(start_idx:end_idx)];
+
+    % [rms_error, max_error, errors] = computeSegmentError(measurement_xy,ground_truth_xy);
+  [rms_array_shifted_line(j), max_err_array_shifted_line(j), ~] = ...
+        computeSegmentError(measurement_xy,ground_truth_xy_shifted_line);
+end
+% figure;
+% plot(xEastShifted,yNorthShifted,'DisplayName',"Meas")
+% hold on
+% plot(ground_truth_xy_shifted(:,1),ground_truth_xy_shifted(:,2),'DisplayName',"GT")
+% axis equal
+% legend()
+
+figure;
+plot(rms_array_shifted_line,'DisplayName', 'RMS Error','LineWidth',1.5)
+hold on
+plot(max_err_array_shifted_line,'DisplayName', 'Max Error','LineWidth',1.5)
+ylabel('Error (m)','FontSize',13)
+xlabel('Index of 10 cm subsegment','FontSize',13)
+legend()
+title('Error Between Parallel Shifted Lane and Ground Truth','FontSize',13)
+ylim([0 0.15])
+xlim([1 numel(rms_array_shifted_line)])
 
 %% Compute rms and curvatures of shifted lanes
 % segmentLength = 100;
