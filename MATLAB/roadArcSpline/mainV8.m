@@ -120,7 +120,7 @@ errorCfg.headingDeviation = 2; % Degrees deviation allowed for concatenated line
 % end
 
 %% Generate other lanes
-laneWidth = 3.75; % meters
+laneWidth = 3.8; % meters
 numLanes = 1; % other lanes
 [otherLanes,xEastShifted,yNorthShifted] = generateOtherLanes(segments{1},laneWidth,numLanes);
 allX = [];
@@ -204,7 +204,7 @@ grid on
 legend()
 
 
-%% Compute rms and curvatures of a picked shifted lane (arc spline)
+%% Compute rms and max error of a picked shifted lane (arc spline)
 segmentNumShifted = 282;
 segmentLengthShifted = 1000;
 
@@ -222,7 +222,7 @@ for j = 1:numel(rms_array_shifted)
     measurement_xy = [xEastShifted(start_idx:end_idx) yNorthShifted(start_idx:end_idx)];
 
     % [rms_error, max_error, errors] = computeSegmentError(measurement_xy,ground_truth_xy);
-  [rms_array_shifted(j), max_err_array_shifted(j), ~] = ...
+  [rms_array_shifted(j), max_err_array_shifted(j), errors] = ...
         computeSegmentError(measurement_xy,ground_truth_xy_shifted);
 end
 % figure;
@@ -439,7 +439,7 @@ xlim([1 numel(rms_array_ref)])
 % title('Error With Respect o OSM Map')
 %% Compute distance between centers
 
-[rms_error, max_error, errors] = computeSegmentError([allX{1} allY{1}],[allX{2} allY{2}]);
+[rms_error_GT, max_error_GT, errors_GT] = computeSegmentError([allX{1}(1:10000) allY{1}(1:10000)],[allX{2}(1:10000) allY{2}(1:10000)]);
 %%
 numAllClothoid = numel(all_clothoids{1});
 disp(['The road initially had ', num2str(numAllClothoid) ,' clothoids.'])
