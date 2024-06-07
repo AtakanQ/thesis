@@ -105,12 +105,6 @@ classdef bezier < handle
             acceleration_multiplier = linspace(obj.mkmin,obj.mkmax,obj.Nk);
             acceleration_tangential_multiplier = acceleration_multiplier * obj.dof/5;
             %DOF IS TOO HIGH. MAKING IT SMALLER GIVES A MORE SENSIBLE ROUTE
-            
-            % for k = 1:obj.Nk
-            %     acceleration_tangential_multiplier(k) = acceleration_multiplier(k) * obj.dof;
-            % end
-
-            
 
             obj.acceleration_zero = zeros(obj.Nk,2);
             obj.acceleration_final = zeros(obj.Nk,2);
@@ -275,9 +269,9 @@ classdef bezier < handle
         function plotCurves(obj,numCurves)
 
             figure;
-            plot(obj.start(1),obj.start(2),'*','MarkerSize',10,'LineWidth',1.5,'Color',[0 0 1]);
+            plot(obj.start(1),obj.start(2),'*','MarkerSize',10,'LineWidth',1.5,'Color',[0 0 1],'DisplayName',"Starting Point");
             hold on
-            plot(obj.finish(1),obj.finish(2),'*','MarkerSize',10,'LineWidth',1.5,'Color',[1 0 0]);
+            plot(obj.finish(1),obj.finish(2),'*','MarkerSize',10,'LineWidth',1.5,'Color',[1 0 0],'DisplayName',"Destination Point");
             axis equal
             title("Generated Beziér Curves")
             xlabel(" Distance (m) ")
