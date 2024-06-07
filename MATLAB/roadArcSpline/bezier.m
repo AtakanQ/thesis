@@ -33,6 +33,10 @@ classdef bezier < handle
     vehicleBoundaries
     Tangents
     Curvatures
+    tan_zero_changes
+    tan_final_changes
+    acc_zero_changes
+    acc_final_changes
     end
     
     methods
@@ -72,6 +76,11 @@ classdef bezier < handle
             obj.generateTangents(tzero,tfinal);
             obj.generateAccelerations(tzero,tfinal,curvature_zero,curvature_final);
             obj.generateCurves(A,B);
+            obj.tan_zero_changes = [];
+            obj.tan_final_changes = [];
+            obj.acc_zero_changes = [];
+            obj.acc_final_changes = [];
+
         end
         
         function generateTangents(obj,tzero,tfinal)
@@ -124,10 +133,24 @@ classdef bezier < handle
             P_zero = A;
             P_five = B;
             curve_position = 1;
+            
             for tan_zero = 1:obj.Nt
+                if tan_zero == 1
+                    obj.tan_zero_changes = [obj.tan_zero_changes curve_position];
+                end
                 for tan_final = 1:obj.Nt
+                    if tan_final == 1
+                        obj.tan_final_changes = [obj.tan_final_changes curve_position];
+                    end
                     for acc_zero = 1:obj.Nk
+                        if acc_zero == 1
+                            obj.acc_zero_changes = [obj.acc_zero_changes curve_position];
+                        end
                         for acc_final = 1:obj.Nk
+                            if acc_final == 1
+                                obj.acc_final_changes = [obj.acc_final_changes curve_position];
+                            end
+
                             obj.P_one(curve_position,:) = P_zero + obj.tzero_vectors(tan_zero,:)/5;
             
                             obj.P_two(curve_position,:) = obj.acceleration_zero(acc_zero,:)/20 + 2*obj.P_one(curve_position,:) - P_zero;
@@ -199,7 +222,56 @@ classdef bezier < handle
 
         end
         
-
+        function plotCurvesByControlPoint(obj,controlPoint)
+            figure;
+            plot(obj.start(1),obj.start(2),'*','MarkerSize',10,'LineWidth',1.5,'Color',[0 0 1],'DisplayName',"Starting Point");
+            hold on
+            plot(obj.finish(1),obj.finish(2),'*','MarkerSize',10,'LineWidth',1.5,'Color',[1 0 0],'DisplayName',"Destination Point");
+            axis equal
+            xlabel(" Distance (m) ",'FontSize',13)
+            ylabel(" Distance (m) ",'FontSize',13)
+            if controlPoint == 1
+                %plot varying tan_zero changes
+                title("Effect of Varying P_1",'FontSize',13)
+                plotList = 1:(obj.Nt * obj.Nk * obj.Nk):(numel(obj.Curves));
+                for i = 1:numel(plotList)
+                    idx = plotList(i);
+                    color = i / numel(plotList);
+                    plot(obj.Curves{idx}(:,1),obj.Curves{idx}(:,2),'Color',[0 color color],'LineWidth',1,...
+                        'DisplayName',"t_0 = [" + num2str(obj.tzero_vectors(i,1),'%.2f') + ", " + num2str(obj.tzero_vectors(i,2),'%.2f') + "]")
+                end
+                
+            elseif controlPoint == 2
+                %plot varying acc_zero changes
+                title("Effect of Varying P_2",'FontSize',13)
+                plotList = 1:(obj.Nk):(obj.Nk * obj.Nk);
+                for i = 1:numel(plotList)
+                    idx = plotList(i);
+                    color = i / numel(plotList);
+                    plot(obj.Curves{idx}(:,1),obj.Curves{idx}(:,2),'Color',[0 color color],'LineWidth',1,...
+                        'DisplayName',"a_0 = [" + num2str(obj.acceleration_zero(i,1),'%.2f') + ", " + num2str(obj.acceleration_zero(i,2),'%.2f') + "]")
+                end
+            elseif controlPoint == 3
+                title("Effect of Varying P_3",'FontSize',13)
+                plotList = 1:1:(obj.Nk);
+                for i = 1:numel(plotList)
+                    idx = plotList(i);
+                    color = i / numel(plotList);
+                    plot(obj.Curves{idx}(:,1),obj.Curves{idx}(:,2),'Color',[0 color color],'LineWidth',1,...
+                        'DisplayName',"a_f = [" + num2str(obj.acceleration_final(i,1),'%.2f') + ", " + num2str(obj.acceleration_final(i,2),'%.2f') + "]")
+                end
+            elseif controlPoint == 4
+                title("Effect of Varying P_4",'FontSize',13)
+                plotList = 1:(obj.Nk * obj.Nk):(obj.Nk * obj.Nk * obj.Nt);
+                for i = 1:numel(plotList)
+                    idx = plotList(i);
+                    color = i / numel(plotList);
+                    plot(obj.Curves{idx}(:,1),obj.Curves{idx}(:,2),'Color',[0 color color],'LineWidth',1,...
+                        'DisplayName',"t_f = [" + num2str(obj.tfinal_vectors(i,1),'%.2f') + ", " + num2str(obj.tfinal_vectors(i,2),'%.2f') + "]")
+                end
+            end
+            legend();
+        end
         function plotCurves(obj,numCurves)
 
             figure;

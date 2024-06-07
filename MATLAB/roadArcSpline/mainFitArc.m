@@ -47,3 +47,35 @@ for i = 1:numel(clothoidArray)
 end
 plot(middleArc.x_coor,middleArc.y_coor,"DisplayName","Arc","LineWidth",2)
 legend();
+
+%% Plot varying P1
+
+trajectories.plotCurvesByControlPoint(1);
+
+plot(clothoid.allX,clothoid.allY,'Color',[0.5 0 0.5],'DisplayName','Lane Center','LineWidth',1.2)
+
+legend();
+ 
+%% Plot varying P2
+
+trajectories.plotCurvesByControlPoint(2);
+
+plot(clothoid.allX,clothoid.allY,'Color',[0.5 0 0.5],'DisplayName','Lane Center','LineWidth',1.2)
+
+legend();
+
+%% Plot varying P3
+
+trajectories.plotCurvesByControlPoint(3);
+
+plot(clothoid.allX,clothoid.allY,'Color',[0.5 0 0.5],'DisplayName','Lane Center','LineWidth',1.2)
+
+legend();
+
+%% Plot varying P4
+
+trajectories.plotCurvesByControlPoint(4);
+
+plot(clothoid.allX,clothoid.allY,'Color',[0.5 0 0.5],'DisplayName','Lane Center','LineWidth',1.2)
+
+legend();
