@@ -1,3 +1,4 @@
+set(groot, 'defaultAxesXGrid', 'on', 'defaultAxesYGrid', 'on', 'defaultAxesZGrid', 'on');
 % Define parameters
 center = [0, 0]; % Center of the arcs
 radius1 = 10; % Radius of the first arc (original lane)

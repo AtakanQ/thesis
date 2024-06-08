@@ -1,4 +1,5 @@
-function [clothoidArray,middleArc] = fitArcSpline(init_pos,init_tan,init_curv,clothoid_GT)
+function [clothoidArray,middleArc] = ...
+    fitArcSpline(init_pos,init_tan,init_curv,clothoid_GT)
 % sigma = 0.01; %This is the slope of the curvature plot
 
 theta0 = -(clothoid_GT.init_tan - init_tan);
@@ -10,7 +11,7 @@ xyPairs = [clothoid_GT.allX' clothoid_GT.allY'];
 if(theta0 > 0)
     if(k0 < 0) % init curv is negative
         L = -2 * theta0 / k0;
-        k1 = init_curv + sigma*L; % intermediate curvature
+        k1 = init_curv + sigma*L; % final curvature after fixing heading and curvature
         clothoidArray(1) = clothoid_v2(init_pos, init_tan, init_curv, k1, L);
         x0 = clothoidArray(1).allX(end);
         y0 = clothoidArray(1).allY(end);

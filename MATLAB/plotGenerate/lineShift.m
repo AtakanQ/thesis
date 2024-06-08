@@ -1,3 +1,4 @@
+set(groot, 'defaultAxesXGrid', 'on', 'defaultAxesYGrid', 'on', 'defaultAxesZGrid', 'on');
 % Define parameters
 length = 7; % Length of the line
 angle_degrees = 60; % Angle in degrees

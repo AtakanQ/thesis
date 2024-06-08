@@ -1,3 +1,4 @@
+set(groot, 'defaultAxesXGrid', 'on', 'defaultAxesYGrid', 'on', 'defaultAxesZGrid', 'on');
 addpath('../roadArcSpline/')
 
 A = [0 0];
@@ -11,10 +12,10 @@ final_curvature = .01;
 trajectories = bezier(A,B,tzero,tfinal,init_curvature,final_curvature);
 
 trajectories.plotCurves(1);
-title("Bézier Curve Example","FontSize",1, 3)
+title("Bézier Curve Example","FontSize",13)
 xlabel("xEast (m)","FontSize",13)
 ylabel("yNorth (m)","FontSize",13)
-
+axis equal
 %% Plot varying P1
 
 trajectories.plotCurvesByControlPoint(1);

@@ -1,3 +1,4 @@
+set(groot, 'defaultAxesXGrid', 'on', 'defaultAxesYGrid', 'on', 'defaultAxesZGrid', 'on');
 addpath('../roadArcSpline/')
 
 init_pos = [0 0];
