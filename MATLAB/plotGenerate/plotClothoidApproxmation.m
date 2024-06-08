@@ -135,3 +135,17 @@ title("Error for High and Low Order Approximation",'FontSize',13)
 xlabel("Sample Number")
 ylabel("Error (m)")
 ylim([0 0.25])
+
+%% Plot the error between ground truth and approximation
+measurement_xy3 = [segments{1}(282).allX' segments{1}(282).allY'];
+ground_truth_xy_3 = [all_clothoids{1}(283).allX' all_clothoids{1}(283).allY'];
+
+[rms_error, max_error, errors] = ...
+    computeSegmentError(measurement_xy3,ground_truth_xy_3);
+figure;
+plot(errors,'LineWidth',1.5)
+legend("Error",'FontSize',13)
+title("Euclidian Distance Error For Order: 6",'FontSize',13)
+xlabel("Sample Along Approximation")
+ylabel("Error (m)")
+ylim([0 0.05])
