@@ -1,3 +1,4 @@
+set(groot, 'defaultAxesXGrid', 'on', 'defaultAxesYGrid', 'on', 'defaultAxesZGrid', 'on');
 %% REAL DATA 
 close all
 clear
@@ -63,13 +64,13 @@ for i = 1:length(xEastCenter)
 end
 
 figure;
-for i = 1:4
+for i = 1:numel(all_clothoids{1})
     [HERE_lats,HERE_lons,h] = enu2geodetic(all_clothoids{1}(i).allX,all_clothoids{1}(i).allY...
         ,0,refLat,refLon,0,wgs84Ellipsoid);
 
-    geoplot(HERE_lats,HERE_lons,'LineWidth',2)
+    geoplot(HERE_lats,HERE_lons,'LineWidth',2,'Color',[0.3010, 0.7450, 0.9330])
     hold on
-    title("G1 Clothoid Fitted Road Segments","FontSize",13)
+    title("G1 Clothoid Fitted Road (Autobahn 38)","FontSize",13)
     geobasemap satellite
 end
 
@@ -367,7 +368,7 @@ end
 % legend()
 
 figure;
-plot(rms_array_ref,'DisplayName', 'RMS Error','LineWidth',1.5)
+% plot(rms_array_ref,'DisplayName', 'RMS Error','LineWidth',1.5)
 hold on
 plot(max_err_array_ref,'DisplayName', 'Max Error','LineWidth',1.5,'Color',[0.8500, 0.3250, 0.0980])
 ylabel('Error (m)','FontSize',13)
@@ -378,7 +379,7 @@ xlabel('Index of 10 m subsegment','FontSize',13)
 % plot(xAxis,curvatures{i} ,'DisplayName', strcat('Curvature:',num2str(i)))
 legend()
 title('Error Between Approximated Base Lane and Ground Truth','FontSize',13)
-ylim([0 0.1])
+ylim([0 0.01])
 xlim([1 numel(rms_array_ref)])
 %% Compute rms and max error of a picked reference line segment
 segmentNum = 275;
@@ -407,7 +408,7 @@ end
 % legend()
 
 figure;
-plot(rms_array_ref_line,'DisplayName', 'RMS Error','LineWidth',1.5)
+% plot(rms_array_ref_line,'DisplayName', 'RMS Error','LineWidth',1.5)
 hold on
 plot(max_err_array_ref_line,'DisplayName', 'Max Error','LineWidth',1.5,'Color',[0.8500, 0.3250, 0.0980])
 ylabel('Error (m)','FontSize',13)
