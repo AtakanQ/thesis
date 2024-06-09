@@ -18,6 +18,9 @@ classdef clothoid < handle
       numPointsPerSegment
       curvatures
       curv_derivative
+      arcLenArray
+      cumulativeArcLenArray
+      arcTangents
    end
 
    methods
@@ -36,6 +39,7 @@ classdef clothoid < handle
             obj.numPointsPerSegment = ceil(length / 0.1) / order; % point for each 10 centimeter
             obj.curv_derivative = (final_curvature - init_curvature)/length;
             obj.generateArcSegments();
+            
             if(obj.curv_sign == 0)
                 error('Curvature is zero')
             end
@@ -43,50 +47,55 @@ classdef clothoid < handle
        end
 
        function generateArcSegments(obj)
-           % if obj.order <= 3
-           %     error('Order is too low.')
-           % end
 
            obj.centers = zeros(obj.order+1,2);
            obj.curvatures = zeros(obj.order+1,1);
-           % obj.arcX = zeros(obj.order+1,obj.numPointsPerSegment);
-           % obj.arcY = zeros(obj.order+1,obj.numPointsPerSegment);
            obj.arcX = cell(obj.order+1,1);
            obj.arcY = cell(obj.order+1,1);
-
+           obj.arcLenArray = zeros(obj.order + 1,1);
+            obj.cumulativeArcLenArray = zeros(obj.order + 1,1);
+            obj.arcTangents = zeros(obj.order + 1,1);
            obj.arcSegments(1) = arcSegment(obj.init_pos,obj.init_tan,...
                abs(inv(obj.init_curv)),obj.length/(2 * obj.order),sign(obj.init_curv),obj.numPointsPerSegment/2);
            [obj.arcX{1}, obj.arcY{1}] = obj.arcSegments(1).getXY();
            obj.centers(1,:) = obj.arcSegments(1).center;
            obj.curvatures(1) =  obj.init_curv;
-
+           obj.arcLenArray(1) = obj.length/(2 * obj.order);
+           obj.cumulativeArcLenArray(1) = obj.length/(2 * obj.order);
+           obj.arcTangents(1) = obj.init_tan;
            for i = 2:(obj.order)
                 curvature = obj.init_curv + (i-1) * (obj.final_curv - obj.init_curv) / obj.order;
                 radius = abs(1/curvature);
                 position = [obj.arcSegments(i-1).x_coor(end) obj.arcSegments(i-1).y_coor(end)];
                 arcLen = obj.length/obj.order;
                 start_angle = obj.arcSegments(i-1).final_angle;
-
+                
                 obj.arcSegments(i) = arcSegment(position,start_angle,radius,arcLen,sign(curvature),obj.numPointsPerSegment);
                 [obj.arcX{i}, obj.arcY{i}] = obj.arcSegments(i).getXY();
+                
+                obj.arcTangents(i) = start_angle;
+                obj.cumulativeArcLenArray(i) = obj.cumulativeArcLenArray(i-1) + arcLen;
+                obj.arcLenArray(i) = arcLen;
                 obj.centers(i,:) = obj.arcSegments(i).center;
                 obj.curvatures(i) = curvature;
            end
            
-           curvature = obj.final_curv;
-           radius = abs(1/curvature);
-           position = [obj.arcSegments(end).x_coor(end) obj.arcSegments(end).y_coor(end)];
-           start_angle = obj.arcSegments(end).final_angle;
-           arcLen = obj.length/(2*obj.order);
-           obj.arcSegments(end + 1) = arcSegment(position,start_angle,radius,arcLen,sign(curvature),obj.numPointsPerSegment/2);
-           [obj.arcX{end}, obj.arcY{end}] = obj.arcSegments(end).getXY();
-           obj.centers(end,:) = obj.arcSegments(end).center;
+            curvature = obj.final_curv;
+            radius = abs(1/curvature);
+            position = [obj.arcSegments(end).x_coor(end) obj.arcSegments(end).y_coor(end)];
+            start_angle = obj.arcSegments(end).final_angle;
+            arcLen = obj.length/(2*obj.order);
+            obj.arcSegments(end + 1) = arcSegment(position,start_angle,radius,arcLen,sign(curvature),obj.numPointsPerSegment/2);
+            [obj.arcX{end}, obj.arcY{end}] = obj.arcSegments(end).getXY();
+            obj.centers(end,:) = obj.arcSegments(end).center;
             obj.curvatures(end) = curvature;
-
+            obj.arcLenArray(end) = arcLen;
+            obj.cumulativeArcLenArray(end) = obj.cumulativeArcLenArray(end-1) + arcLen;
+            obj.arcTangents(end) = start_angle;
            % obj.allX = zeros(1,(obj.order+1)*obj.numPointsPerSegment);
            % obj.allY = zeros(1,(obj.order+1)*obj.numPointsPerSegment);
-          obj.allX = [];
-           obj.allY = [];
+            obj.allX = [];
+            obj.allY = [];
 
             for j = 1:(obj.order + 1)
 
