@@ -1,7 +1,7 @@
 function [clothoidArray,middleArc] = ...
     fitArcSpline(init_pos,init_tan,init_curv,clothoid_GT)
 % sigma = 0.01; %This is the slope of the curvature plot
-
+% This does not work.
 theta0 = -(clothoid_GT.init_tan - init_tan);
 k0 = -(clothoid_GT.init_curv - init_curv);
 sigma = k0 * k0 / (2 * theta0);
