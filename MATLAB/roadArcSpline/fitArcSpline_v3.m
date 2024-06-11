@@ -35,18 +35,23 @@ isOnRight = sign(crossVector(3));
 %positive if roadcenter is on right
 positionError = sign(isOnRight)*norm(closest_point - wayPoints(wayPointCounter).pos);
 
-
+case1 = false;
+case2 = false;
+case3 = false;
+case4 = false;
 if(theta0 > 0)
     if(k0 < 0) % case 1
         sigma = k0 * k0 / (2 * theta0);
         hcLength = -2 * theta0 / k0;
         hcCorrectionLengths = hcLength;
+        case1 = true;
     else % case 2
         sigma = 0.0025;
         l1 = k0/sigma + sqrt(k0^2/2/(sigma^2) + theta0/sigma);  
         l2 = l1 - k0/sigma; 
         hcLength = l1 + l2;
         hcCorrectionLengths = [l1; l2];
+        case2 = true;
     end
 else
     if(k0 < 0) % case 3
@@ -55,10 +60,12 @@ else
         l2 = l1 - k0/sigma; 
         hcLength = l1 + l2;
         hcCorrectionLengths = [l1; l2];
+        case3 = true;
     else % case 4
         sigma = k0 * k0 / (2 * theta0);
         hcLength = -2 * theta0 / k0;
         hcCorrectionLengths = hcLength;
+        case4 = true;
     end
 end
 
@@ -173,10 +180,23 @@ for i = 1:numSections
     
     for n = 1:numel(hcCorrectionLengths)
         if(wayPointsLength <= sum(hcCorrectionLengths(1:n)))
-            if n == 1 % first part
-                hcRate = -sigma;
-            elseif n == 2 % second part
-                hcRate = sigma;
+            if (n == 1 )% first part
+                if case2
+                    hcRate = -sigma;
+                elseif case4
+                    hcRate = sigma;
+                else
+                    hcRate = sigma;
+                end
+            elseif (n == 2)% second part
+                if case2
+                    hcRate = sigma;
+                elseif case4
+                    hcRate = -sigma;
+                else
+                    hcRate = -sigma;
+                end
+                
             end
             break
         end
