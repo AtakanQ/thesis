@@ -1,8 +1,8 @@
 clear
 
 load("all_clothoids.mat")
-posError = -0.2; %meters
-headingError = deg2rad(5); %radians
+posError = 0.01; %meters
+headingError = deg2rad(10); %radians
 curvatureError = 0.01;
 clothoid_GT = all_clothoids{1}(158);
 clothoids_GT = all_clothoids{1}(158:end);
@@ -17,9 +17,9 @@ arcSegClass = arcSegment;
 
 
 % Ego vehicle attitude
+vehicleTan = clothoid_GT.init_tan+headingError;
 vehicleX = clothoid_GT.allX(1) + posError * cos(clothoid_GT.init_tan + pi/2);
 vehicleY = clothoid_GT.allY(1) + posError * sin(clothoid_GT.init_tan + pi/2);
-vehicleTan = clothoid_GT.init_tan+headingError;
 vehicleCurv = clothoid_GT.init_curv + curvatureError;
 %% Try to fit clothoid
 
@@ -36,7 +36,7 @@ vehicleCurv = clothoid_GT.init_curv + curvatureError;
 
 
 figure;
-plot(clothoid_GT.allX,clothoid_GT.allY,'Color',[0 1 0],'DisplayName','Ground Truth')
+plot(clothoid_GT.allX,clothoid_GT.allY,'Color',[0 1 1],'DisplayName','Ground Truth')
 hold on
 axis equal
 for i = 1:numel(clothoidArray)
