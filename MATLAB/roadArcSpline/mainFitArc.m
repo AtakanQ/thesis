@@ -1,9 +1,9 @@
 clear
 
 load("all_clothoids.mat")
-posError = 0.01; %meters
-headingError = deg2rad(10); %radians
-curvatureError = 0.01;
+posError = 0.25; %meters
+headingError = deg2rad(5); %radians
+curvatureError = -0.01;
 clothoid_GT = all_clothoids{1}(158);
 clothoids_GT = all_clothoids{1}(158:end);
 
