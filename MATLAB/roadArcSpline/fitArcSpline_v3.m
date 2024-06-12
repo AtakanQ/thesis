@@ -24,16 +24,8 @@ theta0 = -(clothoids_GT(1).allTangent(1) - wayPoints(wayPointCounter).tan);
 k0 = -(clothoids_GT(1).allCurvature(1) - wayPoints(wayPointCounter).curv);
 
 xyPairs = [clothoids_GT(1).allX' clothoids_GT(1).allY'];
-curr_point = wayPoints(1).pos;
-[closest_point, ~] = findClosestPointOnLine(curr_point(1), curr_point(2),...
-    wayPoints(wayPointCounter).tan + pi/2, xyPairs);
-to_closest = [(closest_point-curr_point) 0];
-curr_heading = [cos(wayPoints(wayPointCounter).tan) sin(wayPoints(wayPointCounter).tan) 0];
-crossVector = cross(to_closest,curr_heading);
-isOnRight = sign(crossVector(3));
 
-%positive if roadcenter is on right
-positionError = sign(isOnRight)*norm(closest_point - wayPoints(wayPointCounter).pos);
+
 
 case1 = false;
 case2 = false;
@@ -56,8 +48,8 @@ if(theta0 > 0)
 else
     if(k0 < 0) % case 3
         sigma = 0.0025;
-        l1 = k0/sigma + sqrt(k0^2/2/(sigma^2) + theta0/sigma);  
-        l2 = l1 - k0/sigma; 
+        l1 = k0/(-sigma) + sqrt(k0^2/2/(sigma^2) - theta0/sigma);  
+        l2 = l1 - k0/(-sigma); 
         hcLength = l1 + l2;
         hcCorrectionLengths = [l1; l2];
         case3 = true;
@@ -68,6 +60,69 @@ else
         case4 = true;
     end
 end
+
+
+if length(hcCorrectionLengths) == 2
+    if case2
+        hcRate = -sigma;
+    elseif case4
+        hcRate = sigma;
+    else
+        hcRate = sigma;
+    end
+    intermediateCurv = init_curv ...
+        + hcRate*hcCorrectionLengths(1) + ...
+        roadData(1).curvRate * hcCorrectionLengths(1);
+
+    posErrorClothoid(1) = clothoid_v2(init_pos,init_tan, init_curv, intermediateCurv,...
+               hcCorrectionLengths(1),0.01);
+
+    intermediateXY = [posErrorClothoid(1).allX(end) posErrorClothoid(1).allY(end)];
+    intermediateTan = posErrorClothoid(1).final_tan;
+    final_curvature = intermediateCurv ...
+        -hcRate*hcCorrectionLengths(2) + ...
+        roadData(1).curvRate * hcCorrectionLengths(2);
+
+    posErrorClothoid(2) = clothoid_v2(intermediateXY,intermediateTan, intermediateCurv, final_curvature,...
+               hcCorrectionLengths(2),0.01);
+
+else
+    final_curvature = init_curv + ...
+        sigma*hcLength + ...
+        roadData(1).curvRate*hcLength;
+    posErrorClothoid(1) = clothoid_v2(init_pos,init_tan, init_curv, final_curvature,...
+               hcCorrectionLengths(1),0.01);
+end
+% Heading curvature correction to compute the position error
+% figure;
+% for i = 1:numel(posErrorClothoid)
+%     posErrorClothoid(i).plotPlain();
+%     hold on
+% end
+% clothoids_GT(1).plotPlain();
+% legend();
+
+%Find closest point
+errorComputationPoint = [posErrorClothoid(end).allX(end) posErrorClothoid(end).allY(end)];
+errorComputatonTangent = posErrorClothoid(end).final_tan;
+errorComputationCurvature = posErrorClothoid(end).final_curv;
+[closest_point, idx] = findClosestPointOnLine(errorComputationPoint(1), errorComputationPoint(2),...
+    errorComputatonTangent + pi/2, xyPairs);
+
+positionErrorComputed = norm(closest_point - errorComputationPoint)
+tanErrorComputed = rad2deg(clothoids_GT(1).allTangent(idx) - errorComputatonTangent)
+curvErrorComputed = errorComputationCurvature - clothoids_GT(1).allCurvature(idx)
+
+curr_point = errorComputationPoint;
+[closest_point, ~] = findClosestPointOnLine(curr_point(1), curr_point(2),...
+    tanErrorComputed + pi/2, xyPairs);
+to_closest = [(closest_point-curr_point) 0];
+curr_heading = [cos(errorComputatonTangent) sin(errorComputatonTangent) 0];
+crossVector = cross(to_closest,curr_heading);
+isOnRight = sign(crossVector(3));
+
+%positive if roadcenter is on right
+positionError = sign(isOnRight)*norm(closest_point - errorComputationPoint);
 
 %Compute bi-elementary
 positionCompensationLength = hcLength;
