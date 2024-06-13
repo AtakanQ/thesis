@@ -1,5 +1,5 @@
 function [clothoidArray,wayPoints] = ...
-    fitArcSpline_v3(init_pos,init_tan,init_curv,clothoids_GT)
+    fitArcSpline_v3(init_pos,init_tan,init_curv,clothoids_GT,plotOn)
 
 wayPoints.pos = init_pos;
 wayPoints.tan = init_tan;
@@ -155,6 +155,42 @@ numClothoidsPassed = 1;
 numBiElementaryPassed = 1;
 numHcCorrectionPassed = 1;
 
+%plot
+if plotOn
+    figure;
+    biElemLens = 0;
+    for i = 1:5
+        biElemLens = [biElemLens sum(biElementaryLengths(1:i))];
+    end
+    biElemCurv = [0 k_peak 0 0 -k_peak 0];
+    plot(biElemLens,biElemCurv,"LineWidth",1.2,"DisplayName","Bi-elementary Curvature")
+    hold on
+    roadLens = 0;
+    roadCurvs = clothoids_GT.init_curv;
+    for i = 1:numClothoidsToPass
+        roadLens = [roadLens roadData(i).cumulativeLength];
+        roadCurvs(i+1) = roadLens(i+1) * roadData(i).curvRate;
+    end
+    roadCurvs(2) = 0.1;
+    ylim([-0.2 0.2])
+
+    plot(roadLens,roadCurvs,"LineWidth",1.2,"DisplayName","Road Curvature")
+    hccPlotLens = 0;
+    hccCurvatures = k0;
+    for i = 1:numel(hcCorrectionLengths)
+        hccPlotLens = [hccPlotLens hcCorrectionLengths(i)];
+        k1 = hccCurvatures(i) * hcCorrectionLengths(i);
+        hccCurvatures(i+1) = k1;
+    end
+    plot(hccPlotLens,hccCurvatures,"LineWidth",1.2,"DisplayName","HCC Curvature")
+    xlim([0 hcLength])
+    legend();
+    title("Curvature Rates of Each Maneuver","FontSize",13)
+    ylabel("Curvature (m^-^1)","FontSize",13)
+    xlabel("Arc Length (m)","FontSize",13)
+    grid on
+    saveas(gcf,"curvaturesOfManeuvers.png")
+end
 for i = 1:numSections
     % find the minimum length to determine curvature rates.
     minLen = Inf;
