@@ -1,9 +1,10 @@
 clear
+close all
 
 load("all_clothoids.mat")
-posError = 0.25; %meters
-headingError = deg2rad(5); %radians
-curvatureError = -0.01;
+posError = 0.55; %meters
+headingError = deg2rad(2); %radians
+curvatureError = 0.01;
 clothoid_GT = all_clothoids{1}(158);
 clothoids_GT = all_clothoids{1}(158:end);
 
@@ -29,14 +30,14 @@ vehicleCurv = clothoid_GT.init_curv + curvatureError;
 
 % [clothoidArray,wayPoints] = fitArcSpline_v2([vehicleX vehicleY],...
 %     vehicleTan,vehicleCurv,clothoidApprox);
-
+plotOn = false;
 [clothoidArray,wayPoints] = ...
     fitArcSpline_v3([vehicleX vehicleY],vehicleTan,vehicleCurv,...
-    clothoids_GT);
+    clothoids_GT,plotOn);
 
 
 figure;
-plot(clothoid_GT.allX,clothoid_GT.allY,'Color',[0 1 1],'DisplayName','Ground Truth')
+plot(clothoid_GT.allX,clothoid_GT.allY,'Color',[0.5 0 1],'DisplayName','Ground Truth','LineWidth',1.2)
 hold on
 axis equal
 for i = 1:numel(clothoidArray)
@@ -108,3 +109,127 @@ trajectories.plotCurvesByControlPoint(4);
 plot(clothoid_GT.allX,clothoid_GT.allY,'Color',[0.5 0 0.5],'DisplayName','Lane Center','LineWidth',1.2)
 
 legend();
+
+%% Plot arc spline the results
+
+% for i = 1:3
+    ground_truth_xy = [clothoid_GT.allX' clothoid_GT.allY'];
+    
+% end
+
+% plot the position error
+arcSpline.allX = [];
+arcSpline.allY = [];
+arcSpline.allTangent = [];
+arcSpline.allCurvature = [];
+for i = 1:numel(clothoidArray)
+    arcSpline.allX = [arcSpline.allX clothoidArray(i).allX];
+    arcSpline.allY = [arcSpline.allY clothoidArray(i).allY];
+    arcSpline.allTangent = [arcSpline.allTangent clothoidArray(i).allTangent];
+    arcSpline.allCurvature = [arcSpline.allCurvature clothoidArray(i).allCurvature];
+end
+measurement_xy = [arcSpline.allX' arcSpline.allY'];
+[~, ~, arcSplineErrors] = ...
+    computeSegmentError(measurement_xy,ground_truth_xy);
+
+figure;
+plot(arcSpline.allX,arcSpline.allY,"LineWidth",1.5,"DisplayName","Arc Spline Trajectory")
+hold on
+plot(clothoid_GT.allX,clothoid_GT.allY,"LineWidth",1.5,"DisplayName","Road Centerline")
+xlabel("xEast (m)","FontSize",13)
+ylabel("yNorth (m)","FontSize",13)
+grid on
+title("Arc Spline Trajectory and Road Centerline","FontSize",13)
+axis equal
+legend();
+
+figure;
+plot(arcSplineErrors,"LineWidth",1.5,"DisplayName","Arc Spline Error")
+xlabel("Sample index","FontSize",13)
+ylabel("Distance to centerline (m)","FontSize",13)
+grid on
+title("Euclidian Distance Error of Arc Spline Trajectory","FontSize",13)
+legend();
+
+tangentsGT = clothoid_GT.allTangent(1:idx);
+curvaturesGT = clothoid_GT.allCurvature(1:idx);
+n1 = length(arcSpline.allTangent);
+n2 = length(tangentsGT);
+
+newIndices = linspace(1, n2, n1);
+downsampledArrayTangent = interp1(1:n2, tangentsGT, newIndices);
+downsampledArrayCurvature = interp1(1:n2, curvaturesGT, newIndices);
+% degTan = rad2deg(downsampledArrayTangent);
+% degTanArcspl = rad2deg(arcSpline.allTangent);
+figure;
+plot(rad2deg(downsampledArrayTangent-arcSpline.allTangent),"LineWidth",1.5,"DisplayName","Heading Error")
+xlabel("Sample index","FontSize",13)
+ylabel("Heading Error (°)","FontSize",13)
+grid on
+title("Heading Error of Arc Spline Trajectory","FontSize",13)
+legend();
+
+figure;
+plot(downsampledArrayCurvature-arcSpline.allCurvature,"LineWidth",1.5,"DisplayName","Curvature Error")
+xlabel("Sample index","FontSize",13)
+ylabel("Curvature Error (m^-^1)","FontSize",13)
+grid on
+title("Curvature Error of Arc Spline Trajectory","FontSize",13)
+legend();
+%% Plot the Bézier results
+% pick a trajectory
+index = 225;
+bezierTrajectory.allX = trajectories.Curves{index}(:,1);
+bezierTrajectory.allY = trajectories.Curves{index}(:,2);
+bezierTrajectory.allTangent = trajectories.Tangents{index};
+bezierTrajectory.allCurvature = trajectories.Curvatures{index};
+
+measurement_xy = [bezierTrajectory.allX bezierTrajectory.allY];
+[~, ~, bezierErrors] = ...
+    computeSegmentError(measurement_xy,ground_truth_xy);
+
+figure;
+plot(bezierTrajectory.allX,bezierTrajectory.allY,"LineWidth",1.5,"DisplayName","Bézier Trajectory")
+hold on
+plot(clothoid_GT.allX,clothoid_GT.allY,"LineWidth",1.5,"DisplayName","Road Centerline")
+xlabel("xEast (m)","FontSize",13)
+ylabel("yNorth (m)","FontSize",13)
+grid on
+title("Bézier Trajectory and Road Centerline","FontSize",13)
+axis equal
+legend();
+
+figure;
+plot(bezierErrors,"LineWidth",1.5,"DisplayName","Bézier Error")
+xlabel("Sample index","FontSize",13)
+ylabel("Distance to centerline (m)","FontSize",13)
+grid on
+title("Euclidian Distance Error of Bézier Trajectory","FontSize",13)
+legend();
+
+tangentsGT = clothoid_GT.allTangent;
+curvaturesGT = clothoid_GT.allCurvature;
+n1 = length(bezierTrajectory.allTangent);
+n2 = length(tangentsGT);
+
+newIndices = linspace(1, n2, n1);
+downsampledArrayTangent = interp1(1:n2, tangentsGT, newIndices)';
+downsampledArrayCurvature = interp1(1:n2, curvaturesGT, newIndices)';
+% degTan = rad2deg(downsampledArrayTangent);
+% degTanArcspl = rad2deg(arcSpline.allTangent);
+figure;
+plot(rad2deg(downsampledArrayTangent-bezierTrajectory.allTangent),"LineWidth",1.5,"DisplayName","Heading Error")
+xlabel("Sample index","FontSize",13)
+ylabel("Heading Error (°)","FontSize",13)
+grid on
+title("Heading Error of Bézier Trajectory","FontSize",13)
+legend();
+
+figure;
+plot(downsampledArrayCurvature-bezierTrajectory.allCurvature,"LineWidth",1.5,"DisplayName","Curvature Error")
+xlabel("Sample index","FontSize",13)
+ylabel("Curvature Error (m^-^1)","FontSize",13)
+grid on
+title("Curvature Error of Bézier Trajectory","FontSize",13)
+legend();
+
