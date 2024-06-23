@@ -1,0 +1,9 @@
+Related Work:
+-Mention offline map usage and offline maps in autonomous driving.
+(Data structure, source, credibility)
+-Road modelling algorithms
+(B-splines, cubic spline etc, line interpolation)
+-Trajectory planning algorithms
+(Bézier, Hybrid A* etc.)
+
+Contributions:

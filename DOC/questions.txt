@@ -1,0 +1,4 @@
+-Should every equation be numbered?
+-For which parts should I use pseudocode?
+-Should I use "I" or "we" instead of passive sentences?
+-How should I write the approximation? It is very close to Ardam's paper.
