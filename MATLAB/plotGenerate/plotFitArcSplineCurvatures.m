@@ -41,7 +41,7 @@ ylim([-1.1*max(k), 1.1*max(k)]);
 xlim([0 L*1.5])
 % Remove all ticks and labels
 set(gca, 'XTick', [0 L], 'YTick', [k1/2 k2/2]);
-yticklabels({'k_0','0'})
+yticklabels({'k_e_r_r_o_r','0'})
 xticklabels({'0',''})
 set(gca, 'FontSize', 13);
 hold off;   
