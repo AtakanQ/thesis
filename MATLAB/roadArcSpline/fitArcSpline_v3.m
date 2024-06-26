@@ -94,13 +94,43 @@ else
                hcCorrectionLengths(1),0.01);
 end
 % Heading curvature correction to compute the position error
-% figure;
-% for i = 1:numel(posErrorClothoid)
-%     posErrorClothoid(i).plotPlain();
-%     hold on
-% end
-% clothoids_GT(1).plotPlain();
-% legend();
+figure;
+for i = 1:numel(posErrorClothoid)
+    posErrorClothoid(i).plotPlain([1 0 0]);
+    hold on
+end
+clothoids_GT(1).plotPlain([0 0 1]);
+
+initPosError = norm([clothoids_GT(1).allX(1) clothoids_GT(1).allY(1)] - [wayPoints(1).pos]);
+ground_truth_xy = [clothoids_GT(1).allX' clothoids_GT(1).allY'];
+finalPoint = [posErrorClothoid(end).allX(end) posErrorClothoid(end).allY(end)];
+[closestPoint, index] = findClosestPointOnLine(...
+    posErrorClothoid(end).allX(end),posErrorClothoid(end).allY(end),...
+    posErrorClothoid(end).allTangent(end) + pi/2,ground_truth_xy)
+finalPosError = norm(finalPoint - closestPoint);
+
+
+plot([clothoids_GT(1).allX(1) wayPoints(1).pos(1)],[clothoids_GT(1).allY(1) wayPoints(1).pos(2)],"--",'Color',[0 0 0],'LineWidth',1)
+
+plot(   [finalPoint(1) closestPoint(1)],...
+    [finalPoint(2) closestPoint(2)],"--",'Color',[0 0 0],'LineWidth',1)
+xlabel("xEast (m)","FontSize",13)
+ylabel("yNorth (m)","FontSize",13)
+title("HCC Maneuver Effect on Position Error","FontSize",13)
+
+text_string = sprintf('%0.2f m', finalPosError);
+text((finalPoint(1) + closestPoint(1))/2, ...
+    (finalPoint(2) + closestPoint(2))/2, text_string,'VerticalAlignment','top',...
+    'HorizontalAlignment', 'left', 'FontSize', 10);
+
+text_string = sprintf('%0.2f m', initPosError);
+text((clothoids_GT(1).allX(1) + wayPoints(1).pos(1))/2, ...
+    (clothoids_GT(1).allY(1) + wayPoints(1).pos(2))/2, text_string,'VerticalAlignment','bottom',...
+    'HorizontalAlignment', 'center', 'FontSize', 10);
+h1 = plot(NaN,NaN,'Color',[1 0 0]);
+h2 = plot(NaN,NaN,'Color',[0 0 1]);
+h3 = plot(NaN,NaN,'Color',[0 0 0]);
+legend([h1 h2 h3],{'Trajectory','Road Centerline','Errors'})
 
 %Find closest point
 errorComputationPoint = [posErrorClothoid(end).allX(end) posErrorClothoid(end).allY(end)];

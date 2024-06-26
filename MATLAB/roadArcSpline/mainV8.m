@@ -38,6 +38,7 @@ for j = 1:length(laneBorders)
 end
 
 figure;
+
 for i = 1:size(xEastCenter,2)    
     plot(xEastCenter{i},yNorthCenter{i},'DisplayName',strcat('Lane ',num2str(i)))
     hold on
@@ -85,12 +86,30 @@ for i = 2:length(xEastCenter_LB)
     [all_clothoids_LB{i}] = ...
         generateClothoids(xEastCenter_LB{i},yNorthCenter_LB{i},theta_GT_LB{i},curvature_GT_LB{i},dk_LB{i},L_LB{i});
 end
+
+figure;
+plot(xEastCenter{1},yNorthCenter{1},'*','MarkerSize',10,'Color',[0 1 0])
+axis equal
+hold on
+for i = 1:numel(all_clothoids{1})
+    plot(all_clothoids{1}(i).allX,all_clothoids{1}(i).allY,"Color",[1 0 0])
+end
+legend("Waypoints","G1 Fitted Road")
+
 [theta_OSM,curvature_OSM,dk_OSM,L_OSM,...
     ~,~,~,~,~] = ...
     G1spline( [xEast yNorth]);
 all_clothoids_OSM = generateClothoids(xEast,yNorth,...
     theta_OSM,curvature_OSM,dk_OSM,L_OSM);
 
+% pick some of the data from roads
+roadSegmentData = zeros(floor(numel(all_clothoids{1})/10),3);
+for i = 1:floor(numel(all_clothoids{1})/10)
+    roadSegmentData(i,1) = all_clothoids{1}(i+10).init_curv;
+    roadSegmentData(i,2) = all_clothoids{1}(i+10).final_curv;
+    roadSegmentData(i,3) = all_clothoids{1}(i+10).curv_length;
+end
+save("roadSegmentData.mat","roadSegmentData")
 %% Represent the road
 lineCfg.lineDegreeDeviation = 0.2; % Allowed heading devation at the end of the segment (degrees)
 lineCfg.rmsThreshold = 0.1; % RMS deviation from real road (meters)
@@ -455,6 +474,20 @@ xlim([1 numel(rms_array_ref_line)])
 %% Compute distance between centers
 
 [rms_error_GT, max_error_GT, errors_GT] = computeSegmentError([allX{1}(1:10000) allY{1}(1:10000)],[allX{2}(1:10000) allY{2}(1:10000)]);
+%% Compute memory usage
+roadLen = 0;
+numBytes = 0;
+for i = 1:numel(segments{1})
+    if(segments{1}(i).numArcs>0)
+        tempBytes = 16*segments{1}(i).numArcs;
+    else
+        tempBytes = 16;
+    end
+    roadLen = roadLen + segments{1}(i).segmentLength;
+   numBytes = numBytes + tempBytes;  
+end
+
+
 %%
 numAllClothoid = numel(all_clothoids{1});
 disp(['The road initially had ', num2str(numAllClothoid) ,' clothoids.'])

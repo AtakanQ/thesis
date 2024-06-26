@@ -177,6 +177,13 @@ classdef bezier < handle
                             % Compute curvatures
                             obj.Curvatures{curve_position} =[obj.curv_zero; (diff(obj.Tangents{curve_position}(1:(end-1)) ) ./ ds(2:end)) ; obj.curv_final];
 
+                            % curvature = computeBezierCurvature(t, P_zero, obj.P_one(curve_position,:), obj.P_two(curve_position,:), obj.P_three(curve_position,:), obj.P_four(curve_position,:), P_five(curve_position,:));
+                            % figure;
+                            % plot(curvature)
+                            % hold on
+                            % plot(obj.Curvatures{curve_position})
+                            % figure;
+                            % plot(obj.Curves{curve_position}(:,1),obj.Curves{curve_position}(:,2))
                             curve_position = curve_position+1;
                         end
                     end

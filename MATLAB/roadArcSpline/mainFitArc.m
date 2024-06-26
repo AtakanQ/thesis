@@ -1,5 +1,6 @@
 clear
 close all
+set(groot, 'defaultAxesXGrid', 'on', 'defaultAxesYGrid', 'on', 'defaultAxesZGrid', 'on');
 
 load("all_clothoids.mat")
 posError = 0.55; %meters
@@ -22,6 +23,42 @@ vehicleTan = clothoid_GT.init_tan+headingError;
 vehicleX = clothoid_GT.allX(1) + posError * cos(clothoid_GT.init_tan + pi/2);
 vehicleY = clothoid_GT.allY(1) + posError * sin(clothoid_GT.init_tan + pi/2);
 vehicleCurv = clothoid_GT.init_curv + curvatureError;
+% Plot the error and the road
+figure;
+plot(clothoid_GT.allX,clothoid_GT.allY,'Color',[0 1 0],'LineWidth',1.2)
+hold on
+axis equal
+quiver(vehicleX,vehicleY,2.5*cos(vehicleTan),2.5*sin(vehicleTan),'Color',[1 0 0],'LineWidth',1.2)
+plot(vehicleX,vehicleY,'*','MarkerSize',8,"LineWidth",1,'Color',[1 0 0])
+plot(clothoid_GT.allX(1),clothoid_GT.allY(1),'*','MarkerSize',8,"LineWidth",1,'Color',[0 0 1])
+quiver(clothoid_GT.allX(1),clothoid_GT.allY(1),2.5*cos(clothoid_GT.allTangent(1)),...
+    2.5*sin(clothoid_GT.allTangent(1)),'LineWidth',1.2,'Color',[0 0 1])
+plot([vehicleX, clothoid_GT.allX(1)], [vehicleY, clothoid_GT.allY(1)], '--', 'LineWidth', 1.2,'Color',[0 0 0]);
+distance = sqrt((vehicleX - clothoid_GT.allX(1))^2 + (vehicleY - clothoid_GT.allY(1))^2);
+midX = (vehicleX + clothoid_GT.allX(1)) / 2;
+midY = (vehicleY + clothoid_GT.allY(1)) / 2;
+text(midX, midY+0.2, sprintf('Distance: %.2f m', distance), ...
+    'FontSize', 10, 'Color', [0 0 0], 'HorizontalAlignment', 'center',...
+    'VerticalAlignment','bottom');
+
+text(vehicleX+0.1, vehicleY-0.2, sprintf('Heading Angle: %.2f°', rad2deg(vehicleTan)), ...
+    'FontSize', 10, 'Color', [0 0 0], 'HorizontalAlignment', 'left');
+
+text(clothoid_GT.allX(1)-.1,clothoid_GT.allY(1)-0.2, sprintf('Heading Angle: %.2f°', rad2deg(clothoid_GT.allTangent(1))), ...
+    'FontSize', 10, 'Color', [0 0 0], 'HorizontalAlignment', 'right');
+title("Road Waypoint and Ego Vehicle Attitude","FontSize",13)
+xlabel("xEast (m)","FontSize",13)
+ylabel("yNorth (m)","FontSize",13)
+
+% Plot dummy points for the legend
+h1 = plot(nan, nan, 'Color',[0 1 0], 'LineWidth', 1.2);
+h2 = plot(nan, nan, 'Color',[1 0 0], 'LineWidth', 1.2);
+h3 = plot(nan, nan, 'Color',[0 0 1], 'LineWidth', 1.2);
+
+% Create a legend with only the dummy points
+legend([h1, h2, h3], {'Road Centerline', 'Initial Waypoint', 'Ego Vehicle'}, 'Location', 'Best');
+
+
 %% Try to fit clothoid
 
 % Obsolete

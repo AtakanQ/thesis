@@ -1,4 +1,5 @@
 set(groot, 'defaultAxesXGrid', 'on', 'defaultAxesYGrid', 'on', 'defaultAxesZGrid', 'on');
+addpath("..\roadArcSpline\")
 % Parameters for the clothoid
 a = 0.001;    % This constant determines the rate at which curvature changes
 L = 50;     % Total arc length

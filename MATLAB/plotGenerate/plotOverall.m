@@ -97,3 +97,35 @@ title('Max Error and Curve Lengths of Segments','FontSize',13)
 xlabel('Segment Index','FontSize',13)
 legend()
 xlim([1 numel(MAX_errors)])
+
+%% use the magnifier
+fig = figure;
+
+for i = 1:numel(segments{1})
+    plot(segments{1}(i).allX,segments{1}(i).allY,'Color',[1 0 0])
+    hold on;
+end
+for j = 1:numel(all_clothoids{1})
+    plot(all_clothoids{1}(j).allX,all_clothoids{1}(j).allY,'Color',[0 0 1])
+    hold on;
+end
+xlabel("xEast (m)","FontSize",13)
+ylabel("yNorth (m)","FontSize",13)
+title("Ground Truth and Approximation Comparison","FontSize",13)
+h1 = plot(NaN,NaN,'Color',[0 0 1]);
+h2 = plot(NaN,NaN,'Color',[1 0 0]);
+axis equal
+legend([h1, h2], {'Ground Truth', 'Approximation'});
+grid on;
+hold off;
+magnifyOnFigure(...
+        fig,...
+        'units','pixels',...
+        'initialPositionSecondaryAxes', [250 100 164.941 102.65],...
+        'initialPositionMagnifier',     [114.91 200 .01 .01],...    
+        'mode', 'manual',...    
+        'displayLinkStyle', 'straight',...        
+        'edgeWidth', 2,...
+        'edgeColor', 'black',...
+        'secondaryAxesFaceColor', [0.91 0.91 0.91]... 
+            ); 
