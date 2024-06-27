@@ -3,9 +3,22 @@ close all
 set(groot, 'defaultAxesXGrid', 'on', 'defaultAxesYGrid', 'on', 'defaultAxesZGrid', 'on');
 
 load("all_clothoids.mat")
+
+%case 1
+% posError = 0.65; %meters
+% headingError = deg2rad(4.5); %radians
+% curvatureError = -0.008;
+
+%case 2
 posError = 0.55; %meters
 headingError = deg2rad(2); %radians
 curvatureError = 0.01;
+
+%case 3
+% posError = -0.35; %meters
+% headingError = deg2rad(-4); %radians
+% curvatureError = -0.009;
+
 clothoid_GT = all_clothoids{1}(158);
 clothoids_GT = all_clothoids{1}(158:end);
 
@@ -180,9 +193,10 @@ title("Arc Spline Trajectory and Road Centerline","FontSize",13)
 axis equal
 legend();
 
+xAxisArcSpline = 0:0.01:(length(arcSplineErrors)-1)/100;
 figure;
-plot(arcSplineErrors,"LineWidth",1.5,"DisplayName","Arc Spline Error")
-xlabel("Sample index","FontSize",13)
+plot(xAxisArcSpline,arcSplineErrors,"LineWidth",1.5,"DisplayName","Arc Spline Error")
+xlabel("Trajectory Length (m)","FontSize",13)
 ylabel("Distance to centerline (m)","FontSize",13)
 grid on
 title("Euclidian Distance Error of Arc Spline Trajectory","FontSize",13)
@@ -198,24 +212,26 @@ downsampledArrayTangent = interp1(1:n2, tangentsGT, newIndices);
 downsampledArrayCurvature = interp1(1:n2, curvaturesGT, newIndices);
 % degTan = rad2deg(downsampledArrayTangent);
 % degTanArcspl = rad2deg(arcSpline.allTangent);
+arcSplineHeadingErrors = rad2deg(downsampledArrayTangent-arcSpline.allTangent);
 figure;
-plot(rad2deg(downsampledArrayTangent-arcSpline.allTangent),"LineWidth",1.5,"DisplayName","Heading Error")
-xlabel("Sample index","FontSize",13)
+plot(xAxisArcSpline,arcSplineHeadingErrors,"LineWidth",1.5,"DisplayName","Heading Error")
+xlabel("Trajectory Length (m)","FontSize",13)
 ylabel("Heading Error (°)","FontSize",13)
 grid on
 title("Heading Error of Arc Spline Trajectory","FontSize",13)
 legend();
 
+arcSplineCurvatureErrors = downsampledArrayCurvature-arcSpline.allCurvature;
 figure;
-plot(downsampledArrayCurvature-arcSpline.allCurvature,"LineWidth",1.5,"DisplayName","Curvature Error")
-xlabel("Sample index","FontSize",13)
+plot(xAxisArcSpline,arcSplineCurvatureErrors,"LineWidth",1.5,"DisplayName","Curvature Error")
+xlabel("Trajectory Length (m)","FontSize",13)
 ylabel("Curvature Error (m^-^1)","FontSize",13)
 grid on
 title("Curvature Error of Arc Spline Trajectory","FontSize",13)
 legend();
 %% Plot the Bézier results
 % pick a trajectory
-index = 225;
+index = 1;
 bezierTrajectory.allX = trajectories.Curves{index}(:,1);
 bezierTrajectory.allY = trajectories.Curves{index}(:,2);
 bezierTrajectory.allTangent = trajectories.Tangents{index};
@@ -236,9 +252,10 @@ title("Bézier Trajectory and Road Centerline","FontSize",13)
 axis equal
 legend();
 
+xAxisBezier = 0:0.01:(length(bezierErrors)-1)/100;
 figure;
-plot(bezierErrors,"LineWidth",1.5,"DisplayName","Bézier Error")
-xlabel("Sample index","FontSize",13)
+plot(xAxisBezier,bezierErrors,"LineWidth",1.5,"DisplayName","Bézier Error")
+xlabel("Trajectory Length (m)","FontSize",13)
 ylabel("Distance to centerline (m)","FontSize",13)
 grid on
 title("Euclidian Distance Error of Bézier Trajectory","FontSize",13)
@@ -254,19 +271,64 @@ downsampledArrayTangent = interp1(1:n2, tangentsGT, newIndices)';
 downsampledArrayCurvature = interp1(1:n2, curvaturesGT, newIndices)';
 % degTan = rad2deg(downsampledArrayTangent);
 % degTanArcspl = rad2deg(arcSpline.allTangent);
+bezierHeadingErrors = rad2deg(downsampledArrayTangent-bezierTrajectory.allTangent);
 figure;
-plot(rad2deg(downsampledArrayTangent-bezierTrajectory.allTangent),"LineWidth",1.5,"DisplayName","Heading Error")
-xlabel("Sample index","FontSize",13)
+plot(xAxisBezier,bezierHeadingErrors,"LineWidth",1.5,"DisplayName","Heading Error")
+xlabel("Trajectory Length (m)","FontSize",13)
 ylabel("Heading Error (°)","FontSize",13)
 grid on
 title("Heading Error of Bézier Trajectory","FontSize",13)
 legend();
 
+bezierCurvatureErrors = downsampledArrayCurvature-bezierTrajectory.allCurvature;
 figure;
-plot(downsampledArrayCurvature-bezierTrajectory.allCurvature,"LineWidth",1.5,"DisplayName","Curvature Error")
-xlabel("Sample index","FontSize",13)
+plot(xAxisBezier,bezierCurvatureErrors,"LineWidth",1.5,"DisplayName","Curvature Error")
+xlabel("Trajectory Length (m)","FontSize",13)
 ylabel("Curvature Error (m^-^1)","FontSize",13)
 grid on
 title("Curvature Error of Bézier Trajectory","FontSize",13)
+legend();
+
+%% Errors on same plot
+% close all
+
+% Original indices
+originalIndices = linspace(1, length(bezierErrors), length(bezierErrors));
+% New indices for the upsampled array
+newIndices = linspace(1, length(bezierErrors), floor(clothoid_GT.curv_length*100));
+% Interpolate to find the new values
+upsampledBezierPosition = interp1(originalIndices, bezierErrors, newIndices, 'linear');
+upsampledBezierHeading = interp1(originalIndices, bezierHeadingErrors, newIndices, 'linear');
+upsampledBezierCurvature = interp1(originalIndices, bezierCurvatureErrors, newIndices, 'linear');
+xAxisBezierUpsampled = 0:0.01:(length(upsampledBezierPosition)-1)/100; 
+figure;
+plot(xAxisArcSpline,arcSplineErrors,"LineWidth",1.5,"DisplayName","Arc Spline Trajectory")
+xlabel("Trajectory Length (m)","FontSize",13)
+ylabel("Distance to centerline (m)","FontSize",13)
+grid on
+hold on
+title("Euclidian Distance Error of Trajectories","FontSize",13)
+plot(xAxisBezierUpsampled,upsampledBezierPosition,"LineWidth",1.5,"DisplayName","Bézier Trajectory")
+legend();
+
+figure;
+
+grid on
+plot(xAxisArcSpline,arcSplineHeadingErrors,"LineWidth",1.5,"DisplayName","Arc Spline Trajectory")
+hold on
+plot(xAxisBezierUpsampled,upsampledBezierHeading,"LineWidth",1.5,"DisplayName","Bézier Trajectory")
+title("Heading Error of Trajectories","FontSize",13)
+xlabel("Trajectory Length (m)","FontSize",13)
+ylabel("Heading Error (°)","FontSize",13)
+legend();
+
+figure;
+grid on
+plot(xAxisArcSpline,arcSplineCurvatureErrors,"LineWidth",1.5,"DisplayName","Arc Spline Trajectory")
+hold on
+plot(xAxisBezierUpsampled,upsampledBezierCurvature,"LineWidth",1.5,"DisplayName","Bézier Trajectory")
+title("Curvature Error of Trajectories","FontSize",13)
+xlabel("Trajectory Length (m)","FontSize",13)
+ylabel("Curvature Error (m^-^1)","FontSize",13)
 legend();
 

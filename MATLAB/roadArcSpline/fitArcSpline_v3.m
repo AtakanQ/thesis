@@ -38,6 +38,7 @@ if(theta0 > 0)
         hcCorrectionLengths = hcLength;
         case1 = true;
     else % case 2
+        % sigma = 0.0010;
         sigma = 0.0025;
         l1 = k0/sigma + sqrt(k0^2/2/(sigma^2) + theta0/sigma);  
         l2 = l1 - k0/sigma; 
@@ -48,6 +49,7 @@ if(theta0 > 0)
 else
     if(k0 < 0) % case 3
         sigma = 0.0025;
+        % sigma = 0.0025;
         l1 = k0/(-sigma) + sqrt(k0^2/2/(sigma^2) - theta0/sigma);  
         l2 = l1 - k0/(-sigma); 
         hcLength = l1 + l2;
