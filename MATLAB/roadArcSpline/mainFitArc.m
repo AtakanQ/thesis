@@ -3,24 +3,38 @@ close all
 set(groot, 'defaultAxesXGrid', 'on', 'defaultAxesYGrid', 'on', 'defaultAxesZGrid', 'on');
 
 load("all_clothoids.mat")
-
+% load("all_clothoids_A1.mat")
+load("all_clothoids_LB_A1.mat")
 %case 1
-% posError = 0.65; %meters
-% headingError = deg2rad(4.5); %radians
-% curvatureError = -0.008;
+% posError = 0.35; %meters
+% headingError = deg2rad(2.0); %radians
+% curvatureError = -0.001;
 
 %case 2
-posError = 0.55; %meters
-headingError = deg2rad(2); %radians
-curvatureError = 0.01;
+posError = 0.50; %meters
+headingError = deg2rad(3); %radians
+curvatureError = 0.0015;
 
 %case 3
 % posError = -0.35; %meters
 % headingError = deg2rad(-4); %radians
-% curvatureError = -0.009;
+% curvatureError = -0.0009;
 
-clothoid_GT = all_clothoids{1}(158);
-clothoids_GT = all_clothoids{1}(158:end);
+clothoidIdx = 158;
+clothoid_GT = all_clothoids{1}(clothoidIdx);
+clothoids_GT = all_clothoids{1}(clothoidIdx:end);
+
+laneWidth = 3.8;
+shiftedCoords1 = [];
+shiftedCoords2 = [];
+for i = 1:numel(clothoids_GT)
+    [tempShiftedCoords1, tempShiftedCoords2] = shiftCoordinates(...
+        [clothoids_GT(i).allX' clothoids_GT(i).allY'], clothoids_GT(i).allTangent', laneWidth);
+    shiftedCoords1 = [shiftedCoords1; tempShiftedCoords1];
+    shiftedCoords2 = [shiftedCoords2; tempShiftedCoords2];
+end
+clear tempShiftedCoords1 tempShiftedCoords2
+
 
 arcSegClass = arcSegment;
 % clothoidApprox = clothoid([clothoid_GT.allX(1) clothoid_GT.allY(1)],...
@@ -63,17 +77,29 @@ title("Road Waypoint and Ego Vehicle Attitude","FontSize",13)
 xlabel("xEast (m)","FontSize",13)
 ylabel("yNorth (m)","FontSize",13)
 
+%lane boundaries
+h4 = plot(shiftedCoords1(:,1),shiftedCoords1(:,2),'--','Color',[0 0 0],'DisplayName','Lane Boundary','LineWidth',1);
+plot(shiftedCoords2(:,1),shiftedCoords2(:,2),'--','Color',[0 0 0],'LineWidth',1)
+
 % Plot dummy points for the legend
 h1 = plot(nan, nan, 'Color',[0 1 0], 'LineWidth', 1.2);
 h2 = plot(nan, nan, 'Color',[1 0 0], 'LineWidth', 1.2);
 h3 = plot(nan, nan, 'Color',[0 0 1], 'LineWidth', 1.2);
 
 % Create a legend with only the dummy points
-legend([h1, h2, h3], {'Road Centerline', 'Initial Waypoint', 'Ego Vehicle'}, 'Location', 'Best');
+legend([h1, h2, h3,h4], {'Road Centerline', 'Initial Waypoint', 'Ego Vehicle','Lane Boundary'}, 'Location', 'Best');
 
 
 %% Try to fit clothoid
+xyPairs = [];
+allTangents = [];
+allCurvatures = [];
 
+for i = 1:numel(clothoids_GT)
+    xyPairs = [xyPairs; clothoids_GT(i).allX' clothoids_GT(i).allY';];
+    allTangents = [allTangents clothoids_GT(i).allTangent];
+    allCurvatures = [allCurvatures clothoids_GT(i).allCurvature];
+end
 % Obsolete
 % [clothoidArray,middleArc] = fitArcSpline([vehicleX vehicleY],...
 %     vehicleTan,vehicleCurv,clothoid);
@@ -83,115 +109,125 @@ legend([h1, h2, h3], {'Road Centerline', 'Initial Waypoint', 'Ego Vehicle'}, 'Lo
 plotOn = false;
 [clothoidArray,wayPoints] = ...
     fitArcSpline_v3([vehicleX vehicleY],vehicleTan,vehicleCurv,...
-    clothoids_GT,plotOn);
+    clothoids_GT,plotOn,shiftedCoords1,shiftedCoords2,xyPairs);
 
 
 figure;
-plot(clothoid_GT.allX,clothoid_GT.allY,'Color',[0.5 0 1],'DisplayName','Ground Truth','LineWidth',1.2)
+h = plot(clothoid_GT.allX,clothoid_GT.allY,'Color',[0.5 0 1],'DisplayName','Ground Truth','LineWidth',1.2);
 hold on
 axis equal
-for i = 1:numel(clothoidArray)
-    clothoidArray(i).plotPlain([i/numel(clothoidArray) 0 0], "Clothoid num:" + num2str(i));
+for i = 2:numel(clothoids_GT)
+    plot(clothoids_GT(i).allX,clothoids_GT(i).allY,'Color',[0.5 0 1],'DisplayName','Ground Truth','LineWidth',1.2);
 end
-legend();
+
+for i = 1:numel(clothoidArray)
+    hT = clothoidArray(i).plotPlain([i/numel(clothoidArray) 0 0], "Clothoid num:" + num2str(i));
+    h = [h hT];
+end
+% h3 = plotLaneBoundaries(all_clothoids_LB, LB_indices);
+h3 = plot(shiftedCoords1(:,1),shiftedCoords1(:,2),'--','Color',[0 0 0],'DisplayName','Lane Boundary','LineWidth',1);
+plot(shiftedCoords2(:,1),shiftedCoords2(:,2),'--','Color',[0 0 0],'LineWidth',1)
+h = [h h3];
+legend(h);
 
 finalPosArc = [clothoidArray(end).allX(end) clothoidArray(end).allY(end)];
 finalTanArc = clothoidArray(end).final_tan;
 finalCurvArc = clothoidArray(end).final_curv;
-xyPairs = [clothoid_GT.allX' clothoid_GT.allY'];
 
-[closest_point, idx] = findClosestPointOnLine(finalPosArc(1), finalPosArc(2),...
+
+[closest_point, arcSplineClosestIndex] = findClosestPointOnLine(finalPosArc(1), finalPosArc(2),...
     finalTanArc + pi/2, xyPairs);
 %print out final errors
-arcSplinePosError = norm( finalPosArc - [clothoid_GT.allX(idx) clothoid_GT.allY(idx)])
-arcSplineTangentError =  rad2deg(finalTanArc - clothoid_GT.allTangent(idx))
-arcSplineCurvatureError = finalCurvArc - clothoid_GT.allCurvature(idx)
+arcSplinePosError = norm( finalPosArc - closest_point)
+arcSplineTangentError =  rad2deg(finalTanArc - allTangents(arcSplineClosestIndex))
+arcSplineCurvatureError = finalCurvArc - allCurvatures(arcSplineClosestIndex)
 %% Try to fit a Bézier curve
 
 [trajectories] = fitBezier([vehicleX vehicleY],...
     vehicleTan,vehicleCurv,clothoid_GT);
 
-trajectories.plotCurves(5);
-axis equal
-hold on
-plot(clothoid_GT.allX,clothoid_GT.allY,'Color',[0 1 0],'DisplayName','Ground Truth')
-legend();
+% trajectories.plotCurves(5);
+% axis equal
+% hold on
+% plot(clothoid_GT.allX,clothoid_GT.allY,'Color',[0 1 0],'DisplayName','Ground Truth')
+% legend();
 
 %% Plot both
-trajectories.plotCurves(5);
-axis equal
-hold on
-plot(clothoid_GT.allX,clothoid_GT.allY,'Color',[0 1 0],'DisplayName','Ground Truth')
-for i = 1:numel(clothoidArray)
-    clothoidArray(i).plotPlain([i/numel(clothoidArray) 0 0], "Clothoid num:" + num2str(i));
-end
-% plot(middleArc.x_coor,middleArc.y_coor,"DisplayName","Arc","LineWidth",2)
-legend();
+% trajectories.plotCurves(5);
+% axis equal
+% hold on
+% plot(clothoid_GT.allX,clothoid_GT.allY,'Color',[0 1 0],'DisplayName','Ground Truth')
+% for i = 1:numel(clothoidArray)
+%     clothoidArray(i).plotPlain([i/numel(clothoidArray) 0 0], "Clothoid num:" + num2str(i));
+% end
+% % plot(middleArc.x_coor,middleArc.y_coor,"DisplayName","Arc","LineWidth",2)
+% legend();
 
 %% Plot varying P1
 
-trajectories.plotCurvesByControlPoint(1);
-
-plot(clothoid_GT.allX,clothoid_GT.allY,'Color',[0.5 0 0.5],'DisplayName','Lane Center','LineWidth',1.2)
-
-legend();
+% trajectories.plotCurvesByControlPoint(1);
+% 
+% plot(clothoid_GT.allX,clothoid_GT.allY,'Color',[0.5 0 0.5],'DisplayName','Lane Center','LineWidth',1.2)
+% 
+% legend();
  
 %% Plot varying P2
-
-trajectories.plotCurvesByControlPoint(2);
-
-plot(clothoid_GT.allX,clothoid_GT.allY,'Color',[0.5 0 0.5],'DisplayName','Lane Center','LineWidth',1.2)
-
-legend();
+% 
+% trajectories.plotCurvesByControlPoint(2);
+% 
+% plot(clothoid_GT.allX,clothoid_GT.allY,'Color',[0.5 0 0.5],'DisplayName','Lane Center','LineWidth',1.2)
+% 
+% legend();
 
 %% Plot varying P3
 
-trajectories.plotCurvesByControlPoint(3);
-
-plot(clothoid_GT.allX,clothoid_GT.allY,'Color',[0.5 0 0.5],'DisplayName','Lane Center','LineWidth',1.2)
-
-legend();
+% trajectories.plotCurvesByControlPoint(3);
+% 
+% plot(clothoid_GT.allX,clothoid_GT.allY,'Color',[0.5 0 0.5],'DisplayName','Lane Center','LineWidth',1.2)
+% 
+% legend();
 
 %% Plot varying P4
 
-trajectories.plotCurvesByControlPoint(4);
-
-plot(clothoid_GT.allX,clothoid_GT.allY,'Color',[0.5 0 0.5],'DisplayName','Lane Center','LineWidth',1.2)
-
-legend();
+% trajectories.plotCurvesByControlPoint(4);
+% 
+% plot(clothoid_GT.allX,clothoid_GT.allY,'Color',[0.5 0 0.5],'DisplayName','Lane Center','LineWidth',1.2)
+% 
+% legend();
 
 %% Plot arc spline the results
 
-% for i = 1:3
-    ground_truth_xy = [clothoid_GT.allX' clothoid_GT.allY'];
+ground_truth_xy = xyPairs;
     
-% end
-
 % plot the position error
 arcSpline.allX = [];
 arcSpline.allY = [];
 arcSpline.allTangent = [];
 arcSpline.allCurvature = [];
+arcSpline.length = 0;
 for i = 1:numel(clothoidArray)
     arcSpline.allX = [arcSpline.allX clothoidArray(i).allX];
     arcSpline.allY = [arcSpline.allY clothoidArray(i).allY];
     arcSpline.allTangent = [arcSpline.allTangent clothoidArray(i).allTangent];
     arcSpline.allCurvature = [arcSpline.allCurvature clothoidArray(i).allCurvature];
+    arcSpline.length = arcSpline.length + clothoidArray(i).curv_length;
 end
 measurement_xy = [arcSpline.allX' arcSpline.allY'];
 [~, ~, arcSplineErrors] = ...
     computeSegmentError(measurement_xy,ground_truth_xy);
 
 figure;
-plot(arcSpline.allX,arcSpline.allY,"LineWidth",1.5,"DisplayName","Arc Spline Trajectory")
+h1 = plot(arcSpline.allX,arcSpline.allY,"LineWidth",1.5,"DisplayName","Arc Spline Trajectory");
 hold on
-plot(clothoid_GT.allX,clothoid_GT.allY,"LineWidth",1.5,"DisplayName","Road Centerline")
+h2 = plot(ground_truth_xy(:,1),ground_truth_xy(:,2),"LineWidth",1.5,"DisplayName","Road Centerline");
+h3 = plot(shiftedCoords1(:,1),shiftedCoords1(:,2),'--','Color',[0 0 0],'DisplayName','Lane Boundary','LineWidth',1);
+plot(shiftedCoords2(:,1),shiftedCoords2(:,2),'--','Color',[0 0 0],'LineWidth',1)
 xlabel("xEast (m)","FontSize",13)
 ylabel("yNorth (m)","FontSize",13)
 grid on
 title("Arc Spline Trajectory and Road Centerline","FontSize",13)
 axis equal
-legend();
+legend([h1 h2 h3]);
 
 xAxisArcSpline = 0:0.01:(length(arcSplineErrors)-1)/100;
 figure;
@@ -202,8 +238,8 @@ grid on
 title("Euclidian Distance Error of Arc Spline Trajectory","FontSize",13)
 legend();
 
-tangentsGT = clothoid_GT.allTangent(1:idx);
-curvaturesGT = clothoid_GT.allCurvature(1:idx);
+tangentsGT = allTangents(1:arcSplineClosestIndex);
+curvaturesGT = allCurvatures(1:arcSplineClosestIndex);
 n1 = length(arcSpline.allTangent);
 n2 = length(tangentsGT);
 
@@ -230,21 +266,19 @@ grid on
 title("Curvature Error of Arc Spline Trajectory","FontSize",13)
 legend();
 %% Plot the Bézier results
-% pick a trajectory
-index = 1;
-bezierTrajectory.allX = trajectories.Curves{index}(:,1);
-bezierTrajectory.allY = trajectories.Curves{index}(:,2);
-bezierTrajectory.allTangent = trajectories.Tangents{index};
-bezierTrajectory.allCurvature = trajectories.Curvatures{index};
+
+bezierTrajectory = trajectories.bestBezier;
 
 measurement_xy = [bezierTrajectory.allX bezierTrajectory.allY];
 [~, ~, bezierErrors] = ...
     computeSegmentError(measurement_xy,ground_truth_xy);
 
 figure;
-plot(bezierTrajectory.allX,bezierTrajectory.allY,"LineWidth",1.5,"DisplayName","Bézier Trajectory")
+h1 = plot(bezierTrajectory.allX,bezierTrajectory.allY,"LineWidth",1.5,"DisplayName","Bézier Trajectory")
 hold on
-plot(clothoid_GT.allX,clothoid_GT.allY,"LineWidth",1.5,"DisplayName","Road Centerline")
+h2 = plot(ground_truth_xy(:,1),ground_truth_xy(:,2),"LineWidth",1.5,"DisplayName","Road Centerline")
+h3 = plot(shiftedCoords1(:,1),shiftedCoords1(:,2),'--','Color',[0 0 0],'DisplayName','Lane Boundary','LineWidth',1);
+plot(shiftedCoords2(:,1),shiftedCoords2(:,2),'--','Color',[0 0 0],'LineWidth',1)
 xlabel("xEast (m)","FontSize",13)
 ylabel("yNorth (m)","FontSize",13)
 grid on
@@ -259,7 +293,7 @@ xlabel("Trajectory Length (m)","FontSize",13)
 ylabel("Distance to centerline (m)","FontSize",13)
 grid on
 title("Euclidian Distance Error of Bézier Trajectory","FontSize",13)
-legend();
+legend([h1 h2 h3]);
 
 tangentsGT = clothoid_GT.allTangent;
 curvaturesGT = clothoid_GT.allCurvature;
@@ -331,4 +365,39 @@ title("Curvature Error of Trajectories","FontSize",13)
 xlabel("Trajectory Length (m)","FontSize",13)
 ylabel("Curvature Error (m^-^1)","FontSize",13)
 legend();
+save("mainFitArc.mat")
 
+%% Make them the same length
+close all
+final_pos = [arcSpline.allX(end) arcSpline.allY(end)];
+final_angle = arcSpline.allTangent(end);
+final_curvature = arcSpline.allCurvature(end);
+
+[beziersSameLength] = fitBezier_v2([vehicleX vehicleY],...
+    vehicleTan,vehicleCurv,final_pos,final_angle,final_curvature);
+bezierTrajectory = beziersSameLength.bestBezier;
+
+plotBezierAnalysis(bezierTrajectory, xyPairs, allTangents, allCurvatures, shiftedCoords1, shiftedCoords2,...
+    [arcSpline.allX' arcSpline.allY'],arcSplineErrors,arcSplineHeadingErrors,arcSplineCurvatureErrors)
+
+%% Make the Bézier varying length
+close all
+indices = floor(linspace(numel(clothoid_GT.allX)/5,numel(clothoid_GT.allX),5));
+bestBezierList = [];
+for i = 1:numel(indices)
+    idx = indices(i);
+
+    final_pos = [clothoid_GT.allX(idx) clothoid_GT.allY(idx)];
+    final_angle = clothoid_GT.allTangent(idx);
+    final_curvature = clothoid_GT.allCurvature(idx);
+
+    [beziers] = fitBezier_v2([vehicleX vehicleY],...
+        vehicleTan,vehicleCurv,final_pos,final_angle,final_curvature);
+    % beziers.bestBezier.allTangent = abs(beziers.bestBezier.allTangent);
+    bestBezierList = [bestBezierList beziers.bestBezier];
+end
+clear beziers
+
+plotBezierAnalysisArray(bestBezierList, xyPairs, allTangents, allCurvatures,...
+    shiftedCoords1, shiftedCoords2, [arcSpline.allX' arcSpline.allY'],...
+    arcSplineErrors,arcSplineHeadingErrors,arcSplineCurvatureErrors)

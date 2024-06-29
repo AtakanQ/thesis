@@ -1,0 +1,7 @@
+-Make the figure text larger. okay
+-add the euclidian distance figure to both methodology and results section
+-discuss how the beziér curves are generated.
+-apply all the notes
+
+-generate a shifted imaginary road center
+-Try to find a position to fix for curvature and heading also length.

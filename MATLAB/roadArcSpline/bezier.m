@@ -37,6 +37,7 @@ classdef bezier < handle
     tan_final_changes
     acc_zero_changes
     acc_final_changes
+    bestBezier
     end
     
     methods
@@ -76,11 +77,12 @@ classdef bezier < handle
             obj.generateTangents(tzero,tfinal);
             obj.generateAccelerations(tzero,tfinal,curvature_zero,curvature_final);
             obj.generateCurves(A,B);
+            obj.pickBestBezier();
             obj.tan_zero_changes = [];
             obj.tan_final_changes = [];
             obj.acc_zero_changes = [];
             obj.acc_final_changes = [];
-
+            
         end
         
         function generateTangents(obj,tzero,tfinal)
@@ -326,6 +328,34 @@ classdef bezier < handle
                     obj.isInLaneArray(i) = 1;
                 end
             end
+        end
+        
+        function pickBestBezier(obj)
+            totalIntegral = zeros(numel(obj.Curves),1);
+            for i = 1:numel(obj.Curves)
+                coordinates = obj.Curves{i};
+                % Calculate differences between consecutive coordinates
+                diffs = diff(coordinates);
+                
+                % Calculate Euclidean distances
+                distances = sqrt(sum(diffs.^2, 2));
+
+                % First derivative
+                firstDerivative = diff(obj.Curvatures{i}) ;
+                firstDerivativeIntegral = firstDerivative.* distances;
+
+                % Second derivative
+                secondDerivative = diff(firstDerivative) ./ distances(1:(end-1));
+                secondDerivativeIntegral = secondDerivative.* distances(1:(end-1));
+                
+                totalIntegral(i) = abs(sum(firstDerivativeIntegral(2:end)) )+ ...
+                    5*abs(sum(secondDerivativeIntegral(2:end)));
+            end
+            [val,idx] = min(totalIntegral);
+            obj.bestBezier.allX = obj.Curves{idx}(:,1);
+            obj.bestBezier.allY = obj.Curves{idx}(:,2);
+            obj.bestBezier.allTangent = obj.Tangents{idx};
+            obj.bestBezier.allCurvature = obj.Curvatures{idx};
         end
     end
 end

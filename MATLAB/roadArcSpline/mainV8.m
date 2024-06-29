@@ -86,7 +86,8 @@ for i = 2:length(xEastCenter_LB)
     [all_clothoids_LB{i}] = ...
         generateClothoids(xEastCenter_LB{i},yNorthCenter_LB{i},theta_GT_LB{i},curvature_GT_LB{i},dk_LB{i},L_LB{i});
 end
-
+save("all_clothoids_A1.mat","all_clothoids")
+save("all_clothoids_LB_A1.mat","all_clothoids_LB")
 figure;
 plot(xEastCenter{1},yNorthCenter{1},'*','MarkerSize',10,'Color',[0 1 0])
 axis equal
@@ -136,9 +137,12 @@ errorCfg.rmsError = 0.1; % Computed after concatenation
 errorCfg.maxError = 0.2; % Computed after concatenation
 errorCfg.headingDeviation = 2; % Degrees deviation allowed for concatenated lines
 
-% [result_clothoids,concat_indices_clothoid,result_lines,concat_indices_line,mergedSegments] = ...
-%     combineSegments(segments{1},all_clothoids{1}(2:end-1),errorCfg);
-% 
+[result_clothoids,concat_indices_clothoid,result_lines,concat_indices_line,mergedSegments] = ...
+    combineSegments(segments{1},all_clothoids{1}(2:end-1),errorCfg);
+
+
+
+
 % segments{1} = mergedSegments;
 %% Test
 % figure;

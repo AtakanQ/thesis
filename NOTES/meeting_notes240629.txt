@@ -1,0 +1,7 @@
+- Implement the method to pick the best bezier curve DONE
+- Show lane markings DONE
+- What happens if I make them the same length DONE
+- Show different length values on same plot for Bézier DONE
+- Put a table of erros and evaluate them (rms and max)
+- Try to implement the case for zero error for theta and curvature	
+- Write about related works

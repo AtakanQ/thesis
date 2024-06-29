@@ -1,0 +1,10 @@
+-split road segment representation and trajectory generation into 2 chapter [done]
+-also add arc spline trajectory generation in the trajectory chapter ( compare them in evaluation)
+-evaluation and results should belong to corresponding chapter, not a different chapter [done]
+-rearrange arc spline trajectory generation. Heading, curvature and position rectification should be done at the same time
+find waypoints where curvature changes
+* 2 options here, sometimes arc length is not enough to make the maneuver.
+Either choose to keep making the maneuver, then measure the error again then make the maneuver again
+Or stop making the maneuver and feed the last attitude as input to next arc
+I chose second.
+-add grid to plots [done]

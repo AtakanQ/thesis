@@ -1,5 +1,6 @@
 function [clothoidArray,wayPoints] = ...
-    fitArcSpline_v3(init_pos,init_tan,init_curv,clothoids_GT,plotOn)
+    fitArcSpline_v3(init_pos,init_tan,init_curv,clothoids_GT,plotOn,...
+    shiftedCoords1, shiftedCoords2, xyPairs)
 
 wayPoints.pos = init_pos;
 wayPoints.tan = init_tan;
@@ -22,8 +23,15 @@ end
 %compute the errors
 theta0 = -(clothoids_GT(1).allTangent(1) - wayPoints(wayPointCounter).tan);
 k0 = -(clothoids_GT(1).allCurvature(1) - wayPoints(wayPointCounter).curv);
+xyPairs = [];
+allTangents = [];
+allCurvatures = [];
+for i = 1:numel(clothoids_GT)
+    xyPairs = [xyPairs; clothoids_GT(i).allX' clothoids_GT(i).allY';];
+    allTangents = [allTangents clothoids_GT(i).allTangent];
+    allCurvatures = [allCurvatures clothoids_GT(i).allCurvature];
+end
 
-xyPairs = [clothoids_GT(1).allX' clothoids_GT(1).allY'];
 
 
 
@@ -38,8 +46,8 @@ if(theta0 > 0)
         hcCorrectionLengths = hcLength;
         case1 = true;
     else % case 2
-        % sigma = 0.0010;
-        sigma = 0.0025;
+        sigma = 0.0001;
+        % sigma = 0.0025;
         l1 = k0/sigma + sqrt(k0^2/2/(sigma^2) + theta0/sigma);  
         l2 = l1 - k0/sigma; 
         hcLength = l1 + l2;
@@ -48,7 +56,7 @@ if(theta0 > 0)
     end
 else
     if(k0 < 0) % case 3
-        sigma = 0.0025;
+        sigma = 0.0001;
         % sigma = 0.0025;
         l1 = k0/(-sigma) + sqrt(k0^2/2/(sigma^2) - theta0/sigma);  
         l2 = l1 - k0/(-sigma); 
@@ -63,37 +71,226 @@ else
     end
 end
 
+posErrorClothoid = [];
+lengthSoFar = 0;
+numClothoidsPassed = 1;
+numHcCorrectionPassed = 1;
+
+% find how many clothoids the trajectory pass
+for k = 1:numel(clothoids_GT)
+    if(roadData(k).cumulativeLength > hcLength)
+        numClothoidsToPass = k;
+        break
+    end
+end
+
+
+posErrorWaypoints = wayPoints;
+posErrorwaypointCounter = wayPointCounter;
+
+numSections = numel(hcCorrectionLengths) + ...
+    numClothoidsToPass - 1;
 
 if length(hcCorrectionLengths) == 2
-    if case2
-        hcRate = -sigma;
-    elseif case4
-        hcRate = sigma;
-    else
-        hcRate = sigma;
+
+
+    % use the rates to generate the next waypoint.
+    for i = 1:numSections
+        itWasClothoid = false;
+        itWasHcCorrection = false;
+        minLen = Inf;
+    
+        for j = numClothoidsPassed:numClothoidsToPass
+            if( (minLen + lengthSoFar) > roadData(j).cumulativeLength)
+                minLen = roadData(j).cumulativeLength - lengthSoFar;
+                itWasClothoid = true;
+                itWasHcCorrection = false;  
+            else
+                break
+            end
+        end
+        
+        for n = numHcCorrectionPassed:numel(hcCorrectionLengths)
+            if( (minLen + lengthSoFar)> sum(hcCorrectionLengths( 1:n )) )
+                minLen = sum(hcCorrectionLengths( 1:n )) - lengthSoFar;
+                % minLen = hcCorrectionLengths(n);
+                itWasClothoid = false;
+                itWasHcCorrection = true; 
+            else
+                break
+            end
+        end
+    
+    
+        if itWasClothoid
+            numClothoidsPassed = numClothoidsPassed + 1;
+        elseif itWasHcCorrection
+            numHcCorrectionPassed = numHcCorrectionPassed + 1;
+        end
+    
+        lengthSoFar = lengthSoFar + minLen;
+
+        % get the rates from each component
+        for j = 1:numClothoidsToPass
+            if(lengthSoFar <= roadData(j).cumulativeLength)
+                roadCurvRate = roadData(j).curvRate;
+                break
+            end
+        end
+        
+        for n = 1:numel(hcCorrectionLengths)
+            if(lengthSoFar <= sum(hcCorrectionLengths(1:n)))
+                if (n == 1 )% first part
+                    if case2
+                        hcRate = -sigma;
+                    elseif case4
+                        hcRate = sigma;
+                    else
+                        hcRate = sigma;
+                    end
+                elseif (n == 2)% second part
+                    if case2
+                        hcRate = sigma;
+                    elseif case4
+                        hcRate = -sigma;
+                    else
+                        hcRate = -sigma;
+                    end
+                    
+                end
+                break
+            end
+        end
+
+        posErrorWaypoints(posErrorwaypointCounter + i).curv = ...
+            posErrorWaypoints(posErrorwaypointCounter + i - 1).curv + ...
+            hcRate * minLen + ...
+            roadCurvRate * minLen;
+        posErrorWaypoints(posErrorwaypointCounter + i).length = minLen;
+    
+        %CHANGE THE ORDER DEPENDING ON CURVATURE LENGTH MAYBE? TODO
+        tempClothoid = clothoid_v2(posErrorWaypoints(posErrorwaypointCounter + i - 1).pos,...
+            posErrorWaypoints(posErrorwaypointCounter + i - 1).tan, ...
+            posErrorWaypoints(posErrorwaypointCounter + i - 1).curv, ...
+            posErrorWaypoints(posErrorwaypointCounter + i).curv, ...
+            posErrorWaypoints(posErrorwaypointCounter + i).length, ...
+            0.01);
+    
+        posErrorClothoid = [posErrorClothoid tempClothoid];
+    
+        posErrorWaypoints(posErrorwaypointCounter + i).pos = [tempClothoid.allX(end) tempClothoid.allY(end)];
+        posErrorWaypoints(posErrorwaypointCounter + i).tan = tempClothoid.final_tan;
     end
-    intermediateCurv = init_curv ...
-        + hcRate*hcCorrectionLengths(1) + ...
-        roadData(1).curvRate * hcCorrectionLengths(1);
-
-    posErrorClothoid(1) = clothoid_v2(init_pos,init_tan, init_curv, intermediateCurv,...
-               hcCorrectionLengths(1),0.01);
-
-    intermediateXY = [posErrorClothoid(1).allX(end) posErrorClothoid(1).allY(end)];
-    intermediateTan = posErrorClothoid(1).final_tan;
-    final_curvature = intermediateCurv ...
-        -hcRate*hcCorrectionLengths(2) + ...
-        roadData(1).curvRate * hcCorrectionLengths(2);
-
-    posErrorClothoid(2) = clothoid_v2(intermediateXY,intermediateTan, intermediateCurv, final_curvature,...
-               hcCorrectionLengths(2),0.01);
+    % intermediateCurv = init_curv ...
+    %     + hcRate*hcCorrectionLengths(1) + ...
+    %     roadData(1).curvRate * hcCorrectionLengths(1);
+    % 
+    % posErrorClothoid(1) = clothoid_v2(init_pos,init_tan, init_curv, intermediateCurv,...
+    %            hcCorrectionLengths(1),0.01);
+    % 
+    % intermediateXY = [posErrorClothoid(1).allX(end) posErrorClothoid(1).allY(end)];
+    % intermediateTan = posErrorClothoid(1).final_tan;
+    % final_curvature = intermediateCurv ...
+    %     -hcRate*hcCorrectionLengths(2) + ...
+    %     roadData(1).curvRate * hcCorrectionLengths(2);
+    % 
+    % posErrorClothoid(2) = clothoid_v2(intermediateXY,intermediateTan, intermediateCurv, final_curvature,...
+    %            hcCorrectionLengths(2),0.01);
 
 else
-    final_curvature = init_curv + ...
-        sigma*hcLength + ...
-        roadData(1).curvRate*hcLength;
-    posErrorClothoid(1) = clothoid_v2(init_pos,init_tan, init_curv, final_curvature,...
-               hcCorrectionLengths(1),0.01);
+        % use the rates to generate the next waypoint.
+    for i = 1:numSections
+        itWasClothoid = false;
+        itWasHcCorrection = false;
+        minLen = Inf;
+    
+        for j = numClothoidsPassed:numClothoidsToPass
+            if( (minLen + lengthSoFar) > roadData(j).cumulativeLength)
+                minLen = roadData(j).cumulativeLength - lengthSoFar;
+                itWasClothoid = true;
+                itWasHcCorrection = false;  
+            else
+                break
+            end
+        end
+        
+        for n = numHcCorrectionPassed:numel(hcCorrectionLengths)
+            if( (minLen + lengthSoFar)> sum(hcCorrectionLengths( 1:n )) )
+                minLen = sum(hcCorrectionLengths( 1:n )) - lengthSoFar;
+                % minLen = hcCorrectionLengths(n);
+                itWasClothoid = false;
+                itWasHcCorrection = true; 
+            else
+                break
+            end
+        end
+    
+    
+        if itWasClothoid
+            numClothoidsPassed = numClothoidsPassed + 1;
+        elseif itWasHcCorrection
+            numHcCorrectionPassed = numHcCorrectionPassed + 1;
+        end
+
+        lengthSoFar = lengthSoFar + minLen;
+
+        % get the rates from each component
+        for j = 1:numClothoidsToPass
+            if(lengthSoFar <= roadData(j).cumulativeLength)
+                roadCurvRate = roadData(j).curvRate;
+                break
+            end
+        end
+        
+        for n = 1:numel(hcCorrectionLengths)
+            if(lengthSoFar <= sum(hcCorrectionLengths(1:n)))
+                if (n == 1 )% first part
+                    if case2
+                        hcRate = -sigma;
+                    elseif case4
+                        hcRate = sigma;
+                    else
+                        hcRate = sigma;
+                    end
+                elseif (n == 2)% second part
+                    if case2
+                        hcRate = sigma;
+                    elseif case4
+                        hcRate = -sigma;
+                    else
+                        hcRate = -sigma;
+                    end
+                    
+                end
+                break
+            end
+        end
+
+        posErrorWaypoints(posErrorwaypointCounter + i).curv = ...
+            posErrorWaypoints(posErrorwaypointCounter + i - 1).curv + ...
+            hcRate * minLen + ...
+            roadCurvRate * minLen;
+        posErrorWaypoints(posErrorwaypointCounter + i).length = minLen;
+    
+        %CHANGE THE ORDER DEPENDING ON CURVATURE LENGTH MAYBE? TODO
+        tempClothoid = clothoid_v2(posErrorWaypoints(posErrorwaypointCounter + i - 1).pos,...
+            posErrorWaypoints(posErrorwaypointCounter + i - 1).tan, ...
+            posErrorWaypoints(posErrorwaypointCounter + i - 1).curv, ...
+            posErrorWaypoints(posErrorwaypointCounter + i).curv, ...
+            posErrorWaypoints(posErrorwaypointCounter + i).length, ...
+            0.01);
+    
+        posErrorClothoid = [posErrorClothoid tempClothoid];
+    
+        posErrorWaypoints(posErrorwaypointCounter + i).pos = [tempClothoid.allX(end) tempClothoid.allY(end)];
+        posErrorWaypoints(posErrorwaypointCounter + i).tan = tempClothoid.final_tan;
+    
+    end
+    % final_curvature = init_curv + ...
+    %     sigma*hcLength + ...
+    %     roadData(1).curvRate*hcLength;
+    % posErrorClothoid(1) = clothoid_v2(init_pos,init_tan, init_curv, final_curvature,...
+    %            hcCorrectionLengths(1),0.01);
 end
 % Heading curvature correction to compute the position error
 figure;
@@ -101,38 +298,44 @@ for i = 1:numel(posErrorClothoid)
     posErrorClothoid(i).plotPlain([1 0 0]);
     hold on
 end
-clothoids_GT(1).plotPlain([0 0 1]);
+for i = 1:numClothoidsPassed
+    clothoids_GT(i).plotPlain([0 0 1]);
+end
+
 
 initPosError = norm([clothoids_GT(1).allX(1) clothoids_GT(1).allY(1)] - [wayPoints(1).pos]);
-ground_truth_xy = [clothoids_GT(1).allX' clothoids_GT(1).allY'];
+ground_truth_xy = xyPairs;
 finalPoint = [posErrorClothoid(end).allX(end) posErrorClothoid(end).allY(end)];
 [closestPoint, index] = findClosestPointOnLine(...
     posErrorClothoid(end).allX(end),posErrorClothoid(end).allY(end),...
-    posErrorClothoid(end).allTangent(end) + pi/2,ground_truth_xy)
+    posErrorClothoid(end).allTangent(end) + pi/2,ground_truth_xy);
 finalPosError = norm(finalPoint - closestPoint);
 
 
 plot([clothoids_GT(1).allX(1) wayPoints(1).pos(1)],[clothoids_GT(1).allY(1) wayPoints(1).pos(2)],"--",'Color',[0 0 0],'LineWidth',1)
 
 plot(   [finalPoint(1) closestPoint(1)],...
-    [finalPoint(2) closestPoint(2)],"--",'Color',[0 0 0],'LineWidth',1)
+    [finalPoint(2) closestPoint(2)],"-",'Color',[0 0 0],'LineWidth',1)
+h4 = plot(shiftedCoords1(:,1),shiftedCoords1(:,2),'--','Color',[0 0 0],'DisplayName','Lane Boundary','LineWidth',1);
+plot(shiftedCoords2(:,1),shiftedCoords2(:,2),'--','Color',[0 0 0],'LineWidth',1)
+
 xlabel("xEast (m)","FontSize",13)
 ylabel("yNorth (m)","FontSize",13)
 title("HCC Maneuver Effect on Position Error","FontSize",13)
 
 text_string = sprintf('%0.2f m', finalPosError);
-text((finalPoint(1) + closestPoint(1))/2, ...
-    (finalPoint(2) + closestPoint(2))/2, text_string,'VerticalAlignment','top',...
+text((finalPoint(1) + closestPoint(1))/2 + 3, ...
+    (finalPoint(2) + closestPoint(2))/2, text_string,'VerticalAlignment','bottom',...
     'HorizontalAlignment', 'left', 'FontSize', 10);
 
 text_string = sprintf('%0.2f m', initPosError);
 text((clothoids_GT(1).allX(1) + wayPoints(1).pos(1))/2, ...
     (clothoids_GT(1).allY(1) + wayPoints(1).pos(2))/2, text_string,'VerticalAlignment','bottom',...
-    'HorizontalAlignment', 'center', 'FontSize', 10);
+    'HorizontalAlignment', 'left', 'FontSize', 10);
 h1 = plot(NaN,NaN,'Color',[1 0 0]);
 h2 = plot(NaN,NaN,'Color',[0 0 1]);
-h3 = plot(NaN,NaN,'Color',[0 0 0]);
-legend([h1 h2 h3],{'Trajectory','Road Centerline','Errors'})
+h3 = plot(NaN,NaN,'-','Color',[0 0 0]);
+legend([h1 h2 h3 h4],{'Trajectory','Road Centerline','Errors','Lane Boundary'})
 
 %Find closest point
 errorComputationPoint = [posErrorClothoid(end).allX(end) posErrorClothoid(end).allY(end)];
@@ -142,8 +345,8 @@ errorComputationCurvature = posErrorClothoid(end).final_curv;
     errorComputatonTangent + pi/2, xyPairs);
 
 positionErrorComputed = norm(closest_point - errorComputationPoint)
-tanErrorComputed = rad2deg(clothoids_GT(1).allTangent(idx) - errorComputatonTangent)
-curvErrorComputed = errorComputationCurvature - clothoids_GT(1).allCurvature(idx)
+tanErrorComputed = rad2deg(allTangents(idx) - errorComputatonTangent)
+curvErrorComputed = errorComputationCurvature - allCurvatures(idx)
 
 curr_point = errorComputationPoint;
 [closest_point, ~] = findClosestPointOnLine(curr_point(1), curr_point(2),...
@@ -170,13 +373,7 @@ biElementaryLengths(3) = 4 * hcLength / 8;
 biElementaryLengths(4) = 1 * hcLength / 8;
 biElementaryLengths(5) = 1 * hcLength / 8;
 
-% find how many clothoids the trajectory pass
-for k = 1:numel(clothoids_GT)
-    if(roadData(k).cumulativeLength > hcLength)
-        numClothoidsToPass = k;
-        break
-    end
-end
+
 numSections = numel(hcCorrectionLengths) + ...
     numel(biElementaryLengths) + ...
     numClothoidsToPass - 2;
@@ -221,7 +418,7 @@ if plotOn
     ylabel("Curvature (m^-^1)","FontSize",13)
     xlabel("Arc Length (m)","FontSize",13)
     grid on
-    saveas(gcf,"curvaturesOfManeuvers.png")
+    % saveas(gcf,"curvaturesOfManeuvers.png")
 end
 for i = 1:numSections
     % find the minimum length to determine curvature rates.
