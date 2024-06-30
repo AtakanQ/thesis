@@ -8,22 +8,23 @@ load("mainFitArc.mat")
 
 %% Maneuver Data Entrance
 
-v_ent = LCdata.v_ent;
+% v_ent = LCdata.v_ent; % 
 v0_LC = LCdata.v0;
-S_numf = LCdata.S_numf;
-k1f = LCdata.k1f;
-lambdaf = LCdata.lambdaf;
-LC_startf = LCdata.LC_startf;
+% S_numf = LCdata.S_numf;
+% k1f = LCdata.k1f;
+% lambdaf = LCdata.lambdaf;
+% LC_startf = LCdata.LC_startf;
+% 
+% acc = (v_ent^2-v0_LC^2)/(2*LC_startf); % deleceration value
+acc = 0;
 
-acc = (v_ent^2-v0_LC^2)/(2*LC_startf); % deleceration value
-
-End = LCdata.End;
-Start2 = LCdata.Start2;
-deltaYf = LCdata.deltaYf;
-
-deltaY2 = -deltaYf;
-k1_mir = lambdaf/(1-lambdaf)*k1f*sign(deltaY2);
-lambda_mir = 1-lambdaf;
+% End = LCdata.End;
+% Start2 = LCdata.Start2;
+% deltaYf = LCdata.deltaYf;
+% 
+% deltaY2 = -deltaYf;
+% k1_mir = lambdaf/(1-lambdaf)*k1f*sign(deltaY2);
+% lambda_mir = 1-lambdaf;
 
 n = 5; % discretization points
 %% Trajectory Re-generation
@@ -52,7 +53,7 @@ curvArc = [];
 % thetaS = 0;
 % curvArc = [0:1:Sall];
 % curvVec = zeros(size(curvArc));
-PS = [LCdata.LC_startf;0];
+PS = [0; 0];
 thetaS = 0;
 for i = 1:numel(clothoidArray)
     S = clothoidArray(i).curv_length;
@@ -73,10 +74,16 @@ for i = 1:numel(clothoidArray)
 end
 
 [arcVec,xVec,yVec] = plotBiElementaryAcrSpline(CircleData,LineData); % no need for arcVec
-% plot(xVec,yVec,'LineWidth',2);
-% xlabel('X-position [m]','FontSize',12)
-% ylabel('Y-position [m]','FontSize',12)
-% set(gca,'FontSize',12)
+
+% xVec = arcSpline.allX; orijinden başlayacak şekilde kullanmalı
+% yVec = arcSpline.allY; orijinden başlayacak şekilde kullanmalı
+
+figure;
+plot(xVec,yVec,'LineWidth',2);
+axis equal
+xlabel('X-position [m]','FontSize',12)
+ylabel('Y-position [m]','FontSize',12)
+set(gca,'FontSize',12)
 
 muVal = .82;
 g = 9.81;
@@ -85,12 +92,12 @@ g = 9.81;
 %% Simulation Time
 
 % Compute velocity profile
-v0 = v_ent;
-tSim = Sall/(v0+2);
-acc_sim = -acc;
-S01 = LC_startf;
-v1 = v0_LC;
-acc1 = 0;
+v0 = 36; % initial velocity
+tSim = Sall/v0; % simulation time 
+acc_sim = 0; % constant velocity 
+S01 = 0; % acc = 0 ise sifir olabilir
+v1 = v0; % maneuver velocity
+acc1 = 0; % gereksiz sifir olsa iyi
 
 % decouplingParameters_yL
 decouplingParametersNested
@@ -106,7 +113,7 @@ sim('laneKeepingArcSplinesNested_atakan.slx',tSim)
 
 
 %% Plots
-
+close all
 vmaxVec = sqrt(sqrt(muVal^2*g^2)./abs(curvVec));
 figure;
 subplot(2,1,1)
@@ -159,6 +166,7 @@ xlabel('X-position [m]','FontSize',12);
 ylabel('Y-position [m]','FontSize',12);
 title('Trajectory Comparison','FontSize',15)
 legend('Original Traj','Simulation','FontSize',13)
+axis equal
 grid on
 
 figure;
