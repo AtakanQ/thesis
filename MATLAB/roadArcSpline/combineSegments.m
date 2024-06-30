@@ -109,7 +109,7 @@ for j = 1:length(concat_indices_clothoid)
     final_curvature = segments(end_idx).finalCurvature;
     cloth_length = 0;
     
-    for k = 0:(length(concat_indices_clothoid) - 1)
+    for k = 0:(length(concat_indices_clothoid{j}) - 1)
         cloth_length = cloth_length + segments(start_idx+k).segmentLength;
     end
 
