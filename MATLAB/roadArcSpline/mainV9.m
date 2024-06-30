@@ -194,8 +194,8 @@ end
 
 %% Plot the results
 
-desiredNumElements = 10000;  % Replace with the desired number
-desiredNumElements_GT = 50000;
+desiredNumElements = 100000;  % Replace with the desired number
+desiredNumElements_GT = 100000;
 for i = 1:numel(allX)
     downsamplingFactor = floor(numel(allX{i}) / desiredNumElements_GT);
     downsampledIndices = 1:downsamplingFactor:numel(allX{i});
@@ -209,12 +209,12 @@ for i = 1:numel(xEastShifted)
     yNorthShifted{i} = yNorthShifted{i}(downsampledIndices);
 end
 
-allX_OSM = [];
-allY_OSM = [];
-for i = 1:numel(all_clothoids_OSM)
-    allX_OSM = [allX_OSM all_clothoids_OSM(i).allX];
-    allY_OSM = [allY_OSM all_clothoids_OSM(i).allY];
-end
+% allX_OSM = [];
+% allY_OSM = [];
+% for i = 1:numel(all_clothoids_OSM)
+%     allX_OSM = [allX_OSM all_clothoids_OSM(i).allX];
+%     allY_OSM = [allY_OSM all_clothoids_OSM(i).allY];
+% end
 
 % downsamplingFactor = floor(numel(allX_OSM) / desiredNumElements);
 % downsampledIndices = 1:downsamplingFactor:numel(allX_OSM);
@@ -244,242 +244,10 @@ grid on
 legend()
 
 
-%% Compute rms and max error of a picked shifted lane (arc spline)
-segmentNumShifted = 155;
-segmentLengthShifted = 1000;
 
-xEastShifted = otherLanes{1}(segmentNumShifted).allX';
-yNorthShifted = otherLanes{1}(segmentNumShifted).allY';
-ground_truth_xy_shifted = [ [all_clothoids{2}(segmentNumShifted+1).allX'; all_clothoids{2}(segmentNumShifted+2).allX']...
-    [all_clothoids{2}(segmentNumShifted+1).allY'; all_clothoids{2}(segmentNumShifted+2).allY']];
-
-rms_array_shifted = zeros(floor(length(xEastShifted)/segmentLengthShifted),1);
-max_err_array_shifted = zeros(floor(length(yNorthShifted)/segmentLengthShifted),1);
-
-for j = 1:numel(rms_array_shifted)
-    start_idx = (j-1) * segmentLengthShifted + 1;
-    end_idx = j*segmentLengthShifted - 1;
-    measurement_xy = [xEastShifted(start_idx:end_idx) yNorthShifted(start_idx:end_idx)];
-
-    % [rms_error, max_error, errors] = computeSegmentError(measurement_xy,ground_truth_xy);
-  [rms_array_shifted(j), max_err_array_shifted(j), errors] = ...
-        computeSegmentError(measurement_xy,ground_truth_xy_shifted);
-end
-% figure;
-% plot(xEastShifted,yNorthShifted,'DisplayName',"Meas")
-% hold on
-% plot(ground_truth_xy_shifted(:,1),ground_truth_xy_shifted(:,2),'DisplayName',"GT")
-% axis equal
-% legend()
-
-figure;
-plot(rms_array_shifted,'DisplayName', 'RMS Error','LineWidth',1.5)
-hold on
-plot(max_err_array_shifted,'DisplayName', 'Max Error','LineWidth',1.5)
-ylabel('Error (m)','FontSize',13)
-xlabel('Index of 10 m subsegment','FontSize',13)
-legend()
-title('Error Between Parallel Shifted Lane and Ground Truth','FontSize',13)
-ylim([0 0.3])
-xlim([1 numel(rms_array_shifted)])
-
-%% Compute rms and curvatures of a picked shifted lane (line segment)
-segmentNumShifted = 272;
-segmentLengthShiftedLine = 1000;
-
-xEastShiftedLine = otherLanes{1}(segmentNumShifted).allX;
-yNorthShiftedLine = otherLanes{1}(segmentNumShifted).allY;
-ground_truth_xy_shifted_line = [ [all_clothoids{2}(segmentNumShifted+1).allX'; all_clothoids{2}(segmentNumShifted+2).allX']...
-    [all_clothoids{2}(segmentNumShifted+1).allY'; all_clothoids{2}(segmentNumShifted+2).allY']];
-
-rms_array_shifted_line = zeros(floor(length(xEastShiftedLine)/segmentLengthShiftedLine),1);
-max_err_array_shifted_line = zeros(floor(length(yNorthShiftedLine)/segmentLengthShiftedLine),1);
-
-for j = 1:numel(rms_array_shifted_line)
-    start_idx = (j-1) * segmentLengthShiftedLine + 1;
-    end_idx = j*segmentLengthShiftedLine - 1;
-    measurement_xy = [xEastShiftedLine(start_idx:end_idx) yNorthShiftedLine(start_idx:end_idx)];
-
-    % [rms_error, max_error, errors] = computeSegmentError(measurement_xy,ground_truth_xy);
-  [rms_array_shifted_line(j), max_err_array_shifted_line(j), ~] = ...
-        computeSegmentError(measurement_xy,ground_truth_xy_shifted_line);
-end
-% figure;
-% plot(xEastShifted,yNorthShifted,'DisplayName',"Meas")
-% hold on
-% plot(ground_truth_xy_shifted(:,1),ground_truth_xy_shifted(:,2),'DisplayName',"GT")
-% axis equal
-% legend()
-
-figure;
-plot(rms_array_shifted_line,'DisplayName', 'RMS Error','LineWidth',1.5)
-hold on
-plot(max_err_array_shifted_line,'DisplayName', 'Max Error','LineWidth',1.5)
-ylabel('Error (m)','FontSize',13)
-xlabel('Index of 10 m subsegment','FontSize',13)
-legend()
-title('Error Between Parallel Shifted Lane and Ground Truth','FontSize',13)
-ylim([0 0.15])
-xlim([1 numel(rms_array_shifted_line)])
-
-%% Compute rms and curvatures of shifted lanes
-% segmentLength = 100;
-% rms_array = cell(length(xEastShifted),1);
-% max_err_array = cell(length(xEastShifted),1);
-% curvatures = cell(length(xEastShifted),1);
-% 
-% for i = 1:length(xEastShifted)
-%     if i == 2
-%         idx = 1;
-%     elseif i == 1
-%         idx = 2;
-%     end
-% 
-%     rms_array{i} = zeros(floor(length(xEastShifted{i})/segmentLength),1);
-%     max_err_array{i} = zeros(floor(length(xEastShifted{i})/segmentLength),1);
-%     ground_truth_xy = [allX{idx} allY{idx}];
-%     for j = 1:floor(length(xEastShifted{i})/segmentLength)
-%         start_idx = (j-1) * segmentLength + 1;
-%         end_idx = j*segmentLength - 1;
-%         measurement_xy = [xEastShifted{i}(start_idx:end_idx) yNorthShifted{i}(start_idx:end_idx)];
-% 
-%         % [rms_error, max_error, errors] = computeSegmentError(measurement_xy,ground_truth_xy);
-%         [rms_array{i}(j), max_err_array{i}(j), errors] = ...
-%             computeSegmentError(measurement_xy,ground_truth_xy);
-%     end
-% 
-%     %Compute curvatures from ground truth data
-%     curvatures{i} = findCurvature(ground_truth_xy);
-% 
-%     curvatures{i} = medfilt1(curvatures{i}, 10);
-% 
-%     figure;
-%     plot(rms_array{i},'DisplayName', 'RMS Error')
-%     hold on
-%     plot(max_err_array{i},'DisplayName', 'Max Error')
-%     ylabel('Error (m)','FontSize',13)
-%     % yyaxis right
-%     % ylabel('Curvature (m^-^1)')
-%     xlabel('Segment Number','FontSize',13)
-%     % xAxis = linspace(1,length(rms_array{i}),length(curvatures{i}));
-%     % plot(xAxis,curvatures{i} ,'DisplayName', strcat('Curvature:',num2str(i)))
-%     legend()
-%     title('Euclidian Error Between Shifted Lane and Ground Truth','FontSize',13)
-% end
-%% Compute rms and max error of a picked reference arcspline segment
-segmentNum = 170;
-segmentLength = 1000; % samples
-xEastRef = [segments{1}(segmentNum).allX];
-yNorthRef = [segments{1}(segmentNum).allY];
-
-rms_array_ref = zeros(floor(length(xEastRef)/segmentLength),1);
-max_err_array_ref = zeros(floor(length(yNorthRef)/segmentLength),1);
-ground_truth_xy = [all_clothoids{1}(segmentNum+1).allX' all_clothoids{1}(segmentNum+1).allY'];
-
-for j = 1:numel(rms_array_ref)
-    start_idx = (j-1) * segmentLength + 1;
-    end_idx = j*segmentLength - 1;
-    measurement_xy = [xEastRef(start_idx:end_idx)' yNorthRef(start_idx:end_idx)'];
-
-    % [rms_error, max_error, errors] = computeSegmentError(measurement_xy,ground_truth_xy);
-  [rms_array_ref(j), max_err_array_ref(j), errors] = ...
-        computeSegmentError(measurement_xy,ground_truth_xy);
-end
-% figure;
-% plot(xEastRef,yNorthRef,'DisplayName',"Meas")
-% hold on
-% plot(ground_truth_xy(:,1),ground_truth_xy(:,2),'DisplayName',"GT")
-% axis equal
-% legend()
-
-figure;
-% plot(rms_array_ref,'DisplayName', 'RMS Error','LineWidth',1.5)
-hold on
-plot(max_err_array_ref,'DisplayName', 'Max Error','LineWidth',1.5,'Color',[0.8500, 0.3250, 0.0980])
-ylabel('Error (m)','FontSize',13)
-% yyaxis right
-% ylabel('Curvature (m^-^1)')
-xlabel('Index of 10 m subsegment','FontSize',13)
-% xAxis = linspace(1,length(rms_array{i}),length(curvatures{i}));
-% plot(xAxis,curvatures{i} ,'DisplayName', strcat('Curvature:',num2str(i)))
-legend()
-title('Error Between Approximated Base Lane and Ground Truth','FontSize',13)
-ylim([0 0.01])
-xlim([1 numel(rms_array_ref)])
-%% Compute rms and max error of a picked reference line segment
-segmentNum = 186;
-segmentLength = 1000; % samples
-xEastRef = [segments{1}(segmentNum).allX];
-yNorthRef = [segments{1}(segmentNum).allY];
-
-rms_array_ref_line = zeros(floor(length(xEastRef)/segmentLength),1);
-max_err_array_ref_line = zeros(floor(length(yNorthRef)/segmentLength),1);
-ground_truth_xy = [all_clothoids{1}(segmentNum+1).allX' all_clothoids{1}(segmentNum+1).allY'];
-
-for j = 1:numel(rms_array_ref_line)
-    start_idx = (j-1) * segmentLength + 1;
-    end_idx = j*segmentLength - 1;
-    measurement_xy = [xEastRef(start_idx:end_idx) yNorthRef(start_idx:end_idx)];
-
-    % [rms_error, max_error, errors] = computeSegmentError(measurement_xy,ground_truth_xy);
-  [rms_array_ref_line(j), max_err_array_ref_line(j), errors] = ...
-        computeSegmentError(measurement_xy,ground_truth_xy);
-end
-% figure;
-% plot(xEastRef,yNorthRef,'DisplayName',"Meas")
-% hold on
-% plot(ground_truth_xy(:,1),ground_truth_xy(:,2),'DisplayName',"GT")
-% axis equal
-% legend()
-
-figure;
-% plot(rms_array_ref_line,'DisplayName', 'RMS Error','LineWidth',1.5)
-hold on
-plot(max_err_array_ref_line,'DisplayName', 'Max Error','LineWidth',1.5,'Color',[0.8500, 0.3250, 0.0980])
-ylabel('Error (m)','FontSize',13)
-% yyaxis right
-% ylabel('Curvature (m^-^1)')
-xlabel('Index of 10 m subsegment','FontSize',13)
-% xAxis = linspace(1,length(rms_array{i}),length(curvatures{i}));
-% plot(xAxis,curvatures{i} ,'DisplayName', strcat('Curvature:',num2str(i)))
-legend()
-title('Error Between Approximated Base Lane and Ground Truth','FontSize',13)
-% ylim([0 0.01])
-xlim([1 numel(rms_array_ref_line)])
-
-%% OSM error
-% rms_OSM = zeros(floor(length(xEastShifted{1})/segmentLength),1);
-% max_err_OSM = zeros(floor(length(xEastShifted{1})/segmentLength),1);
-% 
-% ground_truth_xy = [allX_OSM' allY_OSM'];
-% for j = 1:floor(length(xEastShifted{1})/segmentLength)
-%     start_idx = (j-1) * segmentLength + 1;
-%     end_idx = j*segmentLength - 1;
-% 
-%     %middle lane
-%     measurement_xy = [xEastShifted{1}(start_idx:end_idx) yNorthShifted{1}(start_idx:end_idx)];
-% 
-%     % [rms_error, max_error, errors] = computeSegmentError(measurement_xy,ground_truth_xy);
-%     [rms_OSM(j), max_err_OSM(j), errors] = ...
-%         computeSegmentError(measurement_xy,ground_truth_xy);
-% end
-% curvature_OSM = findCurvature(ground_truth_xy);
-% curvatures{i} = medfilt1(curvatures{i}, 10);
-% figure;
-% plot(rms_OSM,'DisplayName', strcat('RMS Error:',num2str(1)))
-% hold on
-% plot(max_err_OSM,'DisplayName', strcat('Max Error:',num2str(1)))
-% ylabel('Error (m)')
-% yyaxis right
-% ylabel('Curvature (m^-^1)')
-% xlabel('Segment Number')
-% xAxis = linspace(1,length(rms_OSM),length(curvature_OSM));
-% plot(xAxis,curvature_OSM ,'DisplayName', strcat('Curvature:',num2str(1)))
-% legend()
-% title('Error With Respect o OSM Map')
 %% Compute distance between centers
 
-[rms_error_GT, max_error_GT, errors_GT] = computeSegmentError([allX{1}(1:10000) allY{1}(1:10000)],[allX{2}(1:10000) allY{2}(1:10000)]);
+% [rms_error_GT, max_error_GT, errors_GT] = computeSegmentError([allX{1}(1:10000) allY{1}(1:10000)],[allX{2}(1:10000) allY{2}(1:10000)]);
 %% Compute memory usage
 roadLen = 0;
 numBytes = 0;

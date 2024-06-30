@@ -11,15 +11,18 @@ function plotBezierAnalysisArray(bezierTrajectories, xyPairs, allTangents, allCu
         h(i) = plot(bezierTrajectories(i).allX, bezierTrajectories(i).allY, "LineWidth", 1.5, "DisplayName", sprintf("Bézier Trajectory %d", i));
     end
     h3 = plot(xyPairs(:,1), xyPairs(:,2), "LineWidth", 1.5, "DisplayName", "Road Centerline");
-    % h4 = plot(arcSplinePos(:,1),arcSplinePos(:,2),"LineWidth",1.5,"DisplayName","Arc Spline Trajectory");
+    h4 = plot(arcSplinePos(:,1),arcSplinePos(:,2),"LineWidth",1.5,"DisplayName","Arc Spline Trajectory");
     plot(shiftedCoords1(:,1), shiftedCoords1(:,2), '--', 'Color', [0 0 0], 'DisplayName', 'Lane Boundary', 'LineWidth', 1);
     plot(shiftedCoords2(:,1), shiftedCoords2(:,2), '--', 'Color', [0 0 0], 'LineWidth', 1);
     xlabel("xEast (m)", "FontSize", 13);
     ylabel("yNorth (m)", "FontSize", 13);
     grid on;
-    title("Bézier Trajectories and Road Centerline", "FontSize", 13);
+    title("Trajectories and Road Centerline", "FontSize", 13);
     axis equal;
-    legend([h h3]);
+    minY = min(arcSplinePos([1 length(arcSplinePos)],2));
+    maxY = max(arcSplinePos([1 length(arcSplinePos)],2));
+    ylim([minY-5 maxY+5])
+    legend([h h3 h4]);
     
     index = zeros(numel(bezierTrajectories),1);
     for i = 1:numel(bezierTrajectories)
@@ -45,17 +48,23 @@ function plotBezierAnalysisArray(bezierTrajectories, xyPairs, allTangents, allCu
 
         plot(xAxisBezier, bezierErrors, "LineWidth", 1.5, "DisplayName", sprintf("Bézier Error %d", i));
     end
+    n2 = length(arcSplineErrors);
+    n1 = index(ceil(length(index) / 2) );
+    newIndices = linspace(1, n2, n1);
+    arcSplineErrors = interp1(1:n2, arcSplineErrors, newIndices)';
+        
+    plot(0:0.01:(n1-1)/100,arcSplineErrors, "LineWidth", 1.5, "DisplayName", sprintf("Arc Spline Error"));
+
     xlabel("Trajectory Length (m)", "FontSize", 13);
     ylabel("Distance to centerline (m)", "FontSize", 13);
     grid on;
     title("Euclidean Distance Error of Bézier Trajectories", "FontSize", 13);
-    legend();
+    legend('Location','best');
     
 
 
 
     % Downsample Tangent and Curvature Arrays
-
     figure;
     hold on;
     for i = 1:numTrajectories
@@ -71,13 +80,18 @@ function plotBezierAnalysisArray(bezierTrajectories, xyPairs, allTangents, allCu
         % Plot Heading Errors for all trajectories
         bezierHeadingErrors = rad2deg(tangentsGT - bezierTrajectories(i).allTangent');
         xAxisBezier = 0:0.01:(length(bezierHeadingErrors) - 1) / 100;
-        plot(xAxisBezier, bezierHeadingErrors, "LineWidth", 1.5, "DisplayName", sprintf("Heading Error %d", i));
+        plot(xAxisBezier, bezierHeadingErrors, "LineWidth", 1.5, "DisplayName", sprintf("Bézier Error %d", i));
     end
+    n2 = length(arcSplineHeadingErrors);
+    n1 = index(ceil(length(index) / 2) );
+    newIndices = linspace(1, n2, n1);
+    arcSplineHeadingErrors = interp1(1:n2, arcSplineHeadingErrors, newIndices)';
+    plot(0:0.01:(n1-1)/100,arcSplineHeadingErrors, "LineWidth", 1.5, "DisplayName", sprintf("Arc Spline Error"));
     xlabel("Trajectory Length (m)", "FontSize", 13);
     ylabel("Heading Error (°)", "FontSize", 13);
     grid on;
     title("Heading Error of Bézier Trajectories", "FontSize", 13);
-    legend();
+    legend('Location','best');
     
     figure;
     hold on;
@@ -92,11 +106,18 @@ function plotBezierAnalysisArray(bezierTrajectories, xyPairs, allTangents, allCu
         % Plot Curvature Errors for all trajectories
         bezierCurvatureErrors = curvaturesGT - bezierTrajectories(i).allCurvature';
         xAxisBezier = 0:0.01:(length(bezierCurvatureErrors) - 1) / 100;
-        plot(xAxisBezier, bezierCurvatureErrors, "LineWidth", 1.5, "DisplayName", sprintf("Curvature Error %d", i));
+        plot(xAxisBezier, bezierCurvatureErrors, "LineWidth", 1.5, "DisplayName", sprintf("Bézier Error %d", i));
     end
+
+    n2 = length(arcSplineCurvatureErrors);
+    n1 = index(ceil(length(index) / 2) );
+    newIndices = linspace(1, n2, n1);
+    arcSplineCurvatureErrors = interp1(1:n2, arcSplineCurvatureErrors, newIndices)';
+    plot(0:0.01:(n1-1)/100,arcSplineCurvatureErrors, "LineWidth", 1.5, "DisplayName", sprintf("Arc Spline Error"));
+    
     xlabel("Trajectory Length (m)", "FontSize", 13);
     ylabel("Curvature Error (m^{-1})", "FontSize", 13);
     grid on;
     title("Curvature Error of Bézier Trajectories", "FontSize", 13);
-    legend();
+    legend('Location','best');
 end

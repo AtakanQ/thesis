@@ -1,7 +1,7 @@
 function [clothoidArray,wayPoints] = ...
     fitArcSpline_v3(init_pos,init_tan,init_curv,clothoids_GT,plotOn,...
     shiftedCoords1, shiftedCoords2, xyPairs)
-
+dataSparsity = 0.1;
 wayPoints.pos = init_pos;
 wayPoints.tan = init_tan;
 wayPoints.curv = init_curv;
@@ -46,8 +46,10 @@ if(theta0 > 0)
         hcCorrectionLengths = hcLength;
         case1 = true;
     else % case 2
-        sigma = 0.0001;
-        % sigma = 0.0025;
+
+        sigma = 0.00010; % best
+        % sigma = 0.00100;
+        % sigma = 0.00005;
         l1 = k0/sigma + sqrt(k0^2/2/(sigma^2) + theta0/sigma);  
         l2 = l1 - k0/sigma; 
         hcLength = l1 + l2;
@@ -57,7 +59,6 @@ if(theta0 > 0)
 else
     if(k0 < 0) % case 3
         sigma = 0.0001;
-        % sigma = 0.0025;
         l1 = k0/(-sigma) + sqrt(k0^2/2/(sigma^2) - theta0/sigma);  
         l2 = l1 - k0/(-sigma); 
         hcLength = l1 + l2;
@@ -174,7 +175,7 @@ if length(hcCorrectionLengths) == 2
             posErrorWaypoints(posErrorwaypointCounter + i - 1).curv, ...
             posErrorWaypoints(posErrorwaypointCounter + i).curv, ...
             posErrorWaypoints(posErrorwaypointCounter + i).length, ...
-            0.01);
+            dataSparsity);
     
         posErrorClothoid = [posErrorClothoid tempClothoid];
     
@@ -186,7 +187,7 @@ if length(hcCorrectionLengths) == 2
     %     roadData(1).curvRate * hcCorrectionLengths(1);
     % 
     % posErrorClothoid(1) = clothoid_v2(init_pos,init_tan, init_curv, intermediateCurv,...
-    %            hcCorrectionLengths(1),0.01);
+    %            hcCorrectionLengths(1),dataSparsity);
     % 
     % intermediateXY = [posErrorClothoid(1).allX(end) posErrorClothoid(1).allY(end)];
     % intermediateTan = posErrorClothoid(1).final_tan;
@@ -195,7 +196,7 @@ if length(hcCorrectionLengths) == 2
     %     roadData(1).curvRate * hcCorrectionLengths(2);
     % 
     % posErrorClothoid(2) = clothoid_v2(intermediateXY,intermediateTan, intermediateCurv, final_curvature,...
-    %            hcCorrectionLengths(2),0.01);
+    %            hcCorrectionLengths(2),dataSparsity);
 
 else
         % use the rates to generate the next waypoint.
@@ -278,7 +279,7 @@ else
             posErrorWaypoints(posErrorwaypointCounter + i - 1).curv, ...
             posErrorWaypoints(posErrorwaypointCounter + i).curv, ...
             posErrorWaypoints(posErrorwaypointCounter + i).length, ...
-            0.01);
+            dataSparsity);
     
         posErrorClothoid = [posErrorClothoid tempClothoid];
     
@@ -290,67 +291,69 @@ else
     %     sigma*hcLength + ...
     %     roadData(1).curvRate*hcLength;
     % posErrorClothoid(1) = clothoid_v2(init_pos,init_tan, init_curv, final_curvature,...
-    %            hcCorrectionLengths(1),0.01);
+    %            hcCorrectionLengths(1),dataSparsity);
 end
 % Heading curvature correction to compute the position error
-figure;
-for i = 1:numel(posErrorClothoid)
-    posErrorClothoid(i).plotPlain([1 0 0]);
-    hold on
+
+if plotOn
+    figure;
+    for i = 1:numel(posErrorClothoid)
+        posErrorClothoid(i).plotPlain([1 0 0]);
+        hold on
+    end
+    for i = 1:numClothoidsPassed
+        clothoids_GT(i).plotPlain([0 0 1]);
+    end
+    
+    
+    initPosError = norm([clothoids_GT(1).allX(1) clothoids_GT(1).allY(1)] - [wayPoints(1).pos]);
+    ground_truth_xy = xyPairs;
+    finalPoint = [posErrorClothoid(end).allX(end) posErrorClothoid(end).allY(end)];
+    [closestPoint, index] = findClosestPointOnLine(...
+        posErrorClothoid(end).allX(end),posErrorClothoid(end).allY(end),...
+        posErrorClothoid(end).allTangent(end) + pi/2,ground_truth_xy);
+    finalPosError = norm(finalPoint - closestPoint);
+    
+    
+    plot([clothoids_GT(1).allX(1) wayPoints(1).pos(1)],[clothoids_GT(1).allY(1) wayPoints(1).pos(2)],"--",'Color',[0 0 0],'LineWidth',1)
+    
+    plot(   [finalPoint(1) closestPoint(1)],...
+        [finalPoint(2) closestPoint(2)],"-",'Color',[0 0 0],'LineWidth',1)
+    h4 = plot(shiftedCoords1(:,1),shiftedCoords1(:,2),'--','Color',[0 0 0],'DisplayName','Lane Boundary','LineWidth',1);
+    plot(shiftedCoords2(:,1),shiftedCoords2(:,2),'--','Color',[0 0 0],'LineWidth',1)
+    
+    xlabel("xEast (m)","FontSize",13)
+    ylabel("yNorth (m)","FontSize",13)
+    title("HCC Maneuver Effect on Position Error","FontSize",13)
+    
+    text_string = sprintf('%0.2f m', finalPosError);
+    text((finalPoint(1) + closestPoint(1))/2 + 3, ...
+        (finalPoint(2) + closestPoint(2))/2, text_string,'VerticalAlignment','bottom',...
+        'HorizontalAlignment', 'left', 'FontSize', 10);
+    
+    text_string = sprintf('%0.2f m', initPosError);
+    text((clothoids_GT(1).allX(1) + wayPoints(1).pos(1))/2, ...
+        (clothoids_GT(1).allY(1) + wayPoints(1).pos(2))/2, text_string,'VerticalAlignment','bottom',...
+        'HorizontalAlignment', 'left', 'FontSize', 10);
+    h1 = plot(NaN,NaN,'Color',[1 0 0]);
+    h2 = plot(NaN,NaN,'Color',[0 0 1]);
+    h3 = plot(NaN,NaN,'-','Color',[0 0 0]);
+    legend([h1 h2 h3 h4],{'Trajectory','Road Centerline','Errors','Lane Boundary'})
 end
-for i = 1:numClothoidsPassed
-    clothoids_GT(i).plotPlain([0 0 1]);
-end
-
-
-initPosError = norm([clothoids_GT(1).allX(1) clothoids_GT(1).allY(1)] - [wayPoints(1).pos]);
-ground_truth_xy = xyPairs;
-finalPoint = [posErrorClothoid(end).allX(end) posErrorClothoid(end).allY(end)];
-[closestPoint, index] = findClosestPointOnLine(...
-    posErrorClothoid(end).allX(end),posErrorClothoid(end).allY(end),...
-    posErrorClothoid(end).allTangent(end) + pi/2,ground_truth_xy);
-finalPosError = norm(finalPoint - closestPoint);
-
-
-plot([clothoids_GT(1).allX(1) wayPoints(1).pos(1)],[clothoids_GT(1).allY(1) wayPoints(1).pos(2)],"--",'Color',[0 0 0],'LineWidth',1)
-
-plot(   [finalPoint(1) closestPoint(1)],...
-    [finalPoint(2) closestPoint(2)],"-",'Color',[0 0 0],'LineWidth',1)
-h4 = plot(shiftedCoords1(:,1),shiftedCoords1(:,2),'--','Color',[0 0 0],'DisplayName','Lane Boundary','LineWidth',1);
-plot(shiftedCoords2(:,1),shiftedCoords2(:,2),'--','Color',[0 0 0],'LineWidth',1)
-
-xlabel("xEast (m)","FontSize",13)
-ylabel("yNorth (m)","FontSize",13)
-title("HCC Maneuver Effect on Position Error","FontSize",13)
-
-text_string = sprintf('%0.2f m', finalPosError);
-text((finalPoint(1) + closestPoint(1))/2 + 3, ...
-    (finalPoint(2) + closestPoint(2))/2, text_string,'VerticalAlignment','bottom',...
-    'HorizontalAlignment', 'left', 'FontSize', 10);
-
-text_string = sprintf('%0.2f m', initPosError);
-text((clothoids_GT(1).allX(1) + wayPoints(1).pos(1))/2, ...
-    (clothoids_GT(1).allY(1) + wayPoints(1).pos(2))/2, text_string,'VerticalAlignment','bottom',...
-    'HorizontalAlignment', 'left', 'FontSize', 10);
-h1 = plot(NaN,NaN,'Color',[1 0 0]);
-h2 = plot(NaN,NaN,'Color',[0 0 1]);
-h3 = plot(NaN,NaN,'-','Color',[0 0 0]);
-legend([h1 h2 h3 h4],{'Trajectory','Road Centerline','Errors','Lane Boundary'})
-
 %Find closest point
 errorComputationPoint = [posErrorClothoid(end).allX(end) posErrorClothoid(end).allY(end)];
 errorComputatonTangent = posErrorClothoid(end).final_tan;
-errorComputationCurvature = posErrorClothoid(end).final_curv;
-[closest_point, idx] = findClosestPointOnLine(errorComputationPoint(1), errorComputationPoint(2),...
-    errorComputatonTangent + pi/2, xyPairs);
+% errorComputationCurvature = posErrorClothoid(end).final_curv;
+% [closest_point, idx] = findClosestPointOnLine(errorComputationPoint(1), errorComputationPoint(2),...
+%     errorComputatonTangent + pi/2, xyPairs);
 
-positionErrorComputed = norm(closest_point - errorComputationPoint)
-tanErrorComputed = rad2deg(allTangents(idx) - errorComputatonTangent)
-curvErrorComputed = errorComputationCurvature - allCurvatures(idx)
+% positionErrorComputed = norm(closest_point - errorComputationPoint);
+% tanErrorComputed = rad2deg(allTangents(idx) - errorComputatonTangent);
+% curvErrorComputed = errorComputationCurvature - allCurvatures(idx);
 
 curr_point = errorComputationPoint;
 [closest_point, ~] = findClosestPointOnLine(curr_point(1), curr_point(2),...
-    tanErrorComputed + pi/2, xyPairs);
+    errorComputatonTangent + pi/2, xyPairs);
 to_closest = [(closest_point-curr_point) 0];
 curr_heading = [cos(errorComputatonTangent) sin(errorComputatonTangent) 0];
 crossVector = cross(to_closest,curr_heading);
@@ -536,7 +539,7 @@ for i = 1:numSections
         wayPoints(wayPointCounter + i - 1).curv, ...
         wayPoints(wayPointCounter + i).curv, ...
         wayPoints(wayPointCounter + i).length, ...
-        0.01);
+        dataSparsity);
 
     clothoidArray = [clothoidArray tempClothoid];
 

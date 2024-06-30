@@ -3,7 +3,13 @@ clear
 % Load here LC_startf,S_numf,deltaYf,k1f,lambdaf
 addpath("..\")
 load LCdata_trial_13ms
-load("mainFitArc.mat")
+
+
+fileName = "case1";
+% fileName = "case2";
+% fileName = "case3";
+
+load("mainFitArc"+fileName+".mat")
 % load LCdata_trial_20ms
 
 %% Maneuver Data Entrance
@@ -166,8 +172,8 @@ xlabel('X-position [m]','FontSize',12);
 ylabel('Y-position [m]','FontSize',12);
 title('Trajectory Comparison','FontSize',15)
 legend('Original Traj','Simulation','FontSize',13)
-axis equal
 grid on
+axis equal
 
 figure;
 plot(time,Ycurve1,'LineWidth',3);

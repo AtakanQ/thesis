@@ -174,10 +174,27 @@ classdef bezier < handle
                             obj.Tangents{curve_position} = [atan2(dy,dx); obj.final_tan];
                             
                                 % Compute differential arc lengths
-                            ds = sqrt(dx.^2 + dy.^2);
+                            % ds = sqrt(dx.^2 + dy.^2);
                             
                             % Compute curvatures
-                            obj.Curvatures{curve_position} =[obj.curv_zero; (diff(obj.Tangents{curve_position}(1:(end-1)) ) ./ ds(2:end)) ; obj.curv_final];
+
+                            % Calculate the differences (dx, dy)
+                            dx = gradient(obj.Curves{curve_position}(:, 1));
+                            dy = gradient(obj.Curves{curve_position}(:, 2));
+                            
+                            % Calculate the second differences (ddx, ddy)
+                            ddx = gradient(dx);
+                            ddy = gradient(dy);
+                            
+                            % Calculate the curvature using the formula:
+                            % kappa = (dx * ddy - dy * ddx) / (dx^2 + dy^2)^(3/2);
+                            curvatures = (dx .* ddy - dy .* ddx) ./ (dx.^2 + dy.^2).^(3/2);
+                            
+                            %numeric result
+                            obj.Curvatures{curve_position} =curvatures;
+                           
+
+                            % obj.Curvatures{curve_position} =[obj.curv_zero; (diff(obj.Tangents{curve_position}(1:(end-1)) ) ./ ds(2:end)) ; obj.curv_final];
 
                             % curvature = computeBezierCurvature(t, P_zero, obj.P_one(curve_position,:), obj.P_two(curve_position,:), obj.P_three(curve_position,:), obj.P_four(curve_position,:), P_five(curve_position,:));
                             % figure;

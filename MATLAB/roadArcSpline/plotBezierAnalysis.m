@@ -20,9 +20,9 @@ function plotBezierAnalysis(bezierTrajectory, xyPairs, allTangents, allCurvature
     axis equal;
     legend([h1 h2 h3 h4]);
     
-    xAxisArcSpline = 0:0.01:(length(arcSplineErrors)-1) / 100;
+    xAxisArcSpline = 10*(0:0.01:(length(arcSplineErrors)-1) / 100);
     % Plot Bézier Errors
-    xAxisBezier = linspace(0,length(arcSplineErrors)/100,length(bezierErrors));
+    xAxisBezier = 10*(linspace(0,length(arcSplineErrors)/100,length(bezierErrors)));
     
     figure;
     plot(xAxisBezier, bezierErrors, "LineWidth", 1.5, "DisplayName", "Bézier Error");
@@ -31,7 +31,8 @@ function plotBezierAnalysis(bezierTrajectory, xyPairs, allTangents, allCurvature
     xlabel("Trajectory Length (m)", "FontSize", 13);
     ylabel("Distance to centerline (m)", "FontSize", 13);
     grid on;
-    title("Euclidean Distance Error of Bézier Trajectory", "FontSize", 13);
+    title("Euclidean Distance Error of Trajectories", "FontSize", 13);
+    legend();
     
     [~, index] = findClosestPointOnLine(bezierTrajectory.allX(end)...
         , bezierTrajectory.allY(end), bezierTrajectory.allTangent(end) + pi/2, xyPairs);
@@ -55,7 +56,7 @@ function plotBezierAnalysis(bezierTrajectory, xyPairs, allTangents, allCurvature
     xlabel("Trajectory Length (m)", "FontSize", 13);
     ylabel("Heading Error (°)", "FontSize", 13);
     grid on;
-    title("Heading Error of Bézier Trajectory", "FontSize", 13);
+    title("Heading Error of Trajectories", "FontSize", 13);
     legend();
     
     % Plot Curvature Errors
