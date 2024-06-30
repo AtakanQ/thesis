@@ -3,7 +3,7 @@ function [res_clothoid,rms_error,max_error] = concatenateClothoid(init_pos,init_
 %CONCATENATECLOTHOID Summary of this function goes here
 %   Detailed explanation goes here
 arcSegClass = arcSegment;
-maxOrder = 25;
+maxOrder = 10;
 ground_truth_xy = [groundX groundY];
 res_clothoid = [];
 rms_error = Inf;

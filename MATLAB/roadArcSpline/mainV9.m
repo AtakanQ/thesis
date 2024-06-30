@@ -139,8 +139,8 @@ errorCfg.rmsError = 0.1; % Computed after concatenation
 errorCfg.maxError = 0.2; % Computed after concatenation
 errorCfg.headingDeviation = 2; % Degrees deviation allowed for concatenated lines
 
-% [result_clothoids,concat_indices_clothoid,result_lines,concat_indices_line,mergedSegments] = ...
-%     combineSegments(segments{1},all_clothoids{1}(2:end-1),errorCfg);
+[result_clothoids,concat_indices_clothoid,result_lines,concat_indices_line,mergedSegments] = ...
+    combineSegments(segments{1},all_clothoids{1}(2:end-1),errorCfg);
 
 
 
@@ -249,13 +249,18 @@ legend()
 
 % [rms_error_GT, max_error_GT, errors_GT] = computeSegmentError([allX{1}(1:10000) allY{1}(1:10000)],[allX{2}(1:10000) allY{2}(1:10000)]);
 %% Compute memory usage
+
 roadLen = 0;
 numBytes = 0;
+numArcSplines = 0;
+numLineSegments = 0;
 for i = 1:numel(segments{1})
     if(segments{1}(i).numArcs>0)
         tempBytes = 16*segments{1}(i).numArcs;
+        numArcSplines = numArcSplines + 1;
     else
         tempBytes = 16;
+        numLineSegments = numLineSegments + 1;
     end
     roadLen = roadLen + segments{1}(i).segmentLength;
    numBytes = numBytes + tempBytes;  

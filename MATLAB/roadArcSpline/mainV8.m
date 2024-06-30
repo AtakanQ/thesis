@@ -481,11 +481,15 @@ xlim([1 numel(rms_array_ref_line)])
 %% Compute memory usage
 roadLen = 0;
 numBytes = 0;
+numArcSplines = 0;
+numLineSegments = 0;
 for i = 1:numel(segments{1})
     if(segments{1}(i).numArcs>0)
         tempBytes = 16*segments{1}(i).numArcs;
+        numArcSplines = numArcSplines + 1;
     else
         tempBytes = 16;
+        numLineSegments = numLineSegments + 1;
     end
     roadLen = roadLen + segments{1}(i).segmentLength;
    numBytes = numBytes + tempBytes;  
