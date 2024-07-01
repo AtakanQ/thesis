@@ -1,17 +1,23 @@
 function [alpha,k1] = computeAlphak1(S,lambda,gamma,deltaY,plotOn)
 
-syms alphaSym z;
+% syms alphaSym z;
+% 
+% Dintegrand =  @(x,alphaSym) cos(2*alphaSym*(-x.^2+x) );
+% alphaVec = 0:.01:pi/4;
+% DalphaVec = [];
+% DalphaSinVec = [];
+% for jj = 1:length(alphaVec)
+%     alphaSym = alphaVec(jj);
+%     DalphaVec(jj) = 2*integral(@(x)Dintegrand(x,alphaSym),0,.5);
+%     DalphaSinVec(jj) = DalphaVec(jj)*sin(alphaSym/2);
+% end
+% P = polyfit(alphaVec,DalphaVec,3);
 
-Dintegrand =  @(x,alphaSym) cos(2*alphaSym*(-x.^2+x) );
-alphaVec = 0:.01:pi/4;
-DalphaVec = [];
-DalphaSinVec = [];
-for jj = 1:length(alphaVec)
-    alphaSym = alphaVec(jj);
-    DalphaVec(jj) = 2*integral(@(x)Dintegrand(x,alphaSym),0,.5);
-    DalphaSinVec(jj) = DalphaVec(jj)*sin(alphaSym/2);
-end
-P = polyfit(alphaVec,DalphaVec,3);
+P =[0.00163904950551628...
+    -0.0674821606524126...
+    0.000138971916425882...
+    0.999994898825001];
+
 DalphaPoly = @(alph)(P(4) + P(3)*alph + P(2)*alph.^2 + P(1)*alph.^3);
 diffDalphaPoly = @(alph)(P(3)+2*P(2)*alph+3*P(1)*alph.^2);
 
