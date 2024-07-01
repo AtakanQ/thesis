@@ -12,10 +12,10 @@ load("all_clothoids_LB_A1.mat")
 % fileName = "Case1";
 
 %case 2
-posError = 0.20; %meters
-headingError = deg2rad(3); %radians
-curvatureError = 0.0015;
-fileName = "Case2";
+% posError = 0.20; %meters
+% headingError = deg2rad(3); %radians
+% curvatureError = 0.0015;
+% fileName = "Case2";
 
 
 %case 3
@@ -149,6 +149,7 @@ finalCurvArc = clothoidArray(end).final_curv;
 arcSplinePosError = norm( finalPosArc - closest_point);
 arcSplineTangentError =  rad2deg(finalTanArc - allTangents(arcSplineClosestIndex));
 arcSplineCurvatureError = finalCurvArc - allCurvatures(arcSplineClosestIndex);
+save("mainFitArc"+fileName+".mat","clothoidArray")
 %% Try to fit a Bézier curve
 
 [trajectories] = fitBezier([vehicleX vehicleY],...
@@ -377,7 +378,7 @@ title("Curvature Error of Trajectories","FontSize",13)
 xlabel("Trajectory Length (m)","FontSize",13)
 ylabel("Curvature Error (m^-^1)","FontSize",13)
 legend();
-save("mainFitArc"+fileName+".mat")
+
 
 %% Make them the same length
 close all

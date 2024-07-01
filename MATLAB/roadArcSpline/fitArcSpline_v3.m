@@ -43,13 +43,17 @@ if(theta0 > 0)
     if(k0 < 0) % case 1
         sigma = k0 * k0 / (2 * theta0);
         hcLength = -2 * theta0 / k0;
+
+        if((sigma < 0.001 ) && (hcLength>250))
+            sigma = 0.001;
+            hcLength = abs(k0) / sigma;
+        end
         hcCorrectionLengths = hcLength;
         case1 = true;
     else % case 2
-
-        sigma = 0.00010; % best
-        % sigma = 0.00100;
-        % sigma = 0.00005;
+        sigma = 0.0005; % best
+        % sigma = 0.01;
+        % sigma = 0.0001;
         l1 = k0/sigma + sqrt(k0^2/2/(sigma^2) + theta0/sigma);  
         l2 = l1 - k0/sigma; 
         hcLength = l1 + l2;
@@ -58,15 +62,20 @@ if(theta0 > 0)
     end
 else
     if(k0 < 0) % case 3
-        sigma = 0.0001;
+        sigma = 0.0005;
         l1 = k0/(-sigma) + sqrt(k0^2/2/(sigma^2) - theta0/sigma);  
         l2 = l1 - k0/(-sigma); 
         hcLength = l1 + l2;
         hcCorrectionLengths = [l1; l2];
         case3 = true;
     else % case 4
-        sigma = k0 * k0 / (2 * theta0);
+        sigma = abs(k0 * k0 / (2 * theta0));
         hcLength = -2 * theta0 / k0;
+
+        if((sigma < 0.001 ) && (hcLength>250))
+            sigma = 0.001;
+            hcLength = abs(k0) / sigma;
+        end
         hcCorrectionLengths = hcLength;
         case4 = true;
     end

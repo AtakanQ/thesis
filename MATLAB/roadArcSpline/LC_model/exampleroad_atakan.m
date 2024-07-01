@@ -5,9 +5,9 @@ addpath("..\")
 load LCdata_trial_13ms
 
 
-fileName = "case1";
+% fileName = "case1";
 % fileName = "case2";
-% fileName = "case3";
+fileName = "case3";
 
 load("mainFitArc"+fileName+".mat")
 % load LCdata_trial_20ms
@@ -87,9 +87,9 @@ end
 figure;
 plot(xVec,yVec,'LineWidth',2);
 axis equal
-xlabel('X-position [m]','FontSize',12)
-ylabel('Y-position [m]','FontSize',12)
-set(gca,'FontSize',12)
+xlabel('X-position [m]','FontSize',13)
+ylabel('Y-position [m]','FontSize',13)
+set(gca,'FontSize',13)
 
 muVal = .82;
 g = 9.81;
@@ -110,10 +110,10 @@ decouplingParametersNested
 LineData =[
          0;
          0;
-   0;
+        0;
          0;
-   0;
-    0];
+        0;
+     0];
 % sim('laneKeepingArcSplinesNestedRoad_2013a.slx',tSim)
 sim('laneKeepingArcSplinesNested_atakan.slx',tSim)
 
@@ -124,18 +124,20 @@ vmaxVec = sqrt(sqrt(muVal^2*g^2)./abs(curvVec));
 figure;
 subplot(2,1,1)
 plot(curvArc,curvVec,'LineWidth',2)
-xlabel('arc-length [m]','FontSize',12)
-ylabel('road curvature $k_{\mathcal{T}}$','FontSize',12,'Interpreter','latex')
-grid
+xlabel('arc-length [m]','FontSize',13)
+ylabel('road curvature $k_{\mathcal{T}}$','FontSize',13,'Interpreter','latex')
+grid on
 subplot(2,1,2)
 plot(curvArc,vmaxVec,'LineWidth',2)
-xlabel('arc-length [m]','FontSize',12)
-ylabel('velocities [m/sec]','FontSize',12)
+xlabel('arc-length [m]','FontSize',13)
+ylabel('velocities [m/sec]','FontSize',13)
+ylim([0 200])
 grid
 hold all;
 plot(arclength1,vel1,'LineWidth',2)
-lll = legend('$v_{\mathrm{max}}$','$\mathcal{V}(s)$');
+lll = legend('$v_{\mathrm{max}}$','$\mathcal{V}(s)$','Location','best');
 set(lll,'Interpreter','latex')
+grid on
 % set(gca,'Ylim',[20 50])
 
 figure;
@@ -143,48 +145,27 @@ plot([0 arclength1(end)],[muVal*g muVal*g],'k--','LineWidth',2)
 hold all;
 plot(arclength1, abs(acc_long1),'LineWidth',2)
 plot(arclength1, sqrt(acc_long1.^2+acc_lat1.^2 ),'LineWidth',2)
-lll = legend('$\mu\cdot g$','$a_{long}$','$\sqrt{a_{long}\sp2 + a_{lat}\sp2}$');
-set(lll,'FontSize',12,'Interpreter','latex')
-xlabel('X-position [m]','FontSize',12)
-ylabel('accelerations [m/sec^2]','FontSize',12)
-title('Accleration Limits','FontSize',15)
+lll = legend('$\mu\cdot g$','$a_{long}$','$\sqrt{a_{long}\sp2 + a_{lat}\sp2}$','Location','best');
+set(lll,'FontSize',13,'Interpreter','latex')
+xlabel('X-position [m]','FontSize',13)
+ylabel('accelerations [m/sec^2]','FontSize',13)
+title('Acceleration Limits','FontSize',13)
 grid on;
 
 figure;
-plot(time,eyL1,'LineWidth',2)
-xlabel('time [sec]','FontSize',12)
-ylabel('Tracking error [m]','FontSize',12)
-title('Tracking Error During Maneuver','FontSize',15)
-grid
-
-figure
-plot(time,vel1,'LineWidth',3);
-xlabel('Time [s]','FontSize',12);
-ylabel('Velocity [m/s]','FontSize',12);
-title('Velocity Change During Maneuver','FontSize',15)
+plot(time(1:(end-1)),eyL1(1:(end-1)),'LineWidth',2)
+xlabel('time [sec]','FontSize',13)
+ylabel('Tracking error [m]','FontSize',13)
+title('Tracking Error During Maneuver','FontSize',13)
 grid on
 
 figure;
 plot(xVec,yVec,'LineWidth',3);
 hold on
 plot(Xcurve1,Ycurve1,'r','LineWidth',3,'LineStyle','-.')
-xlabel('X-position [m]','FontSize',12);
-ylabel('Y-position [m]','FontSize',12);
-title('Trajectory Comparison','FontSize',15)
-legend('Original Traj','Simulation','FontSize',13)
+xlabel('X-position [m]','FontSize',13);
+ylabel('Y-position [m]','FontSize',13);
+title('Trajectory Comparison','FontSize',13)
+legend('Original Traj','Simulation','FontSize',13,'Location','Best')
 grid on
 axis equal
-
-figure;
-plot(time,Ycurve1,'LineWidth',3);
-xlabel('Time [s]','FontSize',12);
-ylabel('Y-Position [m]','FontSize',12);
-title('Y-Positions vs Time','FontSize',15);
-grid on
-
-figure;
-plot(time,acc_lat1,'LineWidth',3);
-xlabel('Time [s]','FontSize',12);
-ylabel('Acc-Lateral','FontSize',12);
-title('Acc-Lat vs Time','FontSize',15);
-grid on
