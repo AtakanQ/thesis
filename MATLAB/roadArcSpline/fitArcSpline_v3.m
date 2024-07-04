@@ -52,6 +52,7 @@ if(theta0 > 0)
         case1 = true;
     else % case 2
         sigma = 0.0005; % best
+        % sigma = 0.0002;
         % sigma = 0.01;
         % sigma = 0.0001;
         l1 = k0/sigma + sqrt(k0^2/2/(sigma^2) + theta0/sigma);  
@@ -423,9 +424,27 @@ if plotOn
         k1 = hccCurvatures(i) * hcCorrectionLengths(i);
         hccCurvatures(i+1) = k1;
     end
+    if superPose == true
+        hccPlotLens(2) = 100;
+        hccCurvatures(2) = 0.2;
+    end
     plot(hccPlotLens,hccCurvatures,"LineWidth",1.2,"DisplayName","HCC Curvature")
+
+    hold on
+
+    if superPose == true
+        clothoids_GT(1).curv_derivative
+        superPosedx = [0 6.33 ...
+            12.66 38 ...
+            44.32 50.65];
+        superPosedCurvatures = [0.01 (0.01+sigma*6.33 -0.0477 + clothoids_GT(1).curv_derivative*6.33) ...
+            (0.01+sigma*12.66 + clothoids_GT(1).curv_derivative*12.66)  (0.01+sigma*38 + clothoids_GT(1).curv_derivative*38)...
+            (0.01+sigma*44.32 + 0.0477 + clothoids_GT(1).curv_derivative*44.32) ...
+            (0.01+sigma*50.65 + clothoids_GT(1).curv_derivative*50.65)];
+        plot(superPosedx,superPosedCurvatures,"LineWidth",1.2,"DisplayName","Superposed Curvature")
+    end
     xlim([0 hcLength])
-    legend();
+    legend("Location","best");
     title("Curvature Rates of Each Maneuver","FontSize",13)
     ylabel("Curvature (m^-^1)","FontSize",13)
     xlabel("Arc Length (m)","FontSize",13)

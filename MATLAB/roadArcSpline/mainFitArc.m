@@ -12,10 +12,10 @@ load("all_clothoids_LB_A1.mat")
 % fileName = "Case1";
 
 %case 2
-% posError = 0.20; %meters
-% headingError = deg2rad(3); %radians
-% curvatureError = 0.0015;
-% fileName = "Case2";
+posError = 0.20; %meters
+headingError = deg2rad(3); %radians
+curvatureError = 0.0015;
+fileName = "Case2";
 
 
 %case 3
@@ -429,3 +429,35 @@ timePassedBeziers
 plotBezierAnalysisArray(bestBezierList, xyPairs, allTangents, allCurvatures,...
     shiftedCoords1, shiftedCoords2, [arcSpline.allX' arcSpline.allY'],...
     arcSplineErrors,arcSplineHeadingErrors,arcSplineCurvatureErrors)
+
+%% Simulate data for visualization
+clc
+close all
+
+plotOn = true;
+init_pos = [0 0];
+init_tan = 0;
+init_curv = 0;
+clothoids_GT = clothoid_v2(init_pos,init_tan,init_curv,0.02,90,0.01);
+
+shiftedCoords1 = [];
+shiftedCoords2 = [];
+for i = 1:numel(clothoids_GT)
+    [tempShiftedCoords1, tempShiftedCoords2] = shiftCoordinates(...
+        [clothoids_GT(i).allX' clothoids_GT(i).allY'], clothoids_GT(i).allTangent', laneWidth);
+    shiftedCoords1 = [shiftedCoords1; tempShiftedCoords1];
+    shiftedCoords2 = [shiftedCoords2; tempShiftedCoords2];
+end
+for i = 1:numel(clothoids_GT)
+    xyPairs = [xyPairs; clothoids_GT(i).allX' clothoids_GT(i).allY';];
+    allTangents = [allTangents clothoids_GT(i).allTangent];
+    allCurvatures = [allCurvatures clothoids_GT(i).allCurvature];
+end
+[clothoidArray,wayPoints] = ...
+    fitArcSpline_v3(init_pos + [0.3 0.4],init_tan + deg2rad(1),init_curv + 0.01,clothoids_GT,plotOn,...
+    shiftedCoords1, shiftedCoords2, xyPairs);
+
+
+
+
+

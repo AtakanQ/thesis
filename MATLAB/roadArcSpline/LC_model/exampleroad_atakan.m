@@ -6,8 +6,8 @@ load LCdata_trial_13ms
 
 
 % fileName = "case1";
-% fileName = "case2";
-fileName = "case3";
+fileName = "case2";
+% fileName = "case3";
 
 load("mainFitArc"+fileName+".mat")
 % load LCdata_trial_20ms
@@ -41,8 +41,8 @@ CircleData = [];
 LineData = [];
 plotOn = 1;
 pointCount = 1;
-curvVec = [];
-curvArc = [];
+curvVec = [clothoidArray(1).init_curv];
+curvArc = [0];
 % ============================
 % Straight
 % ============================
@@ -75,8 +75,10 @@ for i = 1:numel(clothoidArray)
     Rend = CircleData(3,end);
     thetaS = CircleData(5,end);
     PS = Cend + Rend*[sin(thetaS); -cos(thetaS)];
-    curvArc = [curvArc [Sall-S:1:Sall]];
-    curvVec = [curvVec kB/S*([Sall-S:1:Sall]-(Sall-S)) ];
+
+
+    curvArc = [curvArc (curvArc(i)+S)];
+    curvVec = [curvVec kB];
 end
 
 [arcVec,xVec,yVec] = plotBiElementaryAcrSpline(CircleData,LineData); % no need for arcVec
@@ -100,6 +102,7 @@ g = 9.81;
 % Compute velocity profile
 v0 = 36; % initial velocity
 tSim = Sall/v0; % simulation time 
+tSim = 1.11;
 acc_sim = 0; % constant velocity 
 S01 = 0; % acc = 0 ise sifir olabilir
 v1 = v0; % maneuver velocity
@@ -120,32 +123,36 @@ sim('laneKeepingArcSplinesNested_atakan.slx',tSim)
 
 %% Plots
 close all
-vmaxVec = sqrt(sqrt(muVal^2*g^2)./abs(curvVec));
+vmaxVec = 1.5*sqrt(sqrt(muVal^2*g^2)./abs(curvVec));
 figure;
+
 subplot(2,1,1)
 plot(curvArc,curvVec,'LineWidth',2)
 xlabel('arc-length [m]','FontSize',13)
 ylabel('road curvature $k_{\mathcal{T}}$','FontSize',13,'Interpreter','latex')
 grid on
+title("Curvature of Trajectory","FontSize",13)
 subplot(2,1,2)
 plot(curvArc,vmaxVec,'LineWidth',2)
 xlabel('arc-length [m]','FontSize',13)
 ylabel('velocities [m/sec]','FontSize',13)
 ylim([0 200])
+title("Maximum Velocity over Trajectory","FontSize",13)
 grid
 hold all;
 plot(arclength1,vel1,'LineWidth',2)
 lll = legend('$v_{\mathrm{max}}$','$\mathcal{V}(s)$','Location','best');
 set(lll,'Interpreter','latex')
 grid on
+
 % set(gca,'Ylim',[20 50])
 
 figure;
 plot([0 arclength1(end)],[muVal*g muVal*g],'k--','LineWidth',2)
 hold all;
-plot(arclength1, abs(acc_long1),'LineWidth',2)
+%plot(arclength1, abs(acc_long1),'LineWidth',2)
 plot(arclength1, sqrt(acc_long1.^2+acc_lat1.^2 ),'LineWidth',2)
-lll = legend('$\mu\cdot g$','$a_{long}$','$\sqrt{a_{long}\sp2 + a_{lat}\sp2}$','Location','best');
+lll = legend('$\mu\cdot g$','$\sqrt{a_{long}\sp2 + a_{lat}\sp2}$','Location','best');
 set(lll,'FontSize',13,'Interpreter','latex')
 xlabel('X-position [m]','FontSize',13)
 ylabel('accelerations [m/sec^2]','FontSize',13)
