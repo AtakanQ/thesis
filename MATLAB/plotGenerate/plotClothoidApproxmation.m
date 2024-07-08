@@ -150,3 +150,41 @@ title("Euclidian Distance Error For Order: 6",'FontSize',13)
 xlabel("Sample Along Approximation")
 ylabel("Error (m)")
 ylim([0 0.05])
+
+%% Fit a line to clothoid segment
+close all
+init_pos = [0 0];
+init_tan = 0;
+init_curvature= 0;
+final_curvature = .5;
+curv_length = 5;
+dataPointSparsity = .1;
+
+clothoid_GT = clothoid_v2( ...
+               init_pos, ...
+               init_tan, ...
+               init_curvature, ...
+               final_curvature,...
+               curv_length, ...
+               dataPointSparsity ...
+               );
+
+figure;
+h1 = clothoid_GT.plotPlain([0 0 1],"Clothoid");
+axis equal
+hold on
+h2 = plot([init_pos(1) clothoid_GT.allX(end)], [init_pos(2) clothoid_GT.allY(end)],'DisplayName',"Line Segment",'LineWidth',1.5);
+xVal = linspace(init_pos(1) ,clothoid_GT.allX(end) ,5);
+yVal = linspace(init_pos(2) ,clothoid_GT.allY(end) ,5);
+xyPairs = [clothoid_GT.allX' clothoid_GT.allY'];
+angle = atan2(clothoid_GT.allY(end) - init_pos(2), clothoid_GT.allX(end) - init_pos(1));
+for i = 1:numel(xVal)
+    x0 = xVal(i);
+    y0 = yVal(i);
+    [closestPoint, index] = findClosestPointOnLine(x0, y0, rad2deg(angle + pi/2), xyPairs);
+
+    plot([x0 closestPoint(1)],[y0 closestPoint(2)],'--','Color',[0 0 0])
+    axis equal
+end
+h3 = plot(NaN,NaN,'--','Color',[0 0 0],'DisplayName',"Euclidian Distance");
+legend([h1 h2 h3],'Location','best')
