@@ -38,7 +38,8 @@ curvatureErrors = [0.01 0.005 -0.005 -0.01];
 
 arcSplineRMSPosErrors = zeros(numel(posErrors),numel(headingErrors),numel(curvatureErrors));
 arcSplineMaxPosErrors = zeros(numel(posErrors),numel(headingErrors),numel(curvatureErrors));
-
+arcSplineComputationTimes = zeros(numel(posErrors),numel(headingErrors),numel(curvatureErrors));
+bezierComputationTimes = zeros(numel(posErrors),numel(headingErrors),numel(curvatureErrors));
 clc
 %% Try to fit clothoid
 
@@ -60,11 +61,12 @@ for i = 1:numel(posErrors)
             % if k == 1 && j >2
             %     plotOn = true;
             % end
-            % tic
+            tic
             [clothoidArray,wayPoints] = ...
                 fitArcSpline_v3([vehicleX vehicleY],vehicleTan,vehicleCurv,...
                 clothoids_GT,plotOn,shiftedCoords1,shiftedCoords2,xyPairs);
-            % timePassedClothoid = toc;
+            arcSplineComputationTimes(i,j,k) = toc;
+
             arcSplineXY = [];
             for n = 1:numel(clothoidArray)
                 arcSplineXY = [arcSplineXY; clothoidArray(n).allX' clothoidArray(n).allY'];
@@ -82,6 +84,17 @@ for i = 1:numel(posErrors)
             arcSplineRMSPosErrors(i,j,k) = rms_error;
             arcSplineMaxPosErrors(i,j,k) = max_error;
             
+            
+            
+            init_pos = [vehicleX  vehicleY];
+            init_tan = vehicleTan;
+            init_curv = vehicleCurv;
+            final_pos = finalPosArc;
+            final_angle = finalTanArc;
+            final_curvature = finalCurvArc;
+            tic
+            [trajectories] = fitBezier_v2(init_pos,init_tan,init_curv,final_pos,final_angle,final_curvature);
+            bezierComputationTimes(i,j,k) = toc;
 
             %print out final errors
             % arcSplineTangentError =  rad2deg(finalTanArc - allTangents(arcSplineClosestIndex));
@@ -90,4 +103,29 @@ for i = 1:numel(posErrors)
     end
 end
 
+meanComputationTimeArcSpline = mean(arcSplineComputationTimes(:))
 
+medianComputationTimeArcSpline = median(arcSplineComputationTimes(:))
+
+figure;
+plot(1000*arcSplineComputationTimes(:),"LineWidth",1.5)
+title("Computation Time for Arc-spline Trajectories","FontSize",13)
+xlabel("Sample number")
+ylabel("Time (msec)")
+
+meanComputationTimeBezier = mean(bezierComputationTimes(:))
+
+figure;
+plot(1000*bezierComputationTimes(:),"LineWidth",1.5)
+title("Computation Time for Bézier Trajectories","FontSize",13)
+xlabel("Sample number")
+ylabel("Time (msec)")
+
+figure;
+plot(1000*bezierComputationTimes(:),"LineWidth",1.5,"DisplayName","Bézier trajectory")
+hold on
+plot(1000*arcSplineComputationTimes(:),"LineWidth",1.5,"DisplayName","Arc-spline Trajectory")
+title("Computation Time for Bézier and Arc-spline Trajectories","FontSize",13)
+xlabel("Sample number")
+ylabel("Time (msec)")
+legend("Location","best");
