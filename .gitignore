@@ -1,2 +1,11 @@
 *.asv
 bezierData.mat
+/MATLAB/roadArcSpline/LC_model/slprj
+MS_presentation_izel.pptx
+/MATLAB/plotGenerate/cache
+MATLAB/roadArcSpline/matlab.mat
+MATLAB/roadArcSpline/mainFitArc.mat
+MATLAB/roadArcSpline/last_work_V9.mat
+MATLAB/roadArcSpline/last_work_V8.mat
+MATLAB/roadArcSpline/bezierDataOLD.mat
+MATLAB/roadArcSpline/bezierData - Copy.mat

@@ -140,9 +140,20 @@ errorCfg.headingDeviation = 2; % Degrees deviation allowed for concatenated line
 [result_clothoids,concat_indices_clothoid,result_lines,concat_indices_line,mergedSegments] = ...
     combineSegments(segments{1},all_clothoids{1}(2:end-1),errorCfg);
 
-
-
-
+%% Visualize combination
+figure;
+for i = 1:numel(concat_indices_clothoid{1})
+    idx = concat_indices_clothoid{1}(i);
+    plot(segments{1}(idx).allX,segments{1}(idx).allY,'DisplayName',"Arc-spline "+num2str(i),"LineWidth",1.5)
+    hold on
+    axis equal
+end
+% this part is spaghetti
+plot(mergedSegments(11).allX,mergedSegments(11).allY,'DisplayName',"Combined Arc-spline","LineWidth",1.5) 
+legend("Location","best")
+xlabel("xEast (m)","FontSize",13)
+ylabel("yNorth (m)","FontSize",13)
+title("Combination of Arc-splines","FontSize",13)
 % segments{1} = mergedSegments;
 %% Test
 % figure;

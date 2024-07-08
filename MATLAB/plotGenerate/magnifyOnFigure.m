@@ -1270,9 +1270,12 @@ end
 appDataStruct.ButtonDown = false;
 
 toolArray = get(src, 'userdata');
-focusedTool = find([toolArray.focusOnThisTool] == 1);
-toolArray(focusedTool).ButtonDown = false;
-set(src, 'userdata', toolArray);
+if(~isempty(toolArray))
+    focusedTool = find([toolArray.focusOnThisTool] == 1);
+    toolArray(focusedTool).ButtonDown = false;
+    set(src, 'userdata', toolArray);
+end
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % NAME: DeleteCallback

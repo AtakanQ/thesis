@@ -187,4 +187,7 @@ for i = 1:numel(xVal)
     axis equal
 end
 h3 = plot(NaN,NaN,'--','Color',[0 0 0],'DisplayName',"Euclidian Distance");
+xlabel("xEast (m)","FontSize",13)
+ylabel("yNorth (m)","FontSize",13)
+title("Line Approximation to a Clothoid","FontSize",13)
 legend([h1 h2 h3],'Location','best')
