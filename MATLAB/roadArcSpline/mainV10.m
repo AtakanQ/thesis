@@ -174,7 +174,9 @@ roadLen = 0;
 numBytes = 0;
 numArcSplines = 0;
 numLineSegments = 0;
+curvatures = [];
 for i = 1:numel(segments{1})
+    curvatures = [curvatures segments{1}(i).initialCurvature];
     if(segments{1}(i).numArcs>0)
         tempBytes = 16*segments{1}(i).numArcs;
         numArcSplines = numArcSplines + 1;
@@ -185,9 +187,14 @@ for i = 1:numel(segments{1})
     roadLen = roadLen + segments{1}(i).segmentLength;
    numBytes = numBytes + tempBytes;  
 end
-
-
 %%
+figure;
+plot(curvatures,"LineWidth",1.2,"DisplayName","Curvature")
+title("Road Segment Curvature","FontSize",13)
+xlabel("Segment index","FontSize",13)
+ylabel("Curvature (m^-^1)","FontSize",13)
+legend();
+
 numAllClothoid = numel(all_clothoids{1});
 disp(['The road initially had ', num2str(numAllClothoid) ,' clothoids.'])
 disp(['After approximation and combination of segments the road has ', num2str(numFinalClothoids),...
