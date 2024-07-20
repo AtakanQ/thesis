@@ -98,26 +98,7 @@ errorCfg.headingDeviation = 2; % Degrees deviation allowed for concatenated line
     combineSegments(segments{1},all_clothoids{1}(2:end-1),errorCfg);
 
 
-
-
-% segments{1} = mergedSegments;
-%% Test
-% figure;
-% for i = 2:(length(all_clothoids{3})-1)
-%     plot(all_clothoids{3}(i).allX,all_clothoids{3}(i).allY,'Color',[0 0 1])
-%     hold on
-%     if(segments{3}(i-1).type == "clothoid")
-%         plot(segments{3}(i-1).allX,segments{3}(i-1).allY,'--','Color',[1 0 0])
-%     else
-%         plot(segments{3}(i-1).allX,segments{3}(i-1).allY,'--','Color',[0 1 0])
-%     end
-%     axis equal
-% end
-
 %% Generate other lanes
-laneWidth = -3.52; % meters
-numLanes = 2; % other lanes
-[otherLanes,xEastShifted,yNorthShifted] = generateOtherLanes(segments{1},laneWidth,numLanes);
 allX = [];
 allY = [];
 myX = [];
@@ -157,12 +138,6 @@ for i = 1:numel(allX)
     allX{i} = allX{i}(downsampledIndices);
     allY{i} = allY{i}(downsampledIndices);
 end
-for i = 1:numel(xEastShifted)
-    downsamplingFactor = floor(numel(xEastShifted{i}) / desiredNumElements);
-    downsampledIndices = 1:downsamplingFactor:numel(xEastShifted{i});
-    xEastShifted{i} = xEastShifted{i}(downsampledIndices);
-    yNorthShifted{i} = yNorthShifted{i}(downsampledIndices);
-end
 
 % allX_OSM = [];
 % allY_OSM = [];
@@ -179,18 +154,8 @@ end
 figure
 plot(allX{1},allY{1},'DisplayName','Ground Truth Reference','LineWidth',1.2)
 hold on
-plot(allX{2},allY{2},'DisplayName','Ground Truth Right Lane(1)','LineWidth',1.2)
-hold on
-plot(allX{3},allY{3},'DisplayName','Ground Truth Right Lane(2)','LineWidth',1.2)
-hold on
 
 plot(myX,myY,'DisplayName','Generated Reference Lane','LineWidth',1.2)
-hold on
-plot(xEastShifted{1},yNorthShifted{1},'DisplayName','Generated Right Lane(1)','LineWidth',1.2)
-hold on
-plot(xEastShifted{2},yNorthShifted{2},'DisplayName','Generated Right Lane(2)','LineWidth',1.2)
-
-% plot(allX_OSM,allY_OSM,'DisplayName','OSM Road','LineWidth',1.2 )
 title("Real Road and Generated Road")
 axis equal
 xlabel("xEast (m)")
