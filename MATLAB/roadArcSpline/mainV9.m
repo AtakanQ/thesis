@@ -69,8 +69,31 @@ for i = 1:length(xEastCenter)
 end
 compTimeClothoid
 
+%% clothoid simulation
+compTimeClothoidSim = [];
+all_clothoids_sim = cell(1,3);
+for i = 1:numel(all_clothoids)
+    compTime = 0;
+    for j = 1:numel(all_clothoids{i})
+        S = all_clothoids{i}(j).curv_length;
+        PS =  [all_clothoids{i}(j).allX(1) all_clothoids{i}(j).allY(1)];
+        thetaS = all_clothoids{i}(j).init_tan;
+        kA = all_clothoids{i}(j).init_curv;
+        kB = all_clothoids{i}(j).final_curv;
+        options = simset('SrcWorkspace','current');
+        tic
+        sim('clothoidSimulation.slx',S,options);
+        compTime = compTime + toc;
+        all_clothoids_sim{i} = [all_clothoids_sim{i}; Xval Yval];
+    end
+    compTimeClothoidSim = [compTimeClothoidSim compTime];
+end
+clear Xval Yval
+%%
+
 figure;
-for j = 1:numel(all_clothoids)
+% for j = 1:numel(all_clothoids)
+for j = 1:1
     for i = 1:numel(all_clothoids{j})
         [HERE_lats,HERE_lons,h] = enu2geodetic(all_clothoids{j}(i).allX,all_clothoids{j}(i).allY...
             ,0,refLat,refLon,0,wgs84Ellipsoid);
@@ -81,7 +104,19 @@ for j = 1:numel(all_clothoids)
         geobasemap satellite
     end
 end
+[simLats,simLons,h] = enu2geodetic(all_clothoids_sim{j}(:,1),all_clothoids_sim{j}(:,2)...
+            ,0,refLat,refLon,0,wgs84Ellipsoid);
+geoplot(simLats,simLons,'--','LineWidth',2,'Color',[1, 0, 0])
 
+first10k = all_clothoids_sim{1}(1:10000,:);
+ground_truth_xy = [all_clothoids{1}(2).allX' all_clothoids{1}(2).allY'];
+[rms_error, max_error, errors] = computeSegmentError(ground_truth_xy,first10k);
+
+figure;
+plot(errors)
+title("Error Between Integration and Simulation")
+xlabel("Waypoint index")
+ylabel("Error (m)")
 % Use clothoid fitting to fit lane boundaries
 % for i = 2:length(xEastCenter_LB)
 %     [theta_GT_LB{i},curvature_GT_LB{i},dk_LB{i},L_LB{i},...
@@ -101,11 +136,11 @@ for i = 1:numel(all_clothoids{1})
 end
 legend("Waypoints","G1 Fitted Road")
 
-[theta_OSM,curvature_OSM,dk_OSM,L_OSM,...
-    ~,~,~,~,~] = ...
-    G1spline( [xEast yNorth]);
-all_clothoids_OSM = generateClothoids(xEast,yNorth,...
-    theta_OSM,curvature_OSM,dk_OSM,L_OSM);
+% [theta_OSM,curvature_OSM,dk_OSM,L_OSM,...
+%     ~,~,~,~,~] = ...
+%     G1spline( [xEast yNorth]);
+% all_clothoids_OSM = generateClothoids(xEast,yNorth,...
+%     theta_OSM,curvature_OSM,dk_OSM,L_OSM);
 
 % pick some of the data from roads
 roadSegmentData = zeros(floor(numel(all_clothoids{1})/10),3);
