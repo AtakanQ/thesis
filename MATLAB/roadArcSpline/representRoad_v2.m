@@ -26,7 +26,7 @@ sampleStruct.rmsError = 0;
 sampleStruct.maxError = 0;
 sampleStruct.allX = [];
 sampleStruct.allY = [];
-
+sampleStruct.computationTime = 0;
 % Create an array of structures with empty fields
 segments(numSegment+1) = sampleStruct;
 segments(numSegment+1) = [];
@@ -43,9 +43,12 @@ for i = 1:numSegment
     if (heading_change < lineCfg.lineDegreeDeviation) % Line does not make the segment deviate
         % Generate 500 points between the two coordinates.
         lineCfg.numberOfPoints = norm([xEast(i)-xEast(i+1) yNorth(i)-yNorth(i+1)]) / 0.01;
+        
 
+        tic
         x_values = linspace(xEast(i), xEast(i+1) , lineCfg.numberOfPoints)';
         y_values = linspace(yNorth(i), yNorth(i+1), lineCfg.numberOfPoints)';
+        tempTime = toc;
         heading = atan2(y_values(end)-y_values(1),x_values(end)-x_values(1));
         [rms_error, max_error] = computeSegmentError([x_values y_values],...
             [all_clothoids(i).allX' all_clothoids(i).allY']);
@@ -72,7 +75,7 @@ for i = 1:numSegment
             segments(i).allY = y_values;
             segments(i).rmsError = rms_error;
             segments(i).maxError = max_error;
-            
+            segments(i).computationTime = tempTime;
         end
     end
 end
@@ -161,6 +164,7 @@ for i = 1:numSegment
             segments(i).curvatureDerivative = segments(i).curvatureChange/tempClothoid.length;
             segments(i).rmsError = nextRms_error;
             segments(i).maxError = nextMax_error;
+            segments(i).computationTime = tempClothoid.computationTime;
 
             if(nextMax_error < arcCfg.maximumDistance)
                 % keep decreasing
@@ -200,6 +204,7 @@ for i = 1:numSegment
                 segments(i).curvatureDerivative = segments(i).curvatureChange/tempClothoid.length;
                 segments(i).rmsError = nextRms_error;
                 segments(i).maxError = nextMax_error;
+                segments(i).computationTime = tempClothoid.computationTime;
                 break
             end
         end

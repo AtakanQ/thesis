@@ -24,7 +24,7 @@ sampleStruct.rmsError = 0;
 sampleStruct.maxError = 0;
 sampleStruct.allX = [];
 sampleStruct.allY = [];
-
+sampleStruct.computationTime = 0;
 % Create an array of structures with empty fields
 numSegment = length(segments);
 for i = 1:numLanes
@@ -87,6 +87,7 @@ for i = 1:numLanes
             otherLanes{i}(j).curvatureDerivative = otherLanes{i}(j).curvatureChange/tempClothoid.length;
             otherLanes{i}(j).allX = tempClothoid.allX;
             otherLanes{i}(j).allY = tempClothoid.allY;
+            otherLanes{i}(j).computationTime = tempClothoid.computationTime;
             
             % if i == 2
             %    idx = 1;
@@ -119,9 +120,11 @@ for i = 1:numLanes
                 [sin(segments(j).headingInitial) -cos(segments(j).headingInitial) ];
 
             init_pos = original_init_pos + init_pos_shift;
-
+            
+            tic
             line_allX = segments(j).allX + init_pos_shift(1);
             line_allY = segments(j).allY + init_pos_shift(2);
+            compTime = toc;
 
             tan = segments(j).headingInitial;
             
@@ -138,6 +141,7 @@ for i = 1:numLanes
             otherLanes{i}(j).curvatureDerivative = 0;
             otherLanes{i}(j).allX = line_allX;
             otherLanes{i}(j).allY = line_allY;
+            otherLanes{i}(j).computationTime = compTime;
 
             %exception happens to be here as well
             % if i == 2
