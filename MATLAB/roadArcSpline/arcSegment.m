@@ -23,7 +23,8 @@ classdef arcSegment < handle
             obj.init_tan = init_tan;
             obj.radius = radius;
             obj.length = length;
-            obj.numPointsPerSegment = ceil(length / 0.01); % Datapoint for each 10 cm
+            % obj.numPointsPerSegment = ceil(length / 0.01); % Datapoint for each 10 cm
+            obj.numPointsPerSegment = numPointsPerSegment;
             if radius ~= Inf
                 obj.theta = length / radius;
             end
