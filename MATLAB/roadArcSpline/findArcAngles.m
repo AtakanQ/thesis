@@ -1,11 +1,14 @@
 function [angles] = findArcAngles(tempClothoid)
 
+
 singleArcNumPoints = floor(tempClothoid.segmentLength / 0.01 / (tempClothoid.numArcs));
+inbetweenArcsPoints = singleArcNumPoints-1;
 
 numAngles = tempClothoid.numArcs + 1;
 angles = zeros(numAngles,1);
-inbetweenArcsPoints = singleArcNumPoints-1;
+
 for i = 1:numAngles
+
     if (i == 1) || (i == numAngles)
         singleArcNumPoints = floor(inbetweenArcsPoints / 2); 
     else
