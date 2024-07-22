@@ -21,11 +21,13 @@ classdef clothoid < handle
       arcLenArray
       cumulativeArcLenArray
       arcTangents
+      computationTime
+      dataPointSparsity
    end
 
    methods
        function obj = clothoid(init_pos,init_tan, init_curvature, final_curvature,...
-               length,order,arcSegClass)
+               length,order,arcSegClass,dataPointSparsity)
          if nargin > 0
             obj.init_pos = init_pos;
             obj.init_tan = init_tan;
@@ -36,7 +38,13 @@ classdef clothoid < handle
             obj.curv_increment = (final_curvature - init_curvature) / order;
             obj.curv_sign = sign(final_curvature - init_curvature);
             obj.arcSegments = arcSegClass;
-            obj.numPointsPerSegment = ceil(length / 0.1) / order; % point for each 10 centimeter
+            if nargin == 8
+                obj.dataPointSparsity = dataPointSparsity;
+                obj.numPointsPerSegment = ceil(length / dataPointSparsity) / order; % point for each 1 centimeter
+            else
+                obj.dataPointSparsity = 0.01;
+                obj.numPointsPerSegment = ceil(length / 0.01) / order; % point for each 1 centimeter
+            end
             obj.curv_derivative = (final_curvature - init_curvature)/length;
             obj.generateArcSegments();
             
@@ -47,7 +55,7 @@ classdef clothoid < handle
        end
 
        function generateArcSegments(obj)
-
+           tempTime = 0;
            obj.centers = zeros(obj.order+1,2);
            obj.curvatures = zeros(obj.order+1,1);
            obj.arcX = cell(obj.order+1,1);
@@ -57,7 +65,9 @@ classdef clothoid < handle
             obj.arcTangents = zeros(obj.order + 1,1);
            obj.arcSegments(1) = arcSegment(obj.init_pos,obj.init_tan,...
                abs(inv(obj.init_curv)),obj.length/(2 * obj.order),sign(obj.init_curv),obj.numPointsPerSegment/2);
+            tic
            [obj.arcX{1}, obj.arcY{1}] = obj.arcSegments(1).getXY();
+            tempTime = toc + tempTime ;
            obj.centers(1,:) = obj.arcSegments(1).center;
            obj.curvatures(1) =  obj.init_curv;
            obj.arcLenArray(1) = obj.length/(2 * obj.order);
@@ -70,13 +80,16 @@ classdef clothoid < handle
                 arcLen = obj.length/obj.order;
                 start_angle = obj.arcSegments(i-1).final_angle;
                 
-                obj.arcSegments(i) = arcSegment(position,start_angle,radius,arcLen,sign(curvature),obj.numPointsPerSegment);
-                [obj.arcX{i}, obj.arcY{i}] = obj.arcSegments(i).getXY();
                 
+                obj.arcSegments(i) = arcSegment(position,start_angle,radius,arcLen,sign(curvature),obj.numPointsPerSegment);
+                tic
+                [obj.arcX{i}, obj.arcY{i}] = obj.arcSegments(i).getXY();
+                tempTime = toc + tempTime;
+
                 obj.arcTangents(i) = start_angle;
                 obj.cumulativeArcLenArray(i) = obj.cumulativeArcLenArray(i-1) + arcLen;
                 obj.arcLenArray(i) = arcLen;
-                obj.centers(i,:) = obj.arcSegments(i).center;
+                obj.centers(i,:) = obj.arcSegments(i).center;   
                 obj.curvatures(i) = curvature;
            end
            
@@ -86,7 +99,10 @@ classdef clothoid < handle
             start_angle = obj.arcSegments(end).final_angle;
             arcLen = obj.length/(2*obj.order);
             obj.arcSegments(end + 1) = arcSegment(position,start_angle,radius,arcLen,sign(curvature),obj.numPointsPerSegment/2);
+            tic
             [obj.arcX{end}, obj.arcY{end}] = obj.arcSegments(end).getXY();
+            tempTime = toc + tempTime;
+            obj.computationTime = tempTime;
             obj.centers(end,:) = obj.arcSegments(end).center;
             obj.curvatures(end) = curvature;
             obj.arcLenArray(end) = arcLen;
