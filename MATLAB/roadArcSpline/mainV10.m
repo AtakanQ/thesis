@@ -94,8 +94,8 @@ errorCfg.rmsError = 0.1; % Computed after concatenation
 errorCfg.maxError = 0.2; % Computed after concatenation
 errorCfg.headingDeviation = 2; % Degrees deviation allowed for concatenated lines
 
-[result_clothoids,concat_indices_clothoid,result_lines,concat_indices_line,mergedSegments] = ...
-    combineSegments(segments{1},all_clothoids{1}(2:end-1),errorCfg);
+% [result_clothoids,concat_indices_clothoid,result_lines,concat_indices_line,mergedSegments] = ...
+%     combineSegments(segments{1},all_clothoids{1}(2:end-1),errorCfg);
 
 
 %% Generate other lanes
@@ -187,7 +187,12 @@ for i = 1:numel(segments{1})
     roadLen = roadLen + segments{1}(i).segmentLength;
    numBytes = numBytes + tempBytes;  
 end
-%%
+%% Compute arc spline computation time
+
+
+
+
+
 figure;
 plot(curvatures,"LineWidth",1.2,"DisplayName","Curvature")
 title("Road Segment Curvature","FontSize",13)
@@ -201,4 +206,4 @@ disp(['After approximation and combination of segments the road has ', num2str(n
     ' clothoids and ', num2str(numArcs) , ' arcs were used.'])
 disp(['Additionaly, ',num2str(numLines), ' lines were used.'])
 disp(['Initially there were ', num2str(numAllClothoid) ' segments. After combination there are ', num2str(numFinalClothoids + numLines), ' segments.'])
-save('last_work_V9')
+save('last_work_V10')

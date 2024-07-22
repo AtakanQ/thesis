@@ -57,15 +57,17 @@ if(strcmp(folderName , "autobahn_4")) % there is some bug with this road
 end
 
 % Use clothoid fitting
+compTimeClothoid = [];
 for i = 1:length(xEastCenter)
     [theta_GT{i},curvature_GT{i},dk{i},L{i},...
         nevalG1,~,~,~,~] = ...
         G1spline( [xEastCenter{i} yNorthCenter{i}]);
-
+    tic
     [all_clothoids{i}] = ...
         generateClothoids(xEastCenter{i},yNorthCenter{i},theta_GT{i},curvature_GT{i},dk{i},L{i});
+    compTimeClothoid = [compTimeClothoid toc];
 end
-
+compTimeClothoid
 
 figure;
 for j = 1:numel(all_clothoids)
@@ -139,8 +141,8 @@ errorCfg.rmsError = 0.1; % Computed after concatenation
 errorCfg.maxError = 0.2; % Computed after concatenation
 errorCfg.headingDeviation = 2; % Degrees deviation allowed for concatenated lines
 
-[result_clothoids,concat_indices_clothoid,result_lines,concat_indices_line,mergedSegments] = ...
-    combineSegments(segments{1},all_clothoids{1}(2:end-1),errorCfg);
+% [result_clothoids,concat_indices_clothoid,result_lines,concat_indices_line,mergedSegments] = ...
+%     combineSegments(segments{1},all_clothoids{1}(2:end-1),errorCfg);
 
 
 
@@ -266,6 +268,17 @@ for i = 1:numel(segments{1})
    numBytes = numBytes + tempBytes;  
 end
 
+%Computation time
+compTimeApprox = [];
+for i = 1:numel(segments)
+    tempTime = 0;
+    for j = 1:numel(segments{i})
+        tempTime = tempTime + segments{i}(j).computationTime;
+    end
+    
+    compTimeApprox = [compTimeApprox tempTime];
+end
+compTimeApprox
 
 %%
 numAllClothoid = numel(all_clothoids{1});
