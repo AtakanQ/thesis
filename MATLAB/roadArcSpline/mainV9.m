@@ -109,7 +109,7 @@ end
 geoplot(simLats,simLons,'--','LineWidth',2,'Color',[1, 0, 0])
 
 first10k = all_clothoids_sim{1}(1:10000,:);
-ground_truth_xy = [all_clothoids{1}(2).allX' all_clothoids{1}(2).allY'];
+ground_truth_xy = [all_clothoids{1}(8).allX' all_clothoids{1}(8).allY'];
 [rms_error, max_error, errors] = computeSegmentError(ground_truth_xy,first10k);
 
 figure;
@@ -293,7 +293,8 @@ numArcSplines = 0;
 numLineSegments = 0;
 for i = 1:numel(segments{1})
     if(segments{1}(i).numArcs>0)
-        tempBytes = 16*segments{1}(i).numArcs;
+        % tempBytes = 16*segments{1}(i).numArcs;
+        tempBytes = 25;
         numArcSplines = numArcSplines + 1;
     else
         tempBytes = 16;
@@ -323,3 +324,40 @@ disp(['After approximation and combination of segments the road has ', num2str(n
 disp(['Additionaly, ',num2str(numLines), ' lines were used.'])
 disp(['Initially there were ', num2str(numAllClothoid) ' segments. After combination there are ', num2str(numFinalClothoids + numLines), ' segments.'])
 save('last_work_V9')
+
+%% inspect shifted lines
+idx = 18;
+figure;
+plot(otherLanes{1}(idx).allX,otherLanes{1}(idx).allY,'Color',[0 0 1],'LineWidth',1.2,'DisplayName','Shifted Line Segment')
+hold on
+plot(all_clothoids{2}(idx).allX,all_clothoids{2}(idx).allY,'Color',[1 0 0],'LineWidth',1.2,'DisplayName','Ground Truth')
+
+plot(otherLanes{1}(idx-1).allX,otherLanes{1}(idx-1).allY,'Color',[0 0 1],'LineWidth',1.2,'DisplayName','Shifted Line Segment')
+plot(all_clothoids{2}(idx-1).allX,all_clothoids{2}(idx-1).allY,'Color',[1 0 0],'LineWidth',1.2,'DisplayName','Ground Truth')
+
+plot(otherLanes{1}(idx+1).allX,otherLanes{1}(idx+1).allY,'Color',[0 0 1],'LineWidth',1.2,'DisplayName','Shifted Line Segment')
+plot(all_clothoids{2}(idx+1).allX,all_clothoids{2}(idx+1).allY,'Color',[1 0 0],'LineWidth',1.2,'DisplayName','Ground Truth')
+axis equal
+xlabel("xEast (m)")
+ylabel("yNorth (m)")
+title("Shifted Line Segment and Ground Truth")
+legend();
+%% inspect shifted arc-spline
+idx = 25;
+figure;
+plot(otherLanes{1}(idx).allX,otherLanes{1}(idx).allY,'Color',[0 0 1],'LineWidth',1.2,'DisplayName','Shifted Arc-Spline Segment')
+hold on
+axis equal
+legend();
+plot(all_clothoids{2}(idx).allX,all_clothoids{2}(idx).allY,'Color',[1 0 0],'LineWidth',1.2,'DisplayName','Ground Truth')
+
+plot(otherLanes{1}(idx-1).allX,otherLanes{1}(idx-1).allY,'Color',[0 0 1],'LineWidth',1.2,'DisplayName','Shifted Arc-Spline Segment')
+plot(all_clothoids{2}(idx-1).allX,all_clothoids{2}(idx-1).allY,'Color',[1 0 0],'LineWidth',1.2,'DisplayName','Ground Truth')
+
+plot(otherLanes{1}(idx+1).allX,otherLanes{1}(idx+1).allY,'Color',[0 0 1],'LineWidth',1.2,'DisplayName','Shifted Arc-Spline Segment')
+plot(all_clothoids{2}(idx+1).allX,all_clothoids{2}(idx+1).allY,'Color',[1 0 0],'LineWidth',1.2,'DisplayName','Ground Truth')
+axis equal
+xlabel("xEast (m)")
+ylabel("yNorth (m)")
+title("Shifted Arc-spline Segment and Ground Truth")
+legend();
