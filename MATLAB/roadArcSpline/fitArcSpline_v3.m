@@ -1,6 +1,7 @@
 function [clothoidArray,wayPoints] = ...
     fitArcSpline_v3(init_pos,init_tan,init_curv,clothoids_GT,plotOn,...
     shiftedCoords1, shiftedCoords2, xyPairs)
+superPose = false;
 dataSparsity = 0.1;
 wayPoints.pos = init_pos;
 wayPoints.tan = init_tan;
