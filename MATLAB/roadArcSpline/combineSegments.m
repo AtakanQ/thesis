@@ -283,6 +283,7 @@ while(i <= length(segments))
         sampleStruct.maxError = max_errors_line(j);
         sampleStruct.allX = result_lines(j).allX;
         sampleStruct.allY = result_lines(j).allY;
+        sampleStruct.computationTime = 0;
         mergedSegments(mergedSegmentCounter) = sampleStruct;
 
         i = i + length(concat_successful_indices_line{j});
@@ -306,6 +307,7 @@ while(i <= length(segments))
         sampleStruct.maxError = max_errors_residual_line(n);
         sampleStruct.allX = result_residual_lines(n).allX;
         sampleStruct.allY = result_residual_lines(n).allY;
+        sampleStruct.computationTime = 0;
         mergedSegments(mergedSegmentCounter) = sampleStruct;
 
         i = i + length(concat_successful_residual_indices_line{n});
@@ -327,6 +329,7 @@ while(i <= length(segments))
         sampleStruct.maxError = max_errors_clothoid(k);
         sampleStruct.allX = tempClothoid.allX;
         sampleStruct.allY = tempClothoid.allY;
+        sampleStruct.computationTime = 0;
         mergedSegments(mergedSegmentCounter) = sampleStruct;
         
         i = i + length(concat_successful_indices_clothoid{k});
