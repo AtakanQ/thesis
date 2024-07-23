@@ -430,6 +430,8 @@ plotBezierAnalysisArray(bestBezierList, xyPairs, allTangents, allCurvatures,...
     shiftedCoords1, shiftedCoords2, [arcSpline.allX' arcSpline.allY'],...
     arcSplineErrors,arcSplineHeadingErrors,arcSplineCurvatureErrors)
 
+%%
+
 %% Simulate data for visualization
 clc
 close all
@@ -456,8 +458,6 @@ end
 [clothoidArray,wayPoints] = ...
     fitArcSpline_v3(init_pos + [0.3 0.4],init_tan + deg2rad(1),init_curv + 0.01,clothoids_GT,plotOn,...
     shiftedCoords1, shiftedCoords2, xyPairs);
-
-
 
 
 
