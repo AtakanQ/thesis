@@ -1,7 +1,7 @@
 function [closestPoint, index] = findClosestPointOnLine(x0, y0, angle, xyPairs)
     % Convert angle from degrees to radians if necessary
-    theta = deg2rad(angle);
-
+    % theta = deg2rad(angle);
+    theta = angle;
     % Calculate the direction vector
     dirVec = [cos(theta), sin(theta)];
     
