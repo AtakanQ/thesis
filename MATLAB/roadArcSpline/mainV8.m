@@ -507,7 +507,23 @@ for i = 1:numel(segments{1})
 end
 
 
+%% Try simplification with lines
+xVal = segments{1}(282).allX;
+yVal = segments{1}(282).allY;
+maximumError = segments{1}(282).maxError
+waypoints = simplifyTrajectory(xVal, yVal, maximumError)
+
+figure;
+plot(xVal,yVal,'DisplayName','Arc-spline Segment','LineWidth',1.2)
+hold on
+plot(waypoints(:,1),waypoints(:,2),'--','DisplayName','Arc-spline Segment','LineWidth',1.2)
+axis equal
+legend();
+xlabel("xEast (m)")
+ylabel("yNorth (m)")
+title("Comparison Between Arc-spline Approximation and Line Approximation")
 %%
+
 numAllClothoid = numel(all_clothoids{1});
 disp(['The road initially had ', num2str(numAllClothoid) ,' clothoids.'])
 disp(['After approximation and combination of segments the road has ', num2str(numFinalClothoids),...
