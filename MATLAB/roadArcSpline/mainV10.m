@@ -21,7 +21,7 @@ roadName = '1105231693';
 set(groot, 'defaultAxesXGrid', 'on', 'defaultAxesYGrid', 'on', 'defaultAxesZGrid', 'on');
 figure;
 geoplot(OSM_lats,OSM_lons,'LineWidth',2)
-title("OpenStreetMap Data Example","FontSize",12)
+title("Rural Road Example","FontSize",12)
 geobasemap satellite
 
 xEastCenter{1} = xEast;
