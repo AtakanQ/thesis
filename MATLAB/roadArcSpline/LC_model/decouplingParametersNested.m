@@ -25,19 +25,29 @@ E = -10;
 % l_S = 10;
 
 % Working set ATAKAN
-KP1 = 25;
+KP1 = 15;
 % KP1 = 5;
 KI1 = 15;
-KP2 = 40;
+KP2 = .25;
 % KP2 = 10;
-KI2 = 0.03; 
-KI3 = 0.03; 
+KI2 = 0.25; 
+KI3 = 0.25; 
 Kd = 0.05;
 % Kd = 0.01;
 tau = 0.01;
 
-% l_S = 1.25;
-l_S = 1.25; % look ahead distance, when we increase it creates problems
+% Working set ATAKAN
+% KP1 = 10.5;
+% % KP1 = 5;
+% KI1 = 10.1;
+% KP2 = 1.0;
+% % KP2 = 10;
+% KI2 = 0.01; 
+% KI3 = 0.01; 
+% Kd = 0.01;
+
+l_S = 1.25;
+% l_S = 6; % look ahead distance, when we increase it creates problems
 %% System Dynamics
 
 v_LC = v0; % Lateral system dynamics with this constant velocity

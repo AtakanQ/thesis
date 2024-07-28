@@ -6,11 +6,25 @@ load("all_clothoids.mat")
 % load("all_clothoids_A1.mat")
 load("all_clothoids_LB_A1.mat")
 
+
+%case 1
+% posError = 0.35; %meters
+% headingError = deg2rad(2.0); %radians
+% curvatureError = -0.001;
+% fileName = "Case1";
+
 %case 2
-posError = 0.20; %meters
-headingError = deg2rad(3); %radians
-curvatureError = 0.0015;
-fileName = "Case2";
+% posError = 0.20; %meters
+% headingError = deg2rad(3); %radians
+% curvatureError = 0.0015;
+% fileName = "Case2";
+
+
+%case 3
+posError = -0.35; %meters
+headingError = deg2rad(-4); %radians
+curvatureError = -0.0009;
+fileName = "Case3";
 
 clothoidIdx = 55;
 clothoid_GT = all_clothoids{1}(clothoidIdx);
@@ -223,33 +237,125 @@ for i = 1:numel(clothoids_GT)
         remainingLength = totalLength - passedLength;
         break
     end
-    totalLength = clothoids_GT(i).curv_length;
+    totalLength = totalLength + clothoids_GT(i).curv_length;
 end
 
-% clothoid_v2( ...
-%                init_pos, ...
-%                init_tan, ...
-%                init_curvature, ...
-%                final_curvature,...
-%                curv_length, ...
-%                dataPointSparsity ...
-%                )
 
 tempClothoid = clothoid_v2(xyPairs(arcSplineClosestIndex,:),allTangents(arcSplineClosestIndex),...
     allCurvatures(arcSplineClosestIndex),clothoids_GT(last_idx).final_curv,remainingLength,0.01);
 
 clothoids_GT_next = [tempClothoid clothoids_GT((last_idx+1):end)];
 
-% figure;
-% for i = 1:numel(clothoids_GT_next)
-%     clothoids_GT_next(i).plotPlain()
-%     hold on
-% end
-
 plotOn = true;
 [clothoidArrayRoadFollow] = ...
     followRoad(nextInitPos,nextInitTan,nextInitCurv,...
-    clothoids_GT_next,plotOn,shiftedCoords1,shiftedCoords2,xyPairs);
+    clothoids_GT_next,plotOn,shiftedCoords1,shiftedCoords2,2);
 
 clothoidArray = [clothoidArray clothoidArrayRoadFollow'];
-save("mainFitArc_v2"+fileName+".mat","clothoidArray")
+
+%% plot overall
+close all
+figure;
+h2 = plot(ground_truth_xy(:,1),ground_truth_xy(:,2),'Color',[1 0 0],"LineWidth",1.0,"DisplayName","Road Centerline");
+hold on
+for i = 1:numel(clothoidArray)
+    h1 = clothoidArray(i).plotPlain([0 0 1],"Arc-spline Trajectory");
+    h1.LineWidth = 1.5;
+end
+h3 = plot(shiftedCoords1(:,1),shiftedCoords1(:,2),'--','Color',[0 0 0],'DisplayName','Lane Boundary','LineWidth',1);
+plot(shiftedCoords2(:,1),shiftedCoords2(:,2),'--','Color',[0 0 0],'LineWidth',1)
+xlabel("xEast (m)","FontSize",13)
+ylabel("yNorth (m)","FontSize",13)
+grid on
+title("Arc Spline Trajectory and Road Centerline","FontSize",13)
+legend([h1 h2 h3])
+
+save("mainFitArc_v2"+fileName+".mat","clothoidArray","clothoidArrayRoadFollow")
+
+%% Plot arc spline the results
+finalPosArc = [clothoidArray(end).allX(end) clothoidArray(end).allY(end)];
+finalTanArc = clothoidArray(end).final_tan;
+finalCurvArc = clothoidArray(end).final_curv;
+
+
+[closest_point, arcSplineClosestIndex] = findClosestPointOnLine(finalPosArc(1), finalPosArc(2),...
+    finalTanArc + pi/2, xyPairs);
+
+ground_truth_xy = xyPairs;
+    
+% plot the position error
+arcSpline.allX = [];
+arcSpline.allY = [];
+arcSpline.allTangent = [];
+arcSpline.allCurvature = [];
+arcSpline.length = 0;
+% figure;
+for i = 1:numel(clothoidArray)
+% for i = 10:11
+    arcSpline.allX = [arcSpline.allX clothoidArray(i).allX];
+    arcSpline.allY = [arcSpline.allY clothoidArray(i).allY];
+    arcSpline.allTangent = [arcSpline.allTangent clothoidArray(i).allTangent];
+    arcSpline.allCurvature = [arcSpline.allCurvature clothoidArray(i).allCurvature];
+    arcSpline.length = arcSpline.length + clothoidArray(i).curv_length;
+    % clothoidArray(i).plotPlain([0 0 i/11]);
+    % hold on
+    % axis equal
+end
+measurement_xy = [arcSpline.allX' arcSpline.allY'];
+[~, ~, arcSplineErrors] = ...
+    computeSegmentError(measurement_xy,ground_truth_xy);
+
+figure;
+h2 = plot(ground_truth_xy(:,1),ground_truth_xy(:,2),"LineWidth",1.0,"DisplayName","Road Centerline");
+hold on
+h1 = plot(arcSpline.allX,arcSpline.allY,"LineWidth",1.5,"DisplayName","Arc Spline Trajectory");
+h3 = plot(shiftedCoords1(:,1),shiftedCoords1(:,2),'--','Color',[0 0 0],'DisplayName','Lane Boundary','LineWidth',1);
+plot(shiftedCoords2(:,1),shiftedCoords2(:,2),'--','Color',[0 0 0],'LineWidth',1)
+xlabel("xEast (m)","FontSize",13)
+ylabel("yNorth (m)","FontSize",13)
+grid on
+title("Arc Spline Trajectory and Road Centerline","FontSize",13)
+axis equal
+minY = min(arcSpline.allY([1 length(arcSpline.allY)]));
+maxY = max(arcSpline.allY([1 length(arcSpline.allY)]));
+ylim([minY-5 maxY+5])
+
+legend([h1 h2 h3]);
+
+xAxisArcSpline = (0:0.01:(length(arcSplineErrors)-1)/100 );
+figure;
+plot(xAxisArcSpline,arcSplineErrors,"LineWidth",1.5,"DisplayName","Arc Spline Error")
+xlabel("Trajectory Length (m)","FontSize",13)
+ylabel("Distance to centerline (m)","FontSize",13)
+grid on
+title("Euclidian Distance Error of Arc Spline Trajectory","FontSize",13)
+legend();
+
+tangentsGT = allTangents(1:arcSplineClosestIndex);
+curvaturesGT = allCurvatures(1:arcSplineClosestIndex);
+n1 = length(arcSpline.allTangent);
+n2 = length(tangentsGT);
+
+newIndices = linspace(1, n2, n1);
+downsampledArrayTangent = interp1(1:n2, tangentsGT, newIndices);
+downsampledArrayCurvature = interp1(1:n2, curvaturesGT, newIndices);
+% degTan = rad2deg(downsampledArrayTangent);
+% degTanArcspl = rad2deg(arcSpline.allTangent);
+arcSplineHeadingErrors = rad2deg(downsampledArrayTangent-arcSpline.allTangent);
+figure;
+plot(xAxisArcSpline,arcSplineHeadingErrors,"LineWidth",1.5,"DisplayName","Heading Error")
+xlabel("Trajectory Length (m)","FontSize",13)
+ylabel("Heading Error (°)","FontSize",13)
+grid on
+title("Heading Error of Arc Spline Trajectory","FontSize",13)
+legend();
+
+arcSplineCurvatureErrors = downsampledArrayCurvature-arcSpline.allCurvature;
+figure;
+plot(xAxisArcSpline,arcSplineCurvatureErrors,"LineWidth",1.5,"DisplayName","Curvature Error")
+xlabel("Trajectory Length (m)","FontSize",13)
+ylabel("Curvature Error (m^-^1)","FontSize",13)
+grid on
+title("Curvature Error of Arc Spline Trajectory","FontSize",13)
+legend();
+

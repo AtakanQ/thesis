@@ -5,11 +5,11 @@ addpath("..\")
 load LCdata_trial_13ms
 
 
-fileName = "case1";
+% fileName = "case1";
 % fileName = "case2";
-% fileName = "case3";
+fileName = "case3";
 
-load("mainFitArc"+fileName+".mat")
+load("mainFitArc_v2"+fileName+".mat")
 % load LCdata_trial_20ms
 
 %% Maneuver Data Entrance
@@ -102,7 +102,7 @@ g = 9.81;
 % Compute velocity profile
 v0 = 36; % initial velocity
 tSim = Sall/v0; % simulation time 
-% tSim = 1.11;
+% tSim = 11.05;
 acc_sim = 0; % constant velocity 
 S01 = 0; % acc = 0 ise sifir olabilir
 v1 = v0; % maneuver velocity

@@ -1,7 +1,7 @@
 function [clothoidArray] =  followRoad(nextInitPos,nextInitTan,nextInitCurv,...
-    clothoids_GT,plotOn,shiftedCoords1,shiftedCoords2,xyPairs);
+    clothoids_GT,plotOn,shiftedCoords1,shiftedCoords2,numSegments)
 
-numSegments = 5;
+
 dataPointSparsity = 0.01;
 clothoidArray = [];
 for i = 1:numSegments
